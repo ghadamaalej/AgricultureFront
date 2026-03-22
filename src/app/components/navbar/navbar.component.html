@@ -1,0 +1,44 @@
+<header class="navbar" [class.scrolled]="isScrolled">
+  <div class="container">
+    <nav class="nav-inner">
+      <!-- Logo -->
+      <a class="logo" (click)="scrollTo('home')">
+        <img src="assets/images/logo.png" alt="GreenRoots Logo" class="logo-img" />
+        <span class="logo-text">GreenRoots</span>
+      </a>
+
+      <ul class="nav-links" [class.open]="isMobileMenuOpen">
+        <li *ngFor="let link of navLinks">
+          <a [class.active]="activeSection === link.id" (click)="scrollTo(link.id)">
+            {{ link.label }}
+          </a>
+        </li>
+        <li class="mobile-cta">
+          <button class="btn btn-primary" (click)="scrollTo('products')">
+            <i class="fas fa-shopping-basket"></i> Shop Now
+          </button>
+        </li>
+      </ul>
+     <div class="nav-actions">
+ 
+        <!-- Non connecté : Sign In + Sign Up -->
+        <ng-container *ngIf="!isLoggedIn">
+          <button class="btn-signin" (click)="signIn()">
+            <i class="fas fa-sign-in-alt"></i> Sign In
+          </button>
+          <button class="btn-signup" (click)="signUp()">
+            <i class="fas fa-user-plus"></i> Sign Up
+          </button>
+        </ng-container>
+ 
+        <!-- Connecté : Sign Out uniquement -->
+        <ng-container *ngIf="isLoggedIn">
+          <button class="btn-logout" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+          </button>
+        </ng-container>
+   </div>
+       
+    </nav>
+  </div>
+</header>

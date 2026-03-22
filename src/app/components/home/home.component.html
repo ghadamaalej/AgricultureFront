@@ -1,0 +1,20 @@
+<!-- Site principal -->
+<ng-container *ngIf="!showAuth">
+  <app-navbar (onAuthOpen)="openAuth($event)"></app-navbar>
+  <app-hero></app-hero>
+  <app-about></app-about>
+  <app-services></app-services>
+  <app-products></app-products>
+  <app-counter></app-counter>
+  <app-testimonials></app-testimonials>
+  <app-blog></app-blog>
+  <app-footer></app-footer>
+</ng-container>
+
+<!-- Page Auth -->
+<ng-container *ngIf="showAuth">
+  <button class="back-to-site" (click)="closeAuth()">
+    <i class="fas fa-arrow-left"></i> Back to Site
+  </button>
+  <app-auth></app-auth>
+</ng-container>
