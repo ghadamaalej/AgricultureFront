@@ -1,4 +1,5 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -11,18 +12,26 @@ export class HomeComponent implements OnInit, AfterViewInit {
   showAuth = false;
   authMode: 'signin' | 'signup' = 'signin';
 
-  ngOnInit(): void {}
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    // Scroll vers la section si un fragment est passé dans l'URL
+    this.route.fragment.subscribe(fragment => {
+      if (fragment) {
+        setTimeout(() => {
+          document.getElementById(fragment)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     const points = document.querySelectorAll('.why-point');
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
+        if (entry.isIntersecting) entry.target.classList.add('visible');
       });
     }, { threshold: 0.2 });
-
     points.forEach(p => observer.observe(p));
   }
 

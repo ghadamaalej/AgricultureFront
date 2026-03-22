@@ -15,7 +15,6 @@ import { BlogComponent }         from './components/blog/blog.component';
 import { FooterComponent }       from './components/footer/footer.component';
 import { AuthComponent }         from './components/auth/auth.component';
 import { BlogDetailComponent }   from './components/blog-detail/blog-detail.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
 
@@ -35,7 +34,6 @@ import { NotFoundComponent }     from './components/not-found/not-found.componen
     BlogDetailComponent,
     HomeComponent,
     NotFoundComponent,
-    DashboardComponent
   ],
   imports: [
     BrowserModule,
