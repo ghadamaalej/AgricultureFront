@@ -4,12 +4,12 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent }       from './components/home/home.component';
 import { BlogDetailComponent } from './components/blog-detail/blog-detail.component';
 import { NotFoundComponent }   from './components/not-found/not-found.component';
+import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
 
 const routes: Routes = [
   { path: '',         component: HomeComponent,       pathMatch: 'full' },
-  {
-    path: 'dashboard', loadChildren: () =>import('./dashboard/dashboard.module').then(m => m.DashboardModule)
-  },
+  {path: 'dashboard', loadChildren: () =>import('./dashboard/dashboard.module').then(m => m.DashboardModule)},
+  { path: 'register-extra',  component: RegisterExtraComponent  },
   { path: 'blog/:id', component: BlogDetailComponent },
   { path: '404',      component: NotFoundComponent   },
   { path: '**',       redirectTo: '/404'             }
