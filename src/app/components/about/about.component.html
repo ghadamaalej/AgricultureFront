@@ -1,0 +1,106 @@
+<section class="about section-padding" id="about">
+  <div class="container">
+    <div class="about-grid">
+
+      <!-- Images side -->
+      <div class="about-images reveal-left">
+        <div class="img-main">
+          <img src="assets/images/nature.jpg"
+               alt="Organic Farm">
+          <div class="exp-badge">
+            <span class="exp-number">25+</span>
+            <span class="exp-text">Years of<br>Experience</span>
+          </div>
+        </div>
+        <div class="img-secondary">
+          <img src="assets/images/image1.jpg"
+               alt="Harvesting">
+        </div>
+        <div class="img-leaf">🌿</div>
+      </div>
+
+      <!-- Text side -->
+      <div class="about-text reveal-right">
+        <div class="section-label">
+          <i class="fas fa-leaf"></i> About Us
+        </div>
+      <h2 class="section-title" style="text-align:left; line-height:1.3;">
+        Connecting the Agricultural Ecosystem
+        <span style="display:block; color: #6c8d24;">
+        in One Platform
+        </span>
+        </h2>
+        <p class="about-desc">
+         GreenRoots is a comprehensive agricultural platform built to empower every actor in the farming value chain — from smallholder farmers and buyers to transporters, veterinarians, agricultural experts, and event organizers.
+       </p>
+
+        <!-- Features grid -->
+        <div class="features-grid">
+          <div class="feature-item" *ngFor="let f of features">
+            <div class="feature-icon">
+              <i [class]="f.icon"></i>
+            </div>
+            <div class="feature-body">
+              <h4>{{ f.title }}</h4>
+              <p>{{ f.desc }}</p>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary">
+          <i class="fas fa-arrow-right"></i> Discover Our Story
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose GreenRoots Section -->
+<section class="why-choose">
+  <div class="why-choose-bg">
+    <img
+      src="assets/images/treee.jpg"
+      alt="Farm Background"
+      class="why-bg-img"
+    >
+  </div>
+  <div class="why-choose-bg-overlay"></div>
+  <div class="why-tractor-wrap">
+    <img src="assets/images/tractor.png" alt="Tractor" class="why-tractor">
+  </div>
+  <div class="why-choose-content">
+    <div class="why-label">
+      <i class="fas fa-seedling"></i> Why Choose GreenRoots
+    </div>
+    <h2 class="why-title">
+      Rooted in Agriculture,<br>Growing with Smart Purpose
+    </h2>
+
+    <div class="why-points">
+      <div class="why-point why-point-1">
+        <div class="why-dot">01</div>
+        <p>Smart Farming<br>Technology</p>
+      </div>
+      <div class="why-point why-point-2">
+        <div class="why-dot">02</div>
+        <p>Connected<br>Supply Chain</p>
+      </div>
+      <div class="why-point why-point-3">
+        <div class="why-dot">03</div>
+        <p>Real-Time Market<br>Prices</p>
+      </div>
+      <div class="why-point why-point-4">
+        <div class="why-dot">04</div>
+        <p>Fields of Shared<br>Prosperity</p>
+      </div>
+      <div class="why-point why-point-5">
+        <div class="why-dot">05</div>
+        <p>Sustainable<br>Agriculture</p>
+      </div>
+    </div>
+  </div>
+  <div class="why-soil">
+    <img src="assets/images/naturalsoil.jpg" alt="Soil" class="why-soil-img">
+  </div>
+</section>

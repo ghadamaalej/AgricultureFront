@@ -1,0 +1,111 @@
+<!-- Newsletter banner -->
+<div class="newsletter-banner">
+  <div class="container">
+    <div class="newsletter-inner">
+      <div class="newsletter-text">
+        <h3>🌿 Get Fresh Updates!</h3>
+        <p>Subscribe to receive exclusive offers, farm news, and seasonal recipes.</p>
+      </div>
+      <div class="newsletter-form">
+        <input type="email" [(ngModel)]="email" placeholder="Enter your email address">
+        <button class="btn btn-primary" (click)="subscribe()">
+          <i class="fas fa-paper-plane"></i> Subscribe
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main footer -->
+<footer class="footer">
+  <div class="footer-bg"></div>
+  <div class="container">
+    <div class="footer-grid">
+
+      <!-- Brand column -->
+      <div class="footer-col brand-col">
+        <a class="footer-logo" (click)="scrollTo('home')">
+         <img src="assets/images/logo.png" alt="GreenRoots Logo" class="logo-img" />
+         <span class="logo-text">
+         <span class="green">Green</span>Roots
+         </span>
+        </a>
+        <p class="footer-about">
+           GreenRoots is an agricultural platform connecting farmers, buyers, experts, transporters, and veterinarians , making farming more efficient, profitable, and sustainable for everyone involved.
+        </p>
+        <!-- Socials -->
+        <div class="social-links">
+          <a *ngFor="let s of socials" [href]="s.url" class="social-btn">
+            <i [class]="s.icon"></i>
+          </a>
+        </div>
+        <!-- Contact info -->
+        <div class="contact-info">
+          <div class="contact-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>Avenue de l’Environnement, Tunis, Tunisie</span>
+          </div>
+          <div class="contact-item">
+            <i class="fas fa-phone-alt"></i>
+            <span>+216 12345678</span>
+          </div>
+          <div class="contact-item">
+            <i class="fas fa-envelope"></i>
+            <span>GreenRoots&#64;gmail.com</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Company links -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Company</h4>
+        <ul class="footer-links">
+          <li *ngFor="let link of links.company">
+            <a><i class="fas fa-angle-right"></i> {{ link }}</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Services links -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Services</h4>
+        <ul class="footer-links">
+          <li *ngFor="let link of links.services">
+            <a><i class="fas fa-angle-right"></i> {{ link }}</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Products links -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Products</h4>
+        <ul class="footer-links">
+          <li *ngFor="let link of links.products">
+            <a><i class="fas fa-angle-right"></i> {{ link }}</a>
+          </li>
+        </ul>
+        <!-- Badges -->
+        <div class="footer-badges">
+          <div class="f-badge"><i class="fas fa-leaf"></i> 100% Organic</div>
+          <div class="f-badge"><i class="fas fa-shield-alt"></i> Certified</div>
+          <div class="f-badge"><i class="fas fa-recycle"></i> Eco-Friendly</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="bottom-inner">
+        <p>© {{ currentYear }} <strong>GreenRoots</strong>. All Rights Reserved. Made with 🌿 for a greener world.</p>
+        <div class="bottom-links">
+          <a>Privacy Policy</a>
+          <a>Terms of Service</a>
+          <a>Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

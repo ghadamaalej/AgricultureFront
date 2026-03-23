@@ -1,0 +1,112 @@
+.services {
+  position: relative;
+  background: var(--light-bg);
+  overflow: hidden;
+}
+
+.services-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(76,175,80,0.06) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(139,195,74,0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.service-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 40px 30px;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+  border: 1px solid transparent;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 80px; height: 80px;
+  background: radial-gradient(circle, rgba(76,175,80,0.05), transparent);
+  border-radius: 50%;
+  transform: translate(20px, -20px);
+  transition: var(--transition);
+}
+
+.service-card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow);
+  border-color: rgba(76,175,80,0.15);
+}
+
+.service-card:hover::before {
+  width: 200px; height: 200px;
+}
+
+.service-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 25px;
+  transition: var(--transition);
+}
+
+.service-card:hover .service-icon {
+  transform: rotateY(180deg);
+}
+
+.service-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 15px;
+}
+
+.service-desc {
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+.service-link {
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: gap 0.3s ease;
+}
+
+.service-link:hover { gap: 12px; }
+
+.card-hover-bar {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 0; height: 3px;
+  border-radius: 0 0 0 0;
+  transition: width 0.4s ease;
+}
+
+.service-card:hover .card-hover-bar { width: 100%; }
+
+@media (max-width: 992px) {
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 576px) {
+  .services-grid { grid-template-columns: 1fr; }
+}

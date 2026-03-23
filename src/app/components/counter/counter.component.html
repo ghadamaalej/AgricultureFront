@@ -1,0 +1,17 @@
+<section class="counter-section">
+  <div class="counter-overlay"></div>
+  <div class="container">
+    <div class="counter-grid">
+      <div class="counter-item" *ngFor="let s of stats; let i = index">
+        <div class="counter-icon">
+          <i [class]="s.icon"></i>
+        </div>
+        <div class="counter-value">
+          {{ displayValues[i] | number }}{{ s.suffix }}
+        </div>
+        <div class="counter-label">{{ s.label }}</div>
+        <div class="counter-line"></div>
+      </div>
+    </div>
+  </div>
+</section>

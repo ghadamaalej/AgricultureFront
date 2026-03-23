@@ -1,0 +1,112 @@
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+/>
+<section class="hero" id="home">
+  <!-- Slides -->
+  <div class="slides-wrapper">
+    <div class="slide"
+         *ngFor="let slide of slides; let i = index"
+         [class.active]="currentSlide === i"
+         [style.backgroundImage]="'url(' + slide.image + ')'">
+      <div class="slide-overlay" [style.background]="slide.bg"></div>
+    </div>
+  </div>
+
+  <!-- Floating elements -->
+  <div class="floating-leaf leaf-1">🌿</div>
+  <div class="floating-leaf leaf-2">🍃</div>
+  <div class="floating-leaf leaf-3">🌱</div>
+
+  <!-- Content -->
+  <div class="container">
+    <div class="hero-content">
+      <div class="slide-text" *ngFor="let slide of slides; let i = index" [class.active]="currentSlide === i">
+        <span class="hero-label">
+          <i class="fas fa-seedling"></i>
+          {{ slide.label }}
+        </span>
+        <h1 class="hero-title">
+        <span class="text-animate">{{ slide.title }}</span><br>
+        <span class="highlight text-animate">{{ slide.titleHighlight }}</span>
+        </h1>
+        <p class="hero-subtitle">{{ slide.subtitle }}</p>
+        <div class="hero-btns">
+          <button class="btn btn-primary" (click)="scrollTo('products')">
+            <i class="fas fa-shopping-basket"></i> Explore Products
+          </button>
+          <button class="btn btn-outline" (click)="scrollTo('about')">
+            <i class="fas fa-play-circle"></i> Learn More
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+
+  <!-- Stats bar -->
+  <!-- <div class="hero-stats">
+    <div class="container">
+      <div class="stats-bar">
+        <div class="stat-item">
+          <i class="fas fa-leaf"></i>
+          <div>
+            <strong>100%</strong>
+            <span>Organic</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-truck"></i>
+          <div>
+            <strong>Fast</strong>
+            <span>Delivery</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-award"></i>
+          <div>
+            <strong>Premium</strong>
+            <span>Quality</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-clock"></i>
+          <div>
+            <strong>Fresh</strong>
+            <span>Daily Harvest</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+
+  <!-- Navigation -->
+  <div class="hero-nav">
+    <button class="nav-btn prev" (click)="prevSlide()">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="dots">
+      <span class="dot" *ngFor="let slide of slides; let i = index"
+            [class.active]="currentSlide === i" (click)="goToSlide(i)"></span>
+    </div>
+    <button class="nav-btn next" (click)="nextSlide()">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+
+</section>
+
+<div class="features-slider">
+  <div class="slider-track">
+    <div class="feature-item" *ngFor="let feature of features">
+      <i [class]="feature.icon"></i>
+      <span>{{ feature.text }}</span>
+    </div>
+    <!-- Dupliquer pour effet infini -->
+    <div class="feature-item" *ngFor="let feature of features">
+      <i [class]="feature.icon"></i>
+      <span>{{ feature.text }}</span>
+    </div>
+  </div>
+</div>
+

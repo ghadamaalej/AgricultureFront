@@ -1,0 +1,69 @@
+<header class="navbar" [class.scrolled]="isScrolled">
+  <div class="container">
+    <nav class="nav-inner">
+
+      <!-- Logo (gauche) -->
+      <a class="logo" (click)="navigate('/')">
+        <img src="assets/images/logo.png" alt="GreenRoots Logo" class="logo-img">
+        <span class="logo-text">GreenRoots</span>
+      </a>
+
+      <!-- Nav links (centre) -->
+      <ul class="nav-links" [class.open]="isMobileMenuOpen">
+
+        <li *ngFor="let link of navLinks">
+          <a [class.active]="activeLink === link.route"
+             (click)="navigate(link.route)">
+            {{ link.label }}
+          </a>
+        </li>
+
+        <!-- Dropdown More -->
+        <li class="dropdown-wrap">
+          <a class="dropdown-trigger"
+             [class.active]="isDropdownActive()"
+             (click)="toggleDropdown($event)">
+            More
+            <i class="fas fa-chevron-down dropdown-arrow"
+               [class.rotated]="moreDropdownOpen"></i>
+          </a>
+          <ul class="dropdown-menu" *ngIf="moreDropdownOpen">
+            <li *ngFor="let d of dropdownLinks">
+              <a class="dropdown-item"
+                 [class.active]="activeLink === d.route"
+                 (click)="navigate(d.route)">
+                <i [class]="d.icon"></i>
+                <span>{{ d.label }}</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Mobile only CTA -->
+        <li class="mobile-cta">
+          <button class="btn-signup" (click)="signUp()">
+            <i class="fas fa-user-plus"></i> Sign Up
+          </button>
+        </li>
+
+      </ul>
+
+      <!-- Auth buttons (droite) -->
+      <div class="nav-actions">
+        <ng-container *ngIf="!isLoggedIn">
+          <button class="btn-signin" (click)="signIn()">
+            <i class="fas fa-sign-in-alt"></i> Sign In
+          </button>
+          <button class="btn-signup" (click)="signUp()">
+            <i class="fas fa-user-plus"></i> Sign Up
+          </button>
+        </ng-container>
+        <ng-container *ngIf="isLoggedIn">
+          <button class="btn-logout" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+          </button>
+        </ng-container>
+      </div>
+    </nav>
+  </div>
+</header>
