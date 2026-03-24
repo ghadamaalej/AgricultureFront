@@ -92,6 +92,30 @@
             </span>
           </div>
 
+          <!-- REGION -->
+
+<div class="form-group" *ngIf="extraForm.get('region')" [class.has-error]="invalid('region')">
+
+  <label>Region</label>
+
+  <div class="input-box">
+    <i class="fas fa-map-marker-alt"></i>
+
+    <input 
+      type="text" 
+      formControlName="region" 
+      placeholder="Enter your region (e.g. Tunis, Sfax)">
+  </div>
+
+  <span class="field-error" *ngIf="invalid('region')">
+    <i class="fas fa-exclamation-circle"></i>
+    <span *ngIf="extraForm.get('region')?.hasError('required')">
+      Region is required.
+    </span>
+  </span>
+
+</div>
+
         <!-- VEHICLE TYPE -->
 
 <div class="form-group" *ngIf="extraForm.get('vehicleType')" [class.has-error]="invalid('vehicleType')">
