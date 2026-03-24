@@ -18,6 +18,7 @@ import { AuthComponent }         from './components/auth/auth.component';
 import { BlogDetailComponent }   from './components/blog-detail/blog-detail.component';
 import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
+import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { NotFoundComponent }     from './components/not-found/not-found.componen
     BlogDetailComponent,
     HomeComponent,
     NotFoundComponent,
+    RegisterExtraComponent
   ],
   imports: [
     BrowserModule,

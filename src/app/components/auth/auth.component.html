@@ -395,8 +395,14 @@
   </span>
 </div>
           <button type="submit" class="auth-btn">
-            <i class="fas fa-user-plus"></i> Create Account
+          <ng-container *ngIf="needsExtraStep">
+            <i class="fas fa-arrow-right"></i> Next
+          </ng-container>
+          <ng-container *ngIf="!needsExtraStep">
+          <i class="fas fa-user-plus"></i> Create Account
+          </ng-container>
           </button>
+          
           <p class="switch-link">
             Already have an account ?
             <a (click)="switchTo('signin')">Sign in here</a>
