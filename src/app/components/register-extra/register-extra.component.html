@@ -92,18 +92,55 @@
             </span>
           </div>
 
-          <!-- INTERVENTION RADIUS -->
-          <div class="form-group" *ngIf="extraForm.get('interventionRadius')" [class.has-error]="invalid('interventionRadius')">
-            <label>Intervention Radius (km)</label>
-            <div class="input-box">
-              <i class="fas fa-route"></i>
-              <input type="number" formControlName="interventionRadius" placeholder="e.g. 50">
-            </div>
-            <span class="field-error" *ngIf="invalid('interventionRadius')">
-              <i class="fas fa-exclamation-circle"></i>
-              <span *ngIf="extraForm.get('interventionRadius')?.hasError('required')">Intervention radius is required.</span>
-            </span>
-          </div>
+        <!-- VEHICLE TYPE -->
+
+<div class="form-group" *ngIf="extraForm.get('vehicleType')" [class.has-error]="invalid('vehicleType')">
+
+  <label>Vehicle Type</label>
+
+  <div class="input-box">
+    <i class="fas fa-truck"></i>
+
+    <input 
+      type="text" 
+      formControlName="vehicleType" 
+      placeholder="Enter vehicle type (e.g. Truck, Van, Tractor)">
+  </div>
+
+  <span class="field-error" *ngIf="invalid('vehicleType')">
+    <i class="fas fa-exclamation-circle"></i>
+    <span *ngIf="extraForm.get('vehicleType')?.hasError('required')">
+      Vehicle type is required.
+    </span>
+  </span>
+</div>
+
+<!-- CAPACITY KG -->
+<div class="form-group" *ngIf="extraForm.get('capacityKg')" [class.has-error]="invalid('capacityKg')">
+  <label>Capacity (kg)</label>
+  <div class="input-box">
+    <i class="fas fa-weight-hanging"></i>
+    <input type="number" formControlName="capacityKg" placeholder="e.g. 1000">
+  </div>
+  <span class="field-error" *ngIf="invalid('capacityKg')">
+    <i class="fas fa-exclamation-circle"></i>
+    <span *ngIf="extraForm.get('capacityKg')?.hasError('required')">Capacity is required.</span>
+    <span *ngIf="extraForm.get('capacityKg')?.hasError('min')">Capacity must be greater than 0.</span>
+  </span>
+</div>
+
+<!-- LICENSE PLATE -->
+<div class="form-group" *ngIf="extraForm.get('licensePlate')" [class.has-error]="invalid('licensePlate')">
+  <label>License Plate Number</label>
+  <div class="input-box">
+    <i class="fas fa-id-badge"></i>
+    <input type="text" formControlName="licensePlate" placeholder="e.g. 123 TU 4567">
+  </div>
+  <span class="field-error" *ngIf="invalid('licensePlate')">
+    <i class="fas fa-exclamation-circle"></i>
+    <span *ngIf="extraForm.get('licensePlate')?.hasError('required')">License plate is required.</span>
+  </span>
+</div>
 
           <!-- AGENCY -->
           <div class="form-group" *ngIf="extraForm.get('agency')" [class.has-error]="invalid('agency')">

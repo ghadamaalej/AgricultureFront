@@ -25,8 +25,8 @@ export class RegisterExtraComponent implements OnInit {
       fields: ['region']
     },
     Transporter: {
-      label: 'Transporter',
-      fields: ['interventionRadius']
+    label: 'Transporter',
+    fields: ['vehicleType', 'capacityKg', 'licensePlate']
     },
     AgriculturalExpert: {
       label: 'Agricultural Expert',
@@ -69,7 +69,9 @@ export class RegisterExtraComponent implements OnInit {
     const f = this.config.fields;
 
     if (f.includes('region'))              controls['region']              = new FormControl('', Validators.required);
-    if (f.includes('interventionRadius'))  controls['interventionRadius']  = new FormControl('', Validators.required);
+    if (f.includes('vehicleType'))   controls['vehicleType']   = new FormControl('', Validators.required);
+    if (f.includes('capacityKg'))    controls['capacityKg']    = new FormControl('', [Validators.required, Validators.min(1)]);
+    if (f.includes('licensePlate'))  controls['licensePlate']  = new FormControl('', Validators.required);    
     if (f.includes('documentUrl'))         controls['documentUrl']         = new FormControl(null, Validators.required);
     if (f.includes('agency'))             controls['agency']              = new FormControl('', Validators.required);
     if (f.includes('workCertificate'))     controls['workCertificate']     = new FormControl(null, Validators.required);
