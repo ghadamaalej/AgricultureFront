@@ -13,6 +13,10 @@ const routes: Routes = [
   { path: '',         component: HomeComponent,       pathMatch: 'full' },
   { path: 'auth',     component: AuthComponent, canActivate: [GuestGuard] },
   {
+    path: 'forums',
+    loadChildren: () => import('./forums/forums.module').then(m => m.ForumsModule)
+  },
+  {
     path: 'dashboard', 
     loadChildren: () =>import('./dashboard/dashboard.module').then(m => m.DashboardModule),
     canActivate: [AuthGuard],
