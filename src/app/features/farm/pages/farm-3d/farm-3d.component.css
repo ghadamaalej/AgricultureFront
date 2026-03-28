@@ -188,6 +188,81 @@
   display: block;
 }
 
+.viewport-container--drop-active .three-canvas {
+  outline: 3px solid var(--primary, #2e7d32);
+  outline-offset: -3px;
+}
+
+.plant-palette {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 72px;
+  z-index: 90;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  max-width: min(720px, calc(100% - 100px));
+}
+
+.plant-palette__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dark, #333);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plant-palette__title i {
+  color: var(--primary, #2e7d32);
+}
+
+.plant-palette__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.plant-palette__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border, #e0e0e0);
+  background: #fafafa;
+  font-size: 13px;
+  cursor: grab;
+  color: var(--dark, #333);
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.plant-palette__chip:hover {
+  background: #eef7ee;
+  border-color: var(--primary, #2e7d32);
+}
+
+.plant-palette__chip:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+.plant-palette__chip i {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+@media (max-width: 900px) {
+  .plant-palette {
+    right: 16px;
+    max-width: none;
+  }
+}
+
 /* ========== VIEWPORT CONTROLS ========== */
 
 .viewport-controls {

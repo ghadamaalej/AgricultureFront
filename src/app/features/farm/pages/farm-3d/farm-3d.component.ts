@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  ElementRef,
+  ViewChild
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription, forkJoin, of } from 'rxjs';
@@ -12,6 +20,18 @@ import { ParcelleService } from '../../services/parcelle.service';
 import { CultureService } from '../../services/culture.service';
 import { Terrain } from '../../models/terrain.model';
 import { Parcelle, Culture, StadeCulture } from '../../models/parcelle.model';
+
+/** Élément du catalogue glisser-déposer vers le terrain */
+export interface PlantPaletteItem {
+  id: string;
+  label: string;
+  icon: string;
+  /** Valeur `type` du formulaire culture (cereal, legume, fruit, …) */
+  cultureType: string;
+  defaultName: string;
+  /** Rendu 3D */
+  visual: 'tree' | 'bush' | 'row';
+}
 
 @Component({
   selector: 'app-farm-3d',
@@ -34,7 +54,7 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
   private terrainMesh!: THREE.Mesh;
   /** Outlines (LineLoop) and fills (Mesh) saved parcelles — use Object3D to satisfy TypeScript */
   private parcelleMeshes: THREE.Object3D[] = [];
-  private cultureMeshes: THREE.Mesh[] = [];
+  private cultureMeshes: THREE.Object3D[] = [];
 
   // UI state
   isLoading = true;
@@ -63,6 +83,24 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
   private fieldSideMeters = 100;
   private onCanvasPointerDownHandler = (event: PointerEvent) => this.onCanvasPointerDown(event);
   private onWindowResizeHandler = () => this.onWindowResize();
+  private onCanvasDragOverHandler = (event: DragEvent) => this.onCanvasDragOver(event);
+  private onCanvasDropHandler = (event: DragEvent) => this.onCanvasDrop(event);
+  private onCanvasDragLeaveHandler = () => this.onCanvasDragLeave();
+
+  /** Glisser-déposer plantation */
+  canvasDropHighlight = false;
+
+  readonly plantPalette: PlantPaletteItem[] = [
+    { id: 'ble', label: 'Blé', icon: 'fa-bread-slice', cultureType: 'cereal', defaultName: 'Blé', visual: 'row' },
+    { id: 'mais', label: 'Maïs', icon: 'fa-leaf', cultureType: 'cereal', defaultName: 'Maïs', visual: 'row' },
+    { id: 'tomate', label: 'Tomate', icon: 'fa-apple-whole', cultureType: 'legume', defaultName: 'Tomate', visual: 'bush' },
+    { id: 'carotte', label: 'Carotte', icon: 'fa-carrot', cultureType: 'legume', defaultName: 'Carotte', visual: 'bush' },
+    { id: 'salade', label: 'Salade', icon: 'fa-seedling', cultureType: 'legume', defaultName: 'Salade', visual: 'bush' },
+    { id: 'pomme', label: 'Pommier', icon: 'fa-apple-whole', cultureType: 'fruit', defaultName: 'Pomme', visual: 'tree' },
+    { id: 'olive', label: 'Olivier', icon: 'fa-tree', cultureType: 'fruit', defaultName: 'Olivier', visual: 'tree' },
+    { id: 'raisin', label: 'Vigne', icon: 'fa-wine-bottle', cultureType: 'fruit', defaultName: 'Raisin', visual: 'bush' },
+    { id: 'autre', label: 'Autre', icon: 'fa-plus', cultureType: 'legume', defaultName: 'Culture', visual: 'bush' }
+  ];
 
   // Forms
   parcelleForm: FormGroup;
@@ -76,7 +114,8 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
     private fb: FormBuilder,
     private terrainService: TerrainService,
     private parcelleService: ParcelleService,
-    private cultureService: CultureService
+    private cultureService: CultureService,
+    private cdr: ChangeDetectorRef
   ) {
     this.parcelleForm = this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
@@ -193,6 +232,8 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
       id: c.id ?? c.idCulture,
       parcelleId: c.parcelleId ?? parcelleId,
       nom: c.nom || c.espece || '',
+      type: c.type ?? c.variete,
+      variete: c.variete,
       dateRecolte: c.dateRecolte || c.dateRecoltePrevue || ''
     };
   }
@@ -209,11 +250,14 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
       console.error('Canvas element not found');
       return;
     }
+    if (this.isThreeInitialized) {
+      return;
+    }
 
     // Scene — ciel + brume lointaine
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xcfe8ff);
-    this.scene.fog = new THREE.FogExp2(0xb8d4e8, 0.0018);
+    this.scene.background = new THREE.Color(0xb8daf5);
+    this.scene.fog = new THREE.FogExp2(0xa8cce8, 0.0014);
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(
@@ -251,22 +295,26 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
     // Un seul maillage champ (clics = intersection réelle avec le relief)
     this.updateTerrainMesh();
 
-    this.renderer.domElement.addEventListener('pointerdown', this.onCanvasPointerDownHandler);
+    const el = this.renderer.domElement;
+    el.addEventListener('pointerdown', this.onCanvasPointerDownHandler);
+    el.addEventListener('dragover', this.onCanvasDragOverHandler);
+    el.addEventListener('drop', this.onCanvasDropHandler);
+    el.addEventListener('dragleave', this.onCanvasDragLeaveHandler);
     window.addEventListener('resize', this.onWindowResizeHandler);
 
     this.animate();
   }
 
   private setupLighting(): void {
-    const hemi = new THREE.HemisphereLight(0xd6ecff, 0x4a3c2a, 0.55);
+    const hemi = new THREE.HemisphereLight(0xe8f4ff, 0x6b5344, 0.62);
     hemi.position.set(0, 120, 0);
     this.scene.add(hemi);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.22);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.28);
     this.scene.add(ambient);
 
-    const sun = new THREE.DirectionalLight(0xfff5e6, 1.35);
-    sun.position.set(180, 220, 140);
+    const sun = new THREE.DirectionalLight(0xfff8ee, 1.42);
+    sun.position.set(160, 260, 120);
     sun.castShadow = true;
     sun.shadow.mapSize.width = 3072;
     sun.shadow.mapSize.height = 3072;
@@ -287,24 +335,44 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
+  private pseudoRandom(n: number): number {
+    const x = Math.sin(n * 12.9898) * 43758.5453123;
+    return x - Math.floor(x);
+  }
+
+  private hashSeed(id: number | undefined): number {
+    return ((id ?? 0) * 2654435761) >>> 0;
+  }
+
   private buildFieldTerrain(side: number): THREE.Mesh {
-    const seg = 56;
+    const seg = 64;
     const geom = new THREE.PlaneGeometry(side, side, seg, seg);
     geom.rotateX(-Math.PI / 2);
     const pos = geom.attributes['position'] as THREE.BufferAttribute;
+    const colors: number[] = [];
     const v = new THREE.Vector3();
+    const c1 = new THREE.Color(0x3d6b3e);
+    const c2 = new THREE.Color(0x5a8f52);
+    const c3 = new THREE.Color(0x4a7a48);
+    const tmp = new THREE.Color();
     for (let i = 0; i < pos.count; i++) {
       v.fromBufferAttribute(pos, i);
-      pos.setY(i, this.fieldHeightAt(v.x, v.z));
+      const y = this.fieldHeightAt(v.x, v.z);
+      pos.setY(i, y);
+      const n = this.pseudoRandom(i + Math.floor(v.x * 31) + Math.floor(v.z * 17));
+      tmp.copy(c2).lerp(n > 0.55 ? c1 : c3, 0.35 + n * 0.25);
+      colors.push(tmp.r, tmp.g, tmp.b);
     }
     pos.needsUpdate = true;
+    geom.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geom.computeVertexNormals();
 
     const mat = new THREE.MeshStandardMaterial({
-      color: 0x4d7c4a,
-      roughness: 0.88,
-      metalness: 0.04,
-      envMapIntensity: 0.35,
+      vertexColors: true,
+      color: 0xffffff,
+      roughness: 0.91,
+      metalness: 0.02,
+      envMapIntensity: 0.25,
       flatShading: false
     });
 
@@ -486,11 +554,11 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
       fillGeometry.rotateX(-Math.PI / 2);
       fillGeometry.computeVertexNormals();
       const fillMaterial = new THREE.MeshStandardMaterial({
-        color: 0x6b4423,
+        color: 0x5c4428,
         transparent: true,
-        opacity: 0.42,
-        roughness: 0.75,
-        metalness: 0.05,
+        opacity: 0.48,
+        roughness: 0.88,
+        metalness: 0.02,
         depthWrite: false,
         side: THREE.DoubleSide
       });
@@ -547,7 +615,7 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
           m.emissive.setHex(isHi ? 0x3a6b3a : 0x000000);
           m.emissiveIntensity = isHi ? 0.35 : 0;
           m.opacity = isHi ? 0.58 : 0.42;
-          m.color.setHex(isHi ? 0x8f5c32 : 0x6b4423);
+          m.color.setHex(isHi ? 0x9a6a3e : 0x5c4428);
         } else if ('emissive' in m) {
           (m as THREE.MeshLambertMaterial).emissive.setHex(isHi ? 0x555555 : 0x000000);
         }
@@ -568,63 +636,335 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  private disposeCultureObject(obj: THREE.Object3D): void {
+    obj.traverse((child) => {
+      if (child instanceof THREE.InstancedMesh) {
+        child.geometry.dispose();
+        const mat = child.material;
+        if (Array.isArray(mat)) {
+          mat.forEach((m) => m.dispose());
+        } else {
+          mat.dispose();
+        }
+      } else if (child instanceof THREE.Mesh) {
+        child.geometry?.dispose();
+        const mat = child.material;
+        if (Array.isArray(mat)) {
+          mat.forEach((m) => m.dispose());
+        } else if (mat) {
+          mat.dispose();
+        }
+      }
+    });
+  }
+
   private updateCultureMeshes(): void {
     if (!this.scene) {
       return;
     }
-    // Clear existing culture meshes
-    this.cultureMeshes.forEach(mesh => this.scene.remove(mesh));
+    this.cultureMeshes.forEach((obj) => {
+      this.scene.remove(obj);
+      this.disposeCultureObject(obj);
+    });
     this.cultureMeshes = [];
 
-    this.cultures.forEach(culture => {
-      const parcelle = this.parcelles.find(p => p.id === culture.parcelleId);
-      if (!parcelle) return;
+    this.cultures.forEach((culture) => {
+      const parcelle = this.parcelles.find((p) => p.id === culture.parcelleId);
+      if (!parcelle) {
+        return;
+      }
+      const group = this.buildCultureScatterGroup(culture, parcelle);
+      this.scene.add(group);
+      this.cultureMeshes.push(group);
+    });
+  }
 
-      const geometry = new THREE.CylinderGeometry(0.5, 0.5, 2);
-      const material = new THREE.MeshLambertMaterial({ color: this.getCultureColorForThree(culture) });
-      const mesh = new THREE.Mesh(geometry, material);
-      const center = this.getParcelleCentroid(parcelle);
-      if (center) {
-        const y = this.fieldHeightAt(center.x, center.z) + 1.1;
-        mesh.position.set(center.x, y, center.z);
+  /** Anneau GeoJSON [x,z] pour une parcelle (null si absent) */
+  private getParcelleRing(parcelle: Parcelle): number[][] | null {
+    if (!parcelle.geom) {
+      return null;
+    }
+    try {
+      const geom = JSON.parse(parcelle.geom);
+      if (geom.type === 'Polygon' && geom.coordinates?.[0]?.length >= 3) {
+        return geom.coordinates[0] as number[][];
+      }
+    } catch {
+      /* ignore */
+    }
+    return null;
+  }
+
+  private polygonArea(ring: number[][]): number {
+    let a = 0;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      a += ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
+    }
+    return Math.abs(a / 2);
+  }
+
+  private pointInPolygon(x: number, z: number, ring: number[][]): boolean {
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const xi = ring[i][0];
+      const zi = ring[i][1];
+      const xj = ring[j][0];
+      const zj = ring[j][1];
+      const denom = zj - zi;
+      const intersect =
+        zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (Math.abs(denom) < 1e-9 ? 1e-9 : denom) + xi;
+      if (intersect) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  }
+
+  private samplePointsInPolygon(ring: number[][], count: number, seed: number): THREE.Vector3[] {
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+    for (const c of ring) {
+      minX = Math.min(minX, c[0]);
+      maxX = Math.max(maxX, c[0]);
+      minZ = Math.min(minZ, c[1]);
+      maxZ = Math.max(maxZ, c[1]);
+    }
+    const out: THREE.Vector3[] = [];
+    let tries = 0;
+    const maxTries = Math.max(2000, count * 100);
+    while (out.length < count && tries < maxTries) {
+      tries++;
+      const rx = minX + this.pseudoRandom(seed + tries * 3) * (maxX - minX);
+      const rz = minZ + this.pseudoRandom(seed + tries * 3 + 1) * (maxZ - minZ);
+      if (this.pointInPolygon(rx, rz, ring)) {
+        out.push(new THREE.Vector3(rx, 0, rz));
+      }
+    }
+    if (out.length < count) {
+      const c = this.ringCentroid2d(ring);
+      for (let k = out.length; k < count; k++) {
+        const j = k * 0.37;
+        const rx = c.x + Math.cos(j * 8) * j * 0.4;
+        const rz = c.z + Math.sin(j * 8) * j * 0.4;
+        if (this.pointInPolygon(rx, rz, ring)) {
+          out.push(new THREE.Vector3(rx, 0, rz));
+        } else {
+          out.push(new THREE.Vector3(c.x, 0, c.z));
+        }
+      }
+    }
+    return out;
+  }
+
+  private ringCentroid2d(ring: number[][]): THREE.Vector3 {
+    let sx = 0;
+    let sz = 0;
+    for (const c of ring) {
+      sx += c[0];
+      sz += c[1];
+    }
+    const n = ring.length;
+    return new THREE.Vector3(sx / n, 0, sz / n);
+  }
+
+  private inferVisualKind(culture: Culture): 'tree' | 'bush' | 'row' {
+    const obj = (culture.objectif || '').trim().toLowerCase();
+    const viz = /^viz:(tree|bush|row)$/.exec(obj);
+    if (viz) {
+      return viz[1] as 'tree' | 'bush' | 'row';
+    }
+    const t = (culture.variete || culture.type || '').toLowerCase();
+    const n = (culture.nom || culture.espece || '').toLowerCase();
+    if (t === 'cereal' || t === 'céréale' || /blé|ble|maïs|mais|orge|avoine|riz/.test(n)) {
+      return 'row';
+    }
+    if (
+      t === 'fruit' &&
+      /raisin|vigne|vignoble|frais|fraise|framboise|myrtille|melon|pastèque/.test(n)
+    ) {
+      return 'bush';
+    }
+    if (
+      t === 'fruit' ||
+      t === 'arboriculture' ||
+      /olivier|pommier|poirier|citrus|agrum|figuier|noyer|cocotier|palm|cacaoyer/.test(n)
+    ) {
+      return 'tree';
+    }
+    return 'bush';
+  }
+
+  private instanceCountForParcel(area: number, visual: 'tree' | 'bush' | 'row'): number {
+    const base = Math.sqrt(Math.max(area, 50));
+    if (visual === 'tree') {
+      return Math.min(48, Math.max(4, Math.floor(base * 0.35)));
+    }
+    if (visual === 'row') {
+      return Math.min(120, Math.max(24, Math.floor(base * 1.8)));
+    }
+    return Math.min(90, Math.max(16, Math.floor(base * 1.1)));
+  }
+
+  private buildCultureScatterGroup(culture: Culture, parcelle: Parcelle): THREE.Object3D {
+    const group = new THREE.Group();
+    group.userData = { culture };
+    const color = this.getCultureColorForThree(culture);
+    const visual = this.inferVisualKind(culture);
+    const ring = this.getParcelleRing(parcelle);
+    const seed = this.hashSeed(culture.id);
+
+    let positions: THREE.Vector3[];
+    if (ring && ring.length >= 3) {
+      const area = this.polygonArea(ring);
+      const n = this.instanceCountForParcel(area, visual);
+      positions = this.samplePointsInPolygon(ring, n, seed);
+    } else {
+      const c = this.getParcelleCentroid(parcelle);
+      if (c) {
+        positions = [new THREE.Vector3(c.x, 0, c.z)];
       } else {
         const parcelleIndex = this.parcelles.indexOf(parcelle);
-        const fx = (parcelleIndex % 5 - 2) * 15;
+        const fx = ((parcelleIndex % 5) - 2) * 15;
         const fz = Math.floor(parcelleIndex / 5) * 15;
-        mesh.position.set(fx, this.fieldHeightAt(fx, fz) + 1.1, fz);
+        positions = [new THREE.Vector3(fx, 0, fz)];
       }
+      const fill = Math.max(6, this.instanceCountForParcel(400, visual));
+      for (let i = 1; i < fill; i++) {
+        const p = positions[0].clone();
+        p.x += (this.pseudoRandom(seed + i) - 0.5) * 8;
+        p.z += (this.pseudoRandom(seed + i + 99) - 0.5) * 8;
+        positions.push(p);
+      }
+    }
+
+    const tmpM = new THREE.Matrix4();
+    const tmpQ = new THREE.Quaternion();
+    const tmpS = new THREE.Vector3();
+    const tmpP = new THREE.Vector3();
+    const yUp = new THREE.Vector3(0, 1, 0);
+
+    if (visual === 'tree') {
+      const trunkGeom = new THREE.CylinderGeometry(0.11, 0.16, 1.05, 7);
+      const crownGeom = new THREE.ConeGeometry(0.82, 2.05, 8);
+      const trunkMat = new THREE.MeshStandardMaterial({
+        color: 0x4a3526,
+        roughness: 0.92,
+        metalness: 0
+      });
+      const crownMat = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.82,
+        metalness: 0.02
+      });
+      const trunkIm = new THREE.InstancedMesh(trunkGeom, trunkMat, positions.length);
+      const crownIm = new THREE.InstancedMesh(crownGeom, crownMat, positions.length);
+      for (let i = 0; i < positions.length; i++) {
+        const { x, z } = positions[i];
+        const h = this.fieldHeightAt(x, z);
+        const sc = 0.72 + this.pseudoRandom(seed + i * 7) * 0.38;
+        tmpQ.setFromAxisAngle(yUp, this.pseudoRandom(seed + i * 13) * Math.PI * 2);
+        tmpS.set(sc, sc, sc);
+        tmpP.set(x, h + 0.52 * sc, z);
+        tmpM.compose(tmpP, tmpQ, tmpS);
+        trunkIm.setMatrixAt(i, tmpM);
+        tmpP.set(x, h + 1.35 * sc + 1.05 * sc, z);
+        tmpM.compose(tmpP, tmpQ, new THREE.Vector3(sc * 1.05, sc, sc * 1.05));
+        crownIm.setMatrixAt(i, tmpM);
+      }
+      trunkIm.instanceMatrix.needsUpdate = true;
+      crownIm.instanceMatrix.needsUpdate = true;
+      trunkIm.castShadow = true;
+      crownIm.castShadow = true;
+      trunkIm.receiveShadow = true;
+      crownIm.receiveShadow = true;
+      group.add(trunkIm, crownIm);
+    } else if (visual === 'row') {
+      const stalkGeom = new THREE.BoxGeometry(0.1, 0.72, 0.1);
+      const mat = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.78,
+        metalness: 0.02
+      });
+      const mesh = new THREE.InstancedMesh(stalkGeom, mat, positions.length);
+      for (let i = 0; i < positions.length; i++) {
+        const { x, z } = positions[i];
+        const h = this.fieldHeightAt(x, z);
+        const sc = 0.75 + this.pseudoRandom(seed + i * 5) * 0.45;
+        const tilt = (this.pseudoRandom(seed + i) - 0.5) * 0.14;
+        tmpQ.setFromEuler(new THREE.Euler(tilt, this.pseudoRandom(seed + i * 11) * Math.PI * 2, tilt * 0.5));
+        tmpS.set(sc, sc * 1.15, sc);
+        tmpP.set(x, h + 0.36 * sc, z);
+        tmpM.compose(tmpP, tmpQ, tmpS);
+        mesh.setMatrixAt(i, tmpM);
+      }
+      mesh.instanceMatrix.needsUpdate = true;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      mesh.userData = { culture };
-      this.scene.add(mesh);
-      this.cultureMeshes.push(mesh);
-    });
+      group.add(mesh);
+    } else {
+      const bushGeom = new THREE.IcosahedronGeometry(0.42, 0);
+      const mat = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.8,
+        metalness: 0.03,
+        flatShading: true
+      });
+      const mesh = new THREE.InstancedMesh(bushGeom, mat, positions.length);
+      for (let i = 0; i < positions.length; i++) {
+        const { x, z } = positions[i];
+        const h = this.fieldHeightAt(x, z);
+        const sc = 0.55 + this.pseudoRandom(seed + i * 3) * 0.65;
+        tmpQ.setFromAxisAngle(yUp, this.pseudoRandom(seed + i * 17) * Math.PI * 2);
+        tmpS.set(sc, sc * 0.88, sc);
+        tmpP.set(x, h + 0.32 * sc, z);
+        tmpM.compose(tmpP, tmpQ, tmpS);
+        mesh.setMatrixAt(i, tmpM);
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+    }
+
+    return group;
   }
 
   private getCultureColorForThree(culture: Culture): number {
     const colors: { [key: string]: number } = {
-      'blé': 0xFFD700,
-      'maïs': 0xFFFF00,
-      'tomate': 0xFF6347,
-      'pomme de terre': 0xDAA520,
-      'carotte': 0xFF8C00
+      blé: 0xc9a227,
+      ble: 0xc9a227,
+      'blé dur': 0xd4af37,
+      maïs: 0xf0e060,
+      mais: 0xf0e060,
+      tomate: 0xe63b2e,
+      'pomme de terre': 0xc4a35a,
+      carotte: 0xe67e22,
+      salade: 0x56b85a,
+      pomme: 0x7cba3d,
+      olivier: 0x6a8f3a,
+      raisin: 0x7b4b94,
+      vigne: 0x6b3d7a,
+      culture: 0x45a049
     };
-    if (!culture.nom) return 0x32CD32;
-    return colors[culture.nom.toLowerCase()] || 0x32CD32;
+    const key = (culture.nom || '').toLowerCase().trim();
+    if (key && colors[key]) {
+      return colors[key];
+    }
+    if (!culture.nom) {
+      return 0x3cb371;
+    }
+    let h = 0;
+    for (let i = 0; i < culture.nom.length; i++) {
+      h = (h * 31 + culture.nom.charCodeAt(i)) >>> 0;
+    }
+    return (0x4a8f4a + (h % 0x303030)) & 0xffffff;
   }
 
   getCultureColor(culture: Culture): string {
-    const colorMap: { [key: string]: string } = {
-      'blé': '#FFD700',
-      'maïs': '#FFFF00',
-      'tomate': '#FF6347',
-      'pomme de terre': '#DAA520',
-      'carotte': '#FF8C00'
-    };
-    if (!culture.nom) {
-      return '#32CD32';
-    }
-    return colorMap[culture.nom.toLowerCase()] || '#32CD32';
+    const n = this.getCultureColorForThree(culture);
+    return '#' + n.toString(16).padStart(6, '0');
   }
 
   /** Clic sur une parcelle dans le panneau : affichage sur le terrain + caméra */
@@ -688,11 +1028,169 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
   private cleanupThreeJS(): void {
     window.removeEventListener('resize', this.onWindowResizeHandler);
     if (this.renderer) {
-      this.renderer.domElement.removeEventListener('pointerdown', this.onCanvasPointerDownHandler);
+      const el = this.renderer.domElement;
+      el.removeEventListener('pointerdown', this.onCanvasPointerDownHandler);
+      el.removeEventListener('dragover', this.onCanvasDragOverHandler);
+      el.removeEventListener('drop', this.onCanvasDropHandler);
+      el.removeEventListener('dragleave', this.onCanvasDragLeaveHandler);
       this.renderer.dispose();
+    }
+    if (this.scene) {
+      this.cultureMeshes.forEach((obj) => this.disposeCultureObject(obj));
+      this.cultureMeshes = [];
     }
     if (this.controls) {
       this.controls.dispose();
+    }
+  }
+
+  private defaultSemisDateString(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  private defaultRecolteDateMonthsLater(months: number): string {
+    const d = new Date();
+    d.setMonth(d.getMonth() + months);
+    return d.toISOString().slice(0, 10);
+  }
+
+  private raycastTerrainFromClient(clientX: number, clientY: number): THREE.Vector3 | null {
+    if (!this.renderer || !this.camera) {
+      return null;
+    }
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    this.mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const hits = this.raycaster.intersectObjects(this.getRaycastDrawSurfaces(), false);
+    return hits.length ? hits[0].point : null;
+  }
+
+  private findParcelleAtXZ(x: number, z: number): Parcelle | null {
+    const scored = this.parcelles.map((p) => {
+      const ring = this.getParcelleRing(p);
+      const area = ring ? this.polygonArea(ring) : p.surface || 1e6;
+      return { p, area };
+    });
+    scored.sort((a, b) => a.area - b.area);
+    for (const { p } of scored) {
+      const ring = this.getParcelleRing(p);
+      if (ring && ring.length >= 3 && this.pointInPolygon(x, z, ring)) {
+        return p;
+      }
+    }
+    for (const { p } of scored) {
+      if (this.getParcelleRing(p)) {
+        continue;
+      }
+      const c =
+        this.getParcelleCentroid(p) ??
+        this.getFallbackParcelleFocusPoint(p);
+      if (!c) {
+        continue;
+      }
+      const r = Math.max(4, Math.sqrt((p.surface || 200) / Math.PI) * 0.09);
+      if (Math.hypot(x - c.x, z - c.z) <= r) {
+        return p;
+      }
+    }
+    return null;
+  }
+
+  onPaletteDragStart(event: DragEvent, item: PlantPaletteItem): void {
+    event.dataTransfer?.setData('application/json', JSON.stringify(item));
+    event.dataTransfer!.effectAllowed = 'copy';
+  }
+
+  onCanvasDragOver(event: DragEvent): void {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'copy';
+    }
+    if (!this.canvasDropHighlight) {
+      this.canvasDropHighlight = true;
+      this.cdr.markForCheck();
+    }
+  }
+
+  onCanvasDragLeave(): void {
+    this.canvasDropHighlight = false;
+    this.cdr.markForCheck();
+  }
+
+  onCanvasDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.canvasDropHighlight = false;
+    this.cdr.markForCheck();
+    const raw = event.dataTransfer?.getData('application/json');
+    if (!raw || !this.isThreeInitialized) {
+      return;
+    }
+    let item: PlantPaletteItem;
+    try {
+      item = JSON.parse(raw) as PlantPaletteItem;
+    } catch {
+      return;
+    }
+    const hit = this.raycastTerrainFromClient(event.clientX, event.clientY);
+    if (!hit) {
+      this.error = 'Déposez sur le terrain visible.';
+      return;
+    }
+    const parcelle = this.findParcelleAtXZ(hit.x, hit.z);
+    if (!parcelle?.id) {
+      this.error = 'Aucune parcelle à cet endroit. Dessinez d’abord une parcelle sur le terrain.';
+      return;
+    }
+    const monthsHarvest = item.visual === 'tree' ? 18 : item.visual === 'row' ? 5 : 3;
+    const payload = {
+      espece: item.defaultName,
+      variete: item.cultureType,
+      dateSemis: this.defaultSemisDateString(),
+      dateRecoltePrevue: this.defaultRecolteDateMonthsLater(monthsHarvest),
+      stade: StadeCulture.SEMIS,
+      objectif: `viz:${item.visual}`
+    };
+    this.cultureService.createCulture(parcelle.id, payload).subscribe({
+      next: () => {
+        this.error = null;
+        this.loadCulturesForTerrainParcelles();
+        this.onSelectParcelleInTerrain(parcelle);
+      },
+      error: (err) => {
+        console.error('Error planting from palette:', err);
+        this.error = 'Impossible d’enregistrer la culture. Vérifiez les dates ou le serveur.';
+      }
+    });
+  }
+
+  resetCameraView(): void {
+    if (!this.camera || !this.controls) {
+      return;
+    }
+    this.fitCameraToField(this.fieldSideMeters || 100);
+  }
+
+  setTopView(): void {
+    if (!this.camera || !this.controls) {
+      return;
+    }
+    const side = this.fieldSideMeters || 100;
+    const h = side * 1.05;
+    this.camera.position.set(0, h, 0.001);
+    this.controls.target.set(0, 0, 0);
+    this.controls.update();
+  }
+
+  toggleViewportFullscreen(): void {
+    const host = this.canvas?.nativeElement?.parentElement;
+    if (!host) {
+      return;
+    }
+    if (!document.fullscreenElement) {
+      void host.requestFullscreen?.();
+    } else {
+      void document.exitFullscreen?.();
     }
   }
 
