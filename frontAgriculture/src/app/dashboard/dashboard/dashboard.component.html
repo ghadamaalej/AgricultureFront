@@ -1,0 +1,204 @@
+<div class="dash-content">
+
+  <div class="dash-page-title">
+    <h1>Dashboard</h1>
+    <p>Welcome back, Admin 👋 Here's what's happening on GreenRoots today.</p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card" *ngFor="let s of stats">
+      <div class="stat-icon" [style.background]="s.bg" [style.color]="s.color">
+        <i [class]="s.icon"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ s.value }}</div>
+        <div class="stat-label">{{ s.label }}</div>
+      </div>
+      <div class="stat-trend">
+        <i class="fas fa-arrow-up"></i> +5%
+      </div>
+    </div>
+  </div>
+  <!-- Banner Cards -->
+  <div class="banner-row">
+    <div class="banner-card green">
+      <i class="fas fa-leaf banner-icon"></i>
+      <div><strong>24,800+</strong><span>Total Platform Users</span></div>
+    </div>
+    <div class="banner-card teal">
+      <i class="fas fa-chart-line banner-icon"></i>
+      <div><strong>$1.2M+</strong><span>Total Revenue This Month</span></div>
+    </div>
+    <div class="banner-card olive">
+      <i class="fas fa-trophy banner-icon"></i>
+      <div><strong>98%</strong><span>User Satisfaction Rate</span></div>
+    </div>
+  </div>
+
+  <!-- Charts Row 1 -->
+  <div class="charts-row">
+    <div class="dash-card chart-card">
+      <div class="card-header">
+        <h3><i class="fas fa-chart-line"></i> Monthly Revenue & Expenses</h3>
+        <div class="chart-period-tabs">
+          <button class="period-tab active">Year</button>
+          <button class="period-tab">6M</button>
+          <button class="period-tab">3M</button>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas #revenueChart></canvas>
+      </div>
+    </div>
+    <div class="dash-card chart-card">
+      <div class="card-header">
+        <h3><i class="fas fa-truck"></i> Delivery Status</h3>
+        <button class="view-all-btn">Details</button>
+      </div>
+      <div class="chart-wrapper doughnut-wrap">
+        <canvas #deliveryChart></canvas>
+        <div class="doughnut-center">
+          <strong>1,240</strong>
+          <span>Total</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 2 -->
+  <div class="charts-row">
+    <div class="dash-card chart-card">
+      <div class="card-header">
+        <h3><i class="fas fa-users"></i> New User Registrations</h3>
+        <button class="view-all-btn">View All</button>
+      </div>
+      <div class="chart-wrapper">
+        <canvas #usersChart></canvas>
+      </div>
+    </div>
+    <div class="dash-card chart-card">
+      <div class="card-header">
+        <h3><i class="fas fa-store"></i> Product Categories Performance</h3>
+        <button class="view-all-btn">Details</button>
+      </div>
+      <div class="chart-wrapper">
+        <canvas #categoryChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Grid -->
+  <div class="bottom-grid">
+
+    <div class="dash-card">
+      <div class="card-header">
+        <h3><i class="fas fa-exchange-alt"></i> Recent Transactions</h3>
+        <button class="view-all-btn">View All</button>
+      </div>
+      <div class="transactions-list">
+        <div class="transaction-item" *ngFor="let t of recentTransactions">
+          <div class="t-avatar"
+            [style.background]="t.role === 'Farmer'      ? '#eaf5ea' :
+                                t.role === 'Buyer'       ? '#fff8e1' :
+                                t.role === 'Transporter' ? '#e0f7fa' : '#f3e5f5'">
+            {{ t.avatar }}
+          </div>
+          <div class="t-info">
+            <strong>{{ t.user }}</strong>
+            <span>{{ t.action }}</span>
+          </div>
+          <div class="t-role">
+            <span class="role-badge" [class]="t.role.toLowerCase()">{{ t.role }}</span>
+          </div>
+          <div class="t-amount"
+            [class.positive]="t.amount.startsWith('+')"
+            [class.negative]="t.amount.startsWith('-')">
+            {{ t.amount }}
+          </div>
+          <div class="t-status" [class]="t.status">{{ t.status }}</div>
+          <div class="t-time">{{ t.time }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-card">
+      <div class="card-header">
+        <h3><i class="fas fa-seedling"></i> Top Farmers</h3>
+        <button class="view-all-btn">View All</button>
+      </div>
+      <table class="farmers-table">
+        <thead>
+          <tr>
+            <th>Farmer</th>
+            <th>Region</th>
+            <th>Sales</th>
+            <th>Growth</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of topFarmers; let i = index">
+            <td>
+              <div class="farmer-name">
+                <span class="farmer-rank">{{ i + 1 }}</span>
+                {{ f.name }}
+              </div>
+            </td>
+            <td><span class="region-tag">{{ f.region }}</span></td>
+            <td><strong>{{ f.sales }}</strong></td>
+            <td>
+              <span class="growth-tag"
+                [class.up]="f.positive"
+                [class.down]="!f.positive">
+                <i [class]="f.positive ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                {{ f.growth }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="role-distribution">
+        <div class="role-dist-title">Platform User Roles</div>
+        <div class="role-bars">
+          <div class="role-bar-item">
+            <span>Farmers</span>
+            <div class="role-bar-track">
+              <div class="role-bar-fill" style="width:52%; background:#4caf50"></div>
+            </div>
+            <span>52%</span>
+          </div>
+          <div class="role-bar-item">
+            <span>Buyers</span>
+            <div class="role-bar-track">
+              <div class="role-bar-fill" style="width:24%; background:#ff8f00"></div>
+            </div>
+            <span>24%</span>
+          </div>
+          <div class="role-bar-item">
+            <span>Transporters</span>
+            <div class="role-bar-track">
+              <div class="role-bar-fill" style="width:12%; background:#00acc1"></div>
+            </div>
+            <span>12%</span>
+          </div>
+          <div class="role-bar-item">
+            <span>Experts</span>
+            <div class="role-bar-track">
+              <div class="role-bar-fill" style="width:8%; background:#7b1fa2"></div>
+            </div>
+            <span>8%</span>
+          </div>
+          <div class="role-bar-item">
+            <span>Vets</span>
+            <div class="role-bar-track">
+              <div class="role-bar-fill" style="width:4%; background:#e53935"></div>
+            </div>
+            <span>4%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

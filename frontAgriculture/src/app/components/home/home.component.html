@@ -1,0 +1,42 @@
+<!-- Site principal -->
+<ng-container *ngIf="!showAuth">
+  <app-navbar (onAuthOpen)="openAuth($event)"></app-navbar>
+
+  <section id="home">
+    <app-hero></app-hero>
+  </section>
+
+  <section id="about">
+    <app-about></app-about>
+  </section>
+
+  <section id="services">
+    <app-services></app-services>
+  </section>
+
+  <section id="products">
+    <app-products></app-products>
+  </section>
+
+  <section id="counter">
+    <app-counter></app-counter>
+  </section>
+
+  <section id="testimonials">
+    <app-testimonials></app-testimonials>
+  </section>
+
+  <section id="blog">
+    <app-blog></app-blog>
+  </section>
+
+  <app-footer></app-footer>
+</ng-container>
+
+<!-- Page Auth -->
+<ng-container *ngIf="showAuth">
+  <button class="back-to-site" (click)="closeAuth()">
+    <i class="fas fa-arrow-left"></i> Back to Site
+  </button>
+  <app-auth></app-auth>
+</ng-container>

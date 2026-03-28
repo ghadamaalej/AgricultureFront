@@ -1,0 +1,62 @@
+<div class="blog-detail-page" *ngIf="post">
+
+  <!-- Hero -->
+  <div class="detail-hero">
+    <img [src]="post.image" [alt]="post.title" class="detail-hero-img">
+    <div class="detail-hero-overlay"></div>
+    <div class="detail-hero-content">
+      <span class="blog-category">{{ post.category }}</span>
+      <h1>{{ post.title }}</h1>
+      <div class="detail-meta">
+        <span><i class="fas fa-globe"></i> {{ post.source }}</span>
+        <span><i class="fas fa-calendar"></i> {{ post.date }}</span>
+        <span><i class="fas fa-clock"></i> {{ post.readTime }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="container">
+    <div class="detail-layout">
+
+      <!-- Article -->
+      <article class="detail-body">
+        <button class="back-btn" (click)="goHome()">
+          <i class="fas fa-arrow-left"></i> Back to Home
+        </button>
+        <div class="detail-content" [innerHTML]="post.body"></div>
+        <div class="detail-external">
+          <p>Originally published at:</p>
+          <a [href]="post.sourceUrl" target="_blank" class="btn-outline-link">
+            <i class="fas fa-external-link-alt"></i> View Original Source
+          </a>
+        </div>
+      </article>
+
+      <!-- Sidebar -->
+      <aside class="detail-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fas fa-seedling"></i> About GreenRoots</h4>
+          <p>The all-in-one agricultural platform connecting farmers, buyers, transporters, experts, and veterinarians.</p>
+          <button class="btn btn-primary" style="width:100%; margin-top:12px;">
+            Join GreenRoots
+          </button>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fas fa-tag"></i> Category</h4>
+          <span class="blog-category">{{ post.category }}</span>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fas fa-share-alt"></i> Share</h4>
+          <div class="share-row">
+            <a class="share-btn" style="--c:#1877f2"><i class="fab fa-facebook-f"></i></a>
+            <a class="share-btn" style="--c:#1da1f2"><i class="fab fa-twitter"></i></a>
+            <a class="share-btn" style="--c:#0a66c2"><i class="fab fa-linkedin-in"></i></a>
+            <a class="share-btn" style="--c:#25d366"><i class="fab fa-whatsapp"></i></a>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</div>
