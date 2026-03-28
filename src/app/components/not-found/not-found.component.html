@@ -1,0 +1,59 @@
+<div class="not-found-page">
+
+  <div class="nf-bg">
+    <span class="nf-leaf l1">🌿</span>
+    <span class="nf-leaf l2">🍃</span>
+    <span class="nf-leaf l3">🌱</span>
+    <span class="nf-leaf l4">🍃</span>
+  </div>
+
+  <div class="nf-container">
+
+    <div class="nf-logo" (click)="goHome()">
+       <img src="assets/images/logo.png" alt="GreenRoots">
+       Green<em>Roots</em>
+    </div>
+
+    <div class="nf-illustration">
+
+      <div class="nf-code">
+        <span class="nf-digit">4</span>
+        <span class="nf-digit accent">0</span>
+        <span class="nf-digit">4</span>
+      </div>
+
+      <div class="nf-scene">
+        <div class="nf-ground">
+          <div class="nf-ground-plant p1">🌱</div>
+          <div class="nf-ground-plant p3">🌱</div>
+        </div>
+        <div class="nf-big-plant">
+          <div class="nf-petals">
+            <span>🍃</span><span>🍃</span><span>🍃</span>
+          </div>
+          <div class="nf-trunk" ></div>
+          <div class="nf-base-pot">
+            <div class="nf-pot-top"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <h1 class="nf-title">Oops! Page Not Found</h1>
+    <p class="nf-desc">
+      Looks like this page got lost in the field.<br>
+      The page you're looking for doesn't exist or has been moved.
+    </p>
+
+    <div class="nf-actions">
+      <button class="btn-home" (click)="goHome()">
+        <i class="fas fa-home"></i> Back to Homepage
+      </button>
+      <button class="btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> Go Back
+      </button>
+    </div>
+
+  </div>
+</div>

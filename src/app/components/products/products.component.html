@@ -1,0 +1,83 @@
+<section class="products section-padding" id="products">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">
+        <i class="fas fa-shopping-basket"></i> Our Products
+      </div>
+      <h2 class="section-title">
+        Farm <span>Fresh</span> Products
+      </h2>
+      <p class="section-desc">
+        Explore our wide selection of certified organic produce, harvested daily from our sustainable farm.
+      </p>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="filter-tabs reveal">
+      <button
+        *ngFor="let cat of categories"
+        class="filter-btn"
+        [class.active]="activeFilter === cat.id"
+        (click)="setFilter(cat.id)">
+        {{ cat.label }}
+      </button>
+    </div>
+
+    <!-- Products grid -->
+    <div class="products-grid">
+      <div class="product-card reveal"
+           *ngFor="let p of filteredProducts; let i = index"
+           [style.animation-delay]="(i * 0.08) + 's'">
+
+        <!-- Image -->
+        <div class="product-img">
+          <img [src]="p.image" [alt]="p.name">
+          <span class="product-badge" [class]="getBadgeClass(p.badge)">{{ p.badge }}</span>
+
+          <!-- Overlay actions -->
+          <div class="product-actions">
+            <button class="action-btn" (click)="toggleWishlist(p.id)" title="Wishlist">
+              <i [class]="isWishlisted(p.id) ? 'fas fa-heart' : 'far fa-heart'"
+                 [style.color]="isWishlisted(p.id) ? '#e53935' : ''"></i>
+            </button>
+            <button class="action-btn" title="Quick View">
+              <i class="far fa-eye"></i>
+            </button>
+            <button class="action-btn" title="Compare">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="product-info">
+          <span class="product-category">{{ p.category }}</span>
+          <h3 class="product-name">{{ p.name }}</h3>
+
+          <div class="product-rating">
+            <span class="star" *ngFor="let s of getStars(p.rating)" [class.filled]="s">★</span>
+            <span class="review-count">({{ p.reviews }})</span>
+          </div>
+
+          <div class="product-price-row">
+            <div class="product-price">
+              <span class="price-current">${{ p.price.toFixed(2) }}</span>
+              <span class="price-old" *ngIf="p.oldPrice">${{ p.oldPrice.toFixed(2) }}</span>
+            </div>
+            <button class="add-to-cart" [attr.data-id]="p.id" (click)="addToCart(p)">
+              <i class="fas fa-shopping-cart"></i> Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load more -->
+    <div class="text-center reveal" style="margin-top: 50px; text-align:center;">
+      <button class="btn btn-primary">
+        <i class="fas fa-sync-alt"></i> Load More Products
+      </button>
+    </div>
+
+  </div>
+</section>
