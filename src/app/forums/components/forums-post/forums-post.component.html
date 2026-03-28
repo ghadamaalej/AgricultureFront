@@ -1,0 +1,212 @@
+<section class="forums-post-page" *ngIf="post as currentPost">
+  <div class="container">
+    <header class="thread-hero glass-card">
+      <button class="back-link" (click)="goBack()">← Back to Questions</button>
+      <div class="hero-main">
+        <h1>{{ currentPost.title }}</h1>
+        <div class="hero-meta">
+          <span>{{ currentPost.views }} views</span>
+          <span>{{ currentPost.replies.length }} replies</span>
+          <span>{{ acceptedCount }} accepted</span>
+        </div>
+      </div>
+      <span class="thread-chip">Active Thread</span>
+    </header>
+
+    <div class="thread-canvas">
+      <main class="discussion-column">
+        <article class="question-story glass-card">
+          <p>{{ currentPost.content }}</p>
+          <div class="story-tags">
+            <span *ngFor="let tag of currentPost.tags">{{ tag }}</span>
+          </div>
+          <div class="story-author" *ngIf="getUser(currentPost.authorId) as author">
+            <strong>{{ author.name }}</strong>
+            <span>{{ author.reputation }} rep</span>
+            <em>{{ getBadgeLabel(author.reputation) }}</em>
+          </div>
+        </article>
+
+        <section class="replies-panel">
+          <div class="replies-panel-head">
+            <h2>Reply Stream</h2>
+          </div>
+
+          <div class="reply-stream-card glass-card">
+            <ng-container *ngIf="currentPost.replies.length > 0; else noRepliesYet">
+              <button
+                class="line-toggle-all"
+                type="button"
+                (click)="toggleAllRepliesCollapse()"
+                [attr.aria-expanded]="!areAllRepliesCollapsed()"
+                [attr.aria-label]="areAllRepliesCollapsed() ? 'Expand all replies' : 'Collapse all replies'"
+                title="Toggle replies"
+              ></button>
+
+              <ul class="replies-tree">
+                <li class="reply-branch" *ngFor="let reply of currentPost.replies; let lastReply = last" [class.last-branch]="lastReply" [class.collapsed]="isReplyCollapsed(reply.id)">
+                <button
+                  class="branch-toggle"
+                  type="button"
+                  (click)="toggleReplyCollapse(reply.id)"
+                  [attr.aria-expanded]="!isReplyCollapsed(reply.id)"
+                  [attr.aria-label]="isReplyCollapsed(reply.id) ? 'Expand reply' : 'Collapse reply'"
+                >
+                  {{ isReplyCollapsed(reply.id) ? '+' : '−' }}
+                </button>
+
+                <article class="reply-node" [class.expert-reply]="getUser(reply.authorId)?.isExpert" [class.best-answer]="reply.isAccepted">
+                  <ng-container *ngIf="!isReplyCollapsed(reply.id); else collapsedReply">
+                    <div class="vote-rail">
+                      <button (click)="vote(reply.id, 'up')">▲</button>
+                      <strong>{{ replyScore(reply) }}</strong>
+                      <button (click)="vote(reply.id, 'down')">▼</button>
+                      <button class="accept-btn" (click)="markAccepted(reply.id)">
+                        {{ reply.isAccepted ? 'Accepted ✓' : 'Mark Correct' }}
+                      </button>
+                    </div>
+
+                    <div class="reply-body">
+                      <div class="reply-head" *ngIf="getUser(reply.authorId) as author">
+                        <span class="author">{{ author.name }}</span>
+                        <span>{{ author.reputation }} rep</span>
+                        <span class="badge">{{ getBadgeLabel(author.reputation) }}</span>
+                        <span class="expert" *ngIf="author.isExpert">Expert</span>
+                        <span class="accepted-label" *ngIf="reply.isAccepted">Best answer</span>
+                      </div>
+
+                      <p>{{ reply.content }}</p>
+
+                      <div class="comment-thread-wrap" *ngIf="reply.comments.length > 0">
+                        <button
+                          class="comment-line-toggle"
+                          type="button"
+                          (click)="toggleAllCommentsCollapse(reply)"
+                          [attr.aria-expanded]="!areAllCommentsCollapsed(reply)"
+                          [attr.aria-label]="areAllCommentsCollapsed(reply) ? 'Expand all comments' : 'Collapse all comments'"
+                          title="Toggle comments"
+                        ></button>
+
+                        <ul class="comment-stack">
+                          <li class="comment-branch" *ngFor="let comment of reply.comments; let lastComment = last" [class.last-comment-branch]="lastComment">
+                            <button
+                              class="comment-branch-toggle"
+                              type="button"
+                              (click)="toggleCommentCollapse(reply.id, comment.id)"
+                              [attr.aria-expanded]="!isCommentCollapsed(reply.id, comment.id)"
+                              [attr.aria-label]="isCommentCollapsed(reply.id, comment.id) ? 'Expand comment' : 'Collapse comment'"
+                            >
+                              {{ isCommentCollapsed(reply.id, comment.id) ? '+' : '−' }}
+                            </button>
+
+                            <ng-container *ngIf="!isCommentCollapsed(reply.id, comment.id); else collapsedComment">
+                              <div class="comment">
+                                <strong>{{ getUser(comment.authorId)?.name }}:</strong>
+                                <span>{{ comment.content }}</span>
+                              </div>
+                            </ng-container>
+
+                            <ng-template #collapsedComment>
+                              <div class="comment comment-collapsed" *ngIf="getUser(comment.authorId) as commentAuthor">
+                                <strong>{{ commentAuthor.name }}:</strong>
+                                <span>Comment hidden</span>
+                              </div>
+                            </ng-template>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div class="comment-composer">
+                        <textarea [(ngModel)]="commentDraftByReply[reply.id]" placeholder="Add a comment" (input)="autoResizeCommentInput($event)"></textarea>
+                        <button (click)="addComment(reply.id)">Send</button>
+                      </div>
+                    </div>
+                  </ng-container>
+
+                  <ng-template #collapsedReply>
+                    <div class="collapsed-preview" *ngIf="getUser(reply.authorId) as author">
+                      <strong>{{ author.name }}</strong>
+                      <span>
+                        Reply hidden · {{ reply.comments.length }} comments · {{ replyScore(reply) }} score
+                      </span>
+                    </div>
+                  </ng-template>
+                </article>
+                </li>
+              </ul>
+            </ng-container>
+
+            <ng-template #noRepliesYet>
+              <div class="reply-empty-state">
+                <strong>No replies yet</strong>
+                <span>Be the first to share a practical solution for this thread.</span>
+                <button type="button" class="reply-empty-action" (click)="scrollToReplyComposer()">Write the first reply</button>
+              </div>
+            </ng-template>
+          </div>
+        </section>
+
+        <section id="reply-composer" class="reply-studio glass-card">
+          <h3>Write a reply</h3>
+          <form [formGroup]="replyForm" (ngSubmit)="submitReply()">
+            <textarea rows="4" formControlName="content" placeholder="Share a clear and practical response..."></textarea>
+            <small class="form-error" *ngIf="replyForm.controls.content.touched && replyForm.controls.content.invalid">
+              Reply must be at least 12 characters.
+            </small>
+            <small class="form-error" *ngIf="replySubmitError">{{ replySubmitError }}</small>
+            <button class="btn btn-primary" type="submit" [disabled]="submittingReply">
+              {{ submittingReply ? 'Posting...' : 'Post Reply' }}
+            </button>
+          </form>
+        </section>
+      </main>
+
+      <aside class="insight-column">
+        <section class="insight-card glass-card">
+          <h4>Thread Snapshot</h4>
+          <div class="snapshot-grid">
+            <article>
+              <strong>{{ currentPost.replies.length }}</strong>
+              <span>Replies</span>
+            </article>
+            <article>
+              <strong>{{ totalThreadVotes }}</strong>
+              <span>Net Votes</span>
+            </article>
+            <article>
+              <strong>{{ acceptedCount }}</strong>
+              <span>Accepted</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="insight-card glass-card">
+          <h4>Similar Questions</h4>
+          <div *ngIf="similarQuestions.length > 0; else noSimilarQuestions">
+            <button *ngFor="let item of similarQuestions" (click)="openSimilar(item.id)">
+              <span>{{ item.title }}</span>
+              <small>{{ item.replies.length }} replies • {{ item.views }} views</small>
+            </button>
+          </div>
+          <ng-template #noSimilarQuestions>
+            <p class="note">No similar threads yet. This topic is currently unique.</p>
+          </ng-template>
+        </section>
+
+        <section class="insight-card glass-card">
+          <h4>Quick Guidance</h4>
+          <p class="note">Keep replies concise and field-tested.</p>
+          <p class="note">Upvote clear and verified solutions.</p>
+        </section>
+
+        <section class="insight-card glass-card" *ngIf="recentDiscussions.length > 0">
+          <h4>Recent Discussions</h4>
+          <button *ngFor="let item of recentDiscussions" (click)="openSimilar(item.id)">
+            <span>{{ item.title }}</span>
+            <small>{{ item.replies.length }} replies • {{ item.views }} views</small>
+          </button>
+        </section>
+      </aside>
+    </div>
+  </div>
+</section>
