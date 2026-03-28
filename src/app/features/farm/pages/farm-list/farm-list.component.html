@@ -1,0 +1,107 @@
+<div class="farm-list-page">
+  <div class="page-header">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">
+          <i class="fas fa-list"></i> Mes terrains
+        </div>
+        <h1 class="section-title">
+          Gestion des <span>Terrains</span>
+        </h1>
+        <p class="section-desc">
+          Consultez et gérez tous vos terrains agricoles.
+          Cliquez sur un terrain pour accéder à sa visualisation 3D et gérer vos cultures.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add New Terrain Button -->
+  <div class="container">
+    <div class="actions-bar">
+      <button class="btn-add-terrain" (click)="onAddNewTerrain()">
+        <i class="fas fa-plus"></i>
+        Ajouter un nouveau terrain
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="container" *ngIf="error">
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ error }}
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="container" *ngIf="loading">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement de vos terrains...</p>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="container" *ngIf="!loading && terrains.length === 0 && !error">
+    <div class="empty-state">
+      <i class="fas fa-seedling"></i>
+      <h3>Aucun terrain enregistré</h3>
+      <p>Commencez par ajouter votre premier terrain agricole</p>
+      <button class="btn-add-terrain" (click)="onAddNewTerrain()">
+        <i class="fas fa-plus"></i>
+        Ajouter mon premier terrain
+      </button>
+    </div>
+  </div>
+
+  <!-- Terrains Grid -->
+  <div class="container" *ngIf="!loading && terrains.length > 0">
+    <div class="terrains-grid">
+      <div
+        *ngFor="let terrain of terrains"
+        class="terrain-card"
+        (click)="onTerrainClick(terrain)"
+      >
+        <div class="card-header">
+          <div class="terrain-name">
+            <i class="fas fa-map-marked-alt"></i>
+            <h3>{{ terrain.nom }}</h3>
+          </div>
+          <div class="terrain-area">
+            <i class="fas fa-ruler-combined"></i>
+            <span>{{ terrain.superficieHa }} ha</span>
+          </div>
+        </div>
+
+        <div class="card-content">
+          <div class="terrain-info">
+            <div class="info-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>{{ terrain.localisation }}</span>
+            </div>
+            <div class="info-item">
+              <i [class]="getSoilTypeIcon(terrain.typeSol)"></i>
+              <span>{{ terrain.typeSol }}</span>
+            </div>
+            <div class="info-item">
+              <i [class]="getIrrigationIcon(terrain.irrigation)"></i>
+              <span>{{ terrain.irrigation }}</span>
+            </div>
+          </div>
+
+          <div class="terrain-coords">
+            <small>{{ terrain.latitude.toFixed(4) }}, {{ terrain.longitude.toFixed(4) }}</small>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="view-3d-hint">
+            <i class="fas fa-cube"></i>
+            <span>Cliquer pour voir en 3D</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -13,10 +13,15 @@ const routes: Routes = [
   { path: '',         component: HomeComponent,       pathMatch: 'full' },
   { path: 'auth',     component: AuthComponent, canActivate: [GuestGuard] },
   {
-    path: 'dashboard', 
+    path: 'dashboard',
     loadChildren: () =>import('./dashboard/dashboard.module').then(m => m.DashboardModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'farm',
+    loadChildren: () => import('./features/farm/farm.module').then(m => m.FarmModule),
+    canActivate: [AuthGuard]
   },
   { path: 'register-extra',  component: RegisterExtraComponent  },
   { path: 'blog/:id', component: BlogDetailComponent },

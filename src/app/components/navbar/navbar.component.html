@@ -31,9 +31,24 @@
             <li *ngFor="let d of dropdownLinks">
               <a class="dropdown-item"
                  [class.active]="activeLink === d.route"
-                 (click)="navigate(d.route)">
+                 [class.has-submenu]="d.hasSubmenu"
+                 (click)="d.hasSubmenu ? null : navigate(d.route)"
+                 (mouseenter)="showSubmenu(d)"
+                 (mouseleave)="hideSubmenu()">
                 <i [class]="d.icon"></i>
                 <span>{{ d.label }}</span>
+                <i *ngIf="d.hasSubmenu" class="fas fa-chevron-right submenu-arrow"></i>
+              </a>
+            </li>
+          </ul>
+          <!-- Submenu outside dropdown-menu -->
+          <ul class="submenu" [class.active]="activeSubmenu">
+            <li *ngFor="let sub of activeSubmenu">
+              <a class="submenu-item"
+                 [class.active]="activeLink === sub.route"
+                 (click)="navigate(sub.route)">
+                <i [class]="sub.icon"></i>
+                <span>{{ sub.label }}</span>
               </a>
             </li>
           </ul>

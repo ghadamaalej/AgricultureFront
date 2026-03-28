@@ -18,6 +18,7 @@ export class NavbarComponent implements OnInit {
   isHomePage       = true;
   activeLink       = '/';
   moreDropdownOpen = false;
+  activeSubmenu: any[] | null = null;
 
   navLinks = [
     { label: 'Home',        route: '/'            },
@@ -30,6 +31,10 @@ export class NavbarComponent implements OnInit {
   ];
 
   dropdownLinks = [
+    { label: 'Terrain',       icon: 'fas fa-leaf',            route: '/farm',         hasSubmenu: true, submenu: [
+      { label: 'Add Terrain',  icon: 'fas fa-plus',           route: '/farm/add'      },
+      { label: 'My Terrains',  icon: 'fas fa-list',           route: '/farm/list'     }
+    ]},
     { label: 'Inventory',    icon: 'fas fa-boxes',          route: '/inventory'    },
     { label: 'Appointments', icon: 'fas fa-calendar-check', route: '/appointments' },
     { label: 'Animals',      icon: 'fas fa-paw',            route: '/animals'      },
@@ -73,6 +78,16 @@ export class NavbarComponent implements OnInit {
   toggleDropdown(event: MouseEvent) {
     event.stopPropagation();
     this.moreDropdownOpen = !this.moreDropdownOpen;
+  }
+
+  showSubmenu(dropdownItem: any) {
+    if (dropdownItem.hasSubmenu) {
+      this.activeSubmenu = dropdownItem.submenu;
+    }
+  }
+
+  hideSubmenu() {
+    this.activeSubmenu = null;
   }
 
   isDropdownActive(): boolean {

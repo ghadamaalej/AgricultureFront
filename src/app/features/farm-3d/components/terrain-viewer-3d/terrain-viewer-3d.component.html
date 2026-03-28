@@ -1,0 +1,63 @@
+<div class="viewer-container">
+  <div class="viewer-header">
+    <h3 class="viewer-title">
+      <i class="fas fa-cube"></i>
+      Visualisation 3D
+    </h3>
+    <div class="viewer-controls">
+      <button class="btn-control" (click)="onCanvasResize()" title="Ajuster la taille">
+        <i class="fas fa-expand"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="canvas-container">
+    <canvas #canvas class="three-canvas"></canvas>
+
+    <!-- Empty State Overlay -->
+    <div *ngIf="!selectedTerrain" class="empty-overlay">
+      <div class="empty-content">
+        <i class="fas fa-cube"></i>
+        <h4>Aucun terrain sélectionné</h4>
+        <p>Cliquez sur un terrain dans la liste pour le visualiser en 3D</p>
+      </div>
+    </div>
+
+    <!-- Terrain Info Overlay -->
+    <div *ngIf="selectedTerrain" class="terrain-overlay">
+      <div class="terrain-info-card">
+        <h4>{{ selectedTerrain.nom }}</h4>
+        <div class="terrain-stats">
+          <div class="stat-item">
+            <i class="fas fa-ruler-combined"></i>
+            <span>{{ selectedTerrain.superficieHa }} hectares</span>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-seedling"></i>
+            <span>{{ selectedTerrain.typeSol }}</span>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-tint"></i>
+            <span>{{ selectedTerrain.irrigation }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="viewer-instructions">
+    <div class="instruction-item">
+      <i class="fas fa-mouse"></i>
+      <span>Clic gauche + déplacer : Orbiter autour du terrain</span>
+    </div>
+    <div class="instruction-item">
+      <i class="fas fa-mouse"></i>
+      <span>Molette : Zoom avant/arrière</span>
+    </div>
+    <div class="instruction-item">
+      <i class="fas fa-mouse"></i>
+      <span>Clic droit + déplacer : Panoramique</span>
+    </div>
+  </div>
+</div>
