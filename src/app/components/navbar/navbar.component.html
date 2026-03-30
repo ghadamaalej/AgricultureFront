@@ -30,7 +30,7 @@
           <ul class="dropdown-menu" *ngIf="moreDropdownOpen">
             <li *ngFor="let d of dropdownLinks">
               <a class="dropdown-item"
-                 [class.active]="activeLink === d.route"
+                 [class.active]="isDropdownLinkActive(d)"
                  [class.has-submenu]="d.hasSubmenu"
                  (click)="d.hasSubmenu ? null : navigate(d.route)"
                  (mouseenter)="showSubmenu(d)"

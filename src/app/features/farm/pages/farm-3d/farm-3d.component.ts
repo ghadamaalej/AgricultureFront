@@ -68,7 +68,10 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
   parcellePoints: THREE.Vector3[] = [];
   private undoStack: THREE.Vector3[] = [];
   private redoStack: THREE.Vector3[] = [];
-  private parcelleLine?: THREE.Line;
+  /** Tracé de dessin (tube épais, visible sur le relief) */
+  private parcelleDrawTube?: THREE.Mesh;
+  /** Aperçu semi-transparent du polygone (≥ 3 points) */
+  private parcelleDrawPreviewFill?: THREE.Mesh;
 
   get canRedo(): boolean {
     return this.redoStack.length > 0;
@@ -326,13 +329,14 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
     this.refreshShadowCameraForField(sun);
   }
 
-  /** Hauteur du relief à (x,z) — identique aux sommets du champ */
+  /** Hauteur du relief à (x,z) — vallées douces + petits détails (naturel) */
   private fieldHeightAt(x: number, z: number): number {
-    return (
-      Math.sin(x * 0.08) * Math.cos(z * 0.07) * 0.42 +
-      Math.sin(x * 0.19 + z * 0.14) * 0.14 +
-      Math.cos(x * 0.05 - z * 0.06) * 0.08
-    );
+    const low =
+      Math.sin(x * 0.044) * Math.cos(z * 0.041) * 0.52 +
+      Math.cos(x * 0.031 - z * 0.028) * 0.22;
+    const mid = Math.sin(x * 0.11 + z * 0.088) * 0.16 + Math.cos(x * 0.078 + z * 0.062) * 0.1;
+    const detail = Math.sin(x * 0.21 + z * 0.17) * 0.055 + Math.sin(x * 0.35 - z * 0.12) * 0.028;
+    return low + mid + detail;
   }
 
   private pseudoRandom(n: number): number {
@@ -345,22 +349,33 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private buildFieldTerrain(side: number): THREE.Mesh {
-    const seg = 64;
+    const seg = 96;
     const geom = new THREE.PlaneGeometry(side, side, seg, seg);
     geom.rotateX(-Math.PI / 2);
     const pos = geom.attributes['position'] as THREE.BufferAttribute;
     const colors: number[] = [];
     const v = new THREE.Vector3();
-    const c1 = new THREE.Color(0x3d6b3e);
-    const c2 = new THREE.Color(0x5a8f52);
-    const c3 = new THREE.Color(0x4a7a48);
+    const greenA = new THREE.Color(0x356b38);
+    const greenB = new THREE.Color(0x4f8f4a);
+    const greenC = new THREE.Color(0x3d6840);
+    const brown = new THREE.Color(0x4a3d2a);
     const tmp = new THREE.Color();
+    let yMin = Infinity;
+    let yMax = -Infinity;
     for (let i = 0; i < pos.count; i++) {
       v.fromBufferAttribute(pos, i);
       const y = this.fieldHeightAt(v.x, v.z);
       pos.setY(i, y);
+      yMin = Math.min(yMin, y);
+      yMax = Math.max(yMax, y);
+    }
+    const ySpan = Math.max(yMax - yMin, 0.08);
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      const yn = (v.y - yMin) / ySpan;
       const n = this.pseudoRandom(i + Math.floor(v.x * 31) + Math.floor(v.z * 17));
-      tmp.copy(c2).lerp(n > 0.55 ? c1 : c3, 0.35 + n * 0.25);
+      tmp.copy(greenB).lerp(n > 0.52 ? greenA : greenC, 0.28 + n * 0.32);
+      tmp.lerp(brown, (1 - yn) * 0.22);
       colors.push(tmp.r, tmp.g, tmp.b);
     }
     pos.needsUpdate = true;
@@ -370,9 +385,9 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
     const mat = new THREE.MeshStandardMaterial({
       vertexColors: true,
       color: 0xffffff,
-      roughness: 0.91,
-      metalness: 0.02,
-      envMapIntensity: 0.25,
+      roughness: 0.86,
+      metalness: 0.04,
+      envMapIntensity: 0.28,
       flatShading: false
     });
 
@@ -554,13 +569,16 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
       fillGeometry.rotateX(-Math.PI / 2);
       fillGeometry.computeVertexNormals();
       const fillMaterial = new THREE.MeshStandardMaterial({
-        color: 0x5c4428,
+        color: 0x4d6b3a,
         transparent: true,
-        opacity: 0.48,
+        opacity: 0.45,
         roughness: 0.88,
         metalness: 0.02,
         depthWrite: false,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: -0.6,
+        polygonOffsetUnits: -1
       });
       const fillMesh = new THREE.Mesh(fillGeometry, fillMaterial);
       const avgH = points.reduce((s: number, p: THREE.Vector3) => s + p.y, 0) / points.length;
@@ -758,6 +776,47 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
     return out;
   }
 
+  /** Grille orientée (rangées) pour céréales / cultures en ligne — plus réaliste qu’un tirage aléatoire */
+  private sampleGridRowsInPolygon(ring: number[][], count: number, seed: number): THREE.Vector3[] {
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+    for (const c of ring) {
+      minX = Math.min(minX, c[0]);
+      maxX = Math.max(maxX, c[0]);
+      minZ = Math.min(minZ, c[1]);
+      maxZ = Math.max(maxZ, c[1]);
+    }
+    const cx = (minX + maxX) * 0.5;
+    const cz = (minZ + maxZ) * 0.5;
+    const w = Math.max(maxX - minX, 1);
+    const d = Math.max(maxZ - minZ, 1);
+    const angle = this.pseudoRandom(seed) * Math.PI;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const span = Math.max(w, d, 14) * 0.72;
+    const area = w * d;
+    const step = Math.max(0.5, Math.min(2.05, Math.sqrt(area / Math.max(count, 8))));
+    const out: THREE.Vector3[] = [];
+    let t = 0;
+    for (let u = -span; u <= span && out.length < count; u += step) {
+      for (let v = -span; v <= span && out.length < count; v += step * 0.9) {
+        t++;
+        const jitter = (this.pseudoRandom(seed + t * 11) - 0.5) * step * 0.2;
+        const rx = cx + u * cos - v * sin + jitter * cos;
+        const rz = cz + u * sin + v * cos + jitter * sin;
+        if (this.pointInPolygon(rx, rz, ring)) {
+          out.push(new THREE.Vector3(rx, 0, rz));
+        }
+      }
+    }
+    if (out.length < count) {
+      out.push(...this.samplePointsInPolygon(ring, count - out.length, seed + 7171));
+    }
+    return out.slice(0, count);
+  }
+
   private ringCentroid2d(ring: number[][]): THREE.Vector3 {
     let sx = 0;
     let sz = 0;
@@ -819,7 +878,10 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
     if (ring && ring.length >= 3) {
       const area = this.polygonArea(ring);
       const n = this.instanceCountForParcel(area, visual);
-      positions = this.samplePointsInPolygon(ring, n, seed);
+      positions =
+        visual === 'row'
+          ? this.sampleGridRowsInPolygon(ring, n, seed)
+          : this.samplePointsInPolygon(ring, n, seed);
     } else {
       const c = this.getParcelleCentroid(parcelle);
       if (c) {
@@ -846,79 +908,117 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
     const yUp = new THREE.Vector3(0, 1, 0);
 
     if (visual === 'tree') {
-      const trunkGeom = new THREE.CylinderGeometry(0.11, 0.16, 1.05, 7);
-      const crownGeom = new THREE.ConeGeometry(0.82, 2.05, 8);
+      const trunkGeom = new THREE.CylinderGeometry(0.08, 0.13, 1.2, 12, 2, false);
+      const crownMainGeom = new THREE.SphereGeometry(0.58, 16, 14);
+      crownMainGeom.scale(1, 0.76, 1);
+      const crownTopGeom = new THREE.SphereGeometry(0.34, 12, 10);
       const trunkMat = new THREE.MeshStandardMaterial({
-        color: 0x4a3526,
-        roughness: 0.92,
+        color: 0x3d2a1a,
+        roughness: 0.94,
         metalness: 0
       });
       const crownMat = new THREE.MeshStandardMaterial({
         color,
-        roughness: 0.82,
-        metalness: 0.02
-      });
-      const trunkIm = new THREE.InstancedMesh(trunkGeom, trunkMat, positions.length);
-      const crownIm = new THREE.InstancedMesh(crownGeom, crownMat, positions.length);
-      for (let i = 0; i < positions.length; i++) {
-        const { x, z } = positions[i];
-        const h = this.fieldHeightAt(x, z);
-        const sc = 0.72 + this.pseudoRandom(seed + i * 7) * 0.38;
-        tmpQ.setFromAxisAngle(yUp, this.pseudoRandom(seed + i * 13) * Math.PI * 2);
-        tmpS.set(sc, sc, sc);
-        tmpP.set(x, h + 0.52 * sc, z);
-        tmpM.compose(tmpP, tmpQ, tmpS);
-        trunkIm.setMatrixAt(i, tmpM);
-        tmpP.set(x, h + 1.35 * sc + 1.05 * sc, z);
-        tmpM.compose(tmpP, tmpQ, new THREE.Vector3(sc * 1.05, sc, sc * 1.05));
-        crownIm.setMatrixAt(i, tmpM);
-      }
-      trunkIm.instanceMatrix.needsUpdate = true;
-      crownIm.instanceMatrix.needsUpdate = true;
-      trunkIm.castShadow = true;
-      crownIm.castShadow = true;
-      trunkIm.receiveShadow = true;
-      crownIm.receiveShadow = true;
-      group.add(trunkIm, crownIm);
-    } else if (visual === 'row') {
-      const stalkGeom = new THREE.BoxGeometry(0.1, 0.72, 0.1);
-      const mat = new THREE.MeshStandardMaterial({
-        color,
         roughness: 0.78,
         metalness: 0.02
       });
-      const mesh = new THREE.InstancedMesh(stalkGeom, mat, positions.length);
+      const crownMat2 = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.72,
+        metalness: 0.02
+      });
+      const trunkIm = new THREE.InstancedMesh(trunkGeom, trunkMat, positions.length);
+      const crownMainIm = new THREE.InstancedMesh(crownMainGeom, crownMat, positions.length);
+      const crownTopIm = new THREE.InstancedMesh(crownTopGeom, crownMat2, positions.length);
       for (let i = 0; i < positions.length; i++) {
         const { x, z } = positions[i];
         const h = this.fieldHeightAt(x, z);
-        const sc = 0.75 + this.pseudoRandom(seed + i * 5) * 0.45;
-        const tilt = (this.pseudoRandom(seed + i) - 0.5) * 0.14;
-        tmpQ.setFromEuler(new THREE.Euler(tilt, this.pseudoRandom(seed + i * 11) * Math.PI * 2, tilt * 0.5));
-        tmpS.set(sc, sc * 1.15, sc);
-        tmpP.set(x, h + 0.36 * sc, z);
+        const sc = 0.78 + this.pseudoRandom(seed + i * 7) * 0.42;
+        const yaw = this.pseudoRandom(seed + i * 13) * Math.PI * 2;
+        tmpQ.setFromAxisAngle(yUp, yaw);
+        tmpS.set(sc, sc, sc);
+        tmpP.set(x, h + 0.6 * sc, z);
         tmpM.compose(tmpP, tmpQ, tmpS);
-        mesh.setMatrixAt(i, tmpM);
+        trunkIm.setMatrixAt(i, tmpM);
+        tmpP.set(x, h + 1.22 * sc + 0.46 * sc, z);
+        const crownScale = new THREE.Vector3(sc * 1.02, sc * 1.02, sc * 1.02);
+        tmpM.compose(tmpP, tmpQ, crownScale);
+        crownMainIm.setMatrixAt(i, tmpM);
+        const ox = (this.pseudoRandom(seed + i * 19) - 0.5) * 0.35 * sc;
+        const oz = (this.pseudoRandom(seed + i * 23) - 0.5) * 0.35 * sc;
+        tmpP.set(x + ox, h + 1.95 * sc, z + oz);
+        const st = sc * (0.82 + this.pseudoRandom(seed + i * 29) * 0.22);
+        tmpM.compose(tmpP, tmpQ, new THREE.Vector3(st, st * 0.92, st));
+        crownTopIm.setMatrixAt(i, tmpM);
       }
-      mesh.instanceMatrix.needsUpdate = true;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      group.add(mesh);
+      trunkIm.instanceMatrix.needsUpdate = true;
+      crownMainIm.instanceMatrix.needsUpdate = true;
+      crownTopIm.instanceMatrix.needsUpdate = true;
+      trunkIm.castShadow = true;
+      crownMainIm.castShadow = true;
+      crownTopIm.castShadow = true;
+      trunkIm.receiveShadow = true;
+      crownMainIm.receiveShadow = true;
+      crownTopIm.receiveShadow = true;
+      group.add(trunkIm, crownMainIm, crownTopIm);
+    } else if (visual === 'row') {
+      const stalkGeom = new THREE.CapsuleGeometry(0.032, 0.66, 6, 10);
+      const headGeom = new THREE.SphereGeometry(0.085, 8, 6);
+      const stalkMat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(color).multiplyScalar(0.72),
+        roughness: 0.82,
+        metalness: 0.02
+      });
+      const headMat = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.68,
+        metalness: 0.03
+      });
+      const stalkIm = new THREE.InstancedMesh(stalkGeom, stalkMat, positions.length);
+      const headIm = new THREE.InstancedMesh(headGeom, headMat, positions.length);
+      const halfStem = (0.66 + 0.032 * 2) * 0.5;
+      for (let i = 0; i < positions.length; i++) {
+        const { x, z } = positions[i];
+        const h = this.fieldHeightAt(x, z);
+        const sc = 0.78 + this.pseudoRandom(seed + i * 5) * 0.48;
+        const tilt = (this.pseudoRandom(seed + i) - 0.5) * 0.12;
+        tmpQ.setFromEuler(
+          new THREE.Euler(tilt, this.pseudoRandom(seed + i * 11) * Math.PI * 2, tilt * 0.45)
+        );
+        tmpS.set(sc, sc, sc);
+        tmpP.set(x, h + halfStem * sc, z);
+        tmpM.compose(tmpP, tmpQ, tmpS);
+        stalkIm.setMatrixAt(i, tmpM);
+        tmpP.set(x, h + (halfStem * 2 + 0.085) * sc, z);
+        tmpM.compose(tmpP, tmpQ, new THREE.Vector3(sc * 1.05, sc * 1.1, sc * 1.05));
+        headIm.setMatrixAt(i, tmpM);
+      }
+      stalkIm.instanceMatrix.needsUpdate = true;
+      headIm.instanceMatrix.needsUpdate = true;
+      stalkIm.castShadow = true;
+      headIm.castShadow = true;
+      stalkIm.receiveShadow = true;
+      headIm.receiveShadow = true;
+      group.add(stalkIm, headIm);
     } else {
-      const bushGeom = new THREE.IcosahedronGeometry(0.42, 0);
+      const bushGeom = new THREE.SphereGeometry(0.4, 14, 12);
       const mat = new THREE.MeshStandardMaterial({
         color,
-        roughness: 0.8,
-        metalness: 0.03,
-        flatShading: true
+        roughness: 0.82,
+        metalness: 0.04,
+        flatShading: false
       });
       const mesh = new THREE.InstancedMesh(bushGeom, mat, positions.length);
       for (let i = 0; i < positions.length; i++) {
         const { x, z } = positions[i];
         const h = this.fieldHeightAt(x, z);
-        const sc = 0.55 + this.pseudoRandom(seed + i * 3) * 0.65;
+        const sc = 0.58 + this.pseudoRandom(seed + i * 3) * 0.55;
+        const rx = 0.88 + this.pseudoRandom(seed + i * 31) * 0.28;
+        const ry = 0.68 + this.pseudoRandom(seed + i * 37) * 0.32;
+        const rz = 0.9 + this.pseudoRandom(seed + i * 41) * 0.22;
         tmpQ.setFromAxisAngle(yUp, this.pseudoRandom(seed + i * 17) * Math.PI * 2);
-        tmpS.set(sc, sc * 0.88, sc);
-        tmpP.set(x, h + 0.32 * sc, z);
+        tmpS.set(sc * rx, sc * ry, sc * rz);
+        tmpP.set(x, h + 0.38 * sc * ry, z);
         tmpM.compose(tmpP, tmpQ, tmpS);
         mesh.setMatrixAt(i, tmpM);
       }
@@ -1036,6 +1136,7 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
       this.renderer.dispose();
     }
     if (this.scene) {
+      this.disposeParcelleDrawingOverlays();
       this.cultureMeshes.forEach((obj) => this.disposeCultureObject(obj));
       this.cultureMeshes = [];
     }
@@ -1377,11 +1478,31 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
     this.parcellePoints = [];
     this.undoStack = [];
     this.redoStack = [];
-    if (this.parcelleLine && this.scene) {
-      this.scene.remove(this.parcelleLine);
-      this.parcelleLine = undefined;
-    }
+    this.disposeParcelleDrawingOverlays();
     this.parcelleForm.patchValue({ geom: '' });
+  }
+
+  private disposeParcelleDrawingOverlays(): void {
+    if (!this.scene) {
+      return;
+    }
+    if (this.parcelleDrawTube) {
+      this.scene.remove(this.parcelleDrawTube);
+      this.parcelleDrawTube.geometry.dispose();
+      const tm = this.parcelleDrawTube.material;
+      if (Array.isArray(tm)) {
+        tm.forEach((m) => m.dispose());
+      } else {
+        tm.dispose();
+      }
+      this.parcelleDrawTube = undefined;
+    }
+    if (this.parcelleDrawPreviewFill) {
+      this.scene.remove(this.parcelleDrawPreviewFill);
+      this.parcelleDrawPreviewFill.geometry.dispose();
+      (this.parcelleDrawPreviewFill.material as THREE.Material).dispose();
+      this.parcelleDrawPreviewFill = undefined;
+    }
   }
 
   undoPoint(): void {
@@ -1409,29 +1530,64 @@ export class Farm3dComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private updateDrawingLine(): void {
-    if (this.parcelleLine) {
-      this.scene.remove(this.parcelleLine);
-      this.parcelleLine = undefined;
-    }
+    this.disposeParcelleDrawingOverlays();
 
-    if (this.parcellePoints.length < 2) return;
+    if (this.parcellePoints.length < 2 || !this.scene) {
+      return;
+    }
 
     const lifted = this.parcellePoints.map((p) => {
       const q = p.clone();
-      q.y = this.fieldHeightAt(q.x, q.z) + 0.16;
+      q.y = this.fieldHeightAt(q.x, q.z) + 0.22;
       return q;
     });
-    const points = [...lifted];
-    if (this.parcellePoints.length > 2) {
-      points.push(lifted[0]);
-    }
+    const closed = this.parcellePoints.length > 2;
+    const curve = new THREE.CatmullRomCurve3(lifted, closed);
+    const rad = Math.max(0.32, Math.min(1.85, (this.fieldSideMeters || 100) * 0.0068));
+    const tubular = Math.max(36, lifted.length * 18);
+    const tubeGeom = new THREE.TubeGeometry(curve, tubular, rad, 14, closed);
+    const tubeMat = new THREE.MeshStandardMaterial({
+      color: 0xf43f5e,
+      emissive: 0x3d0a14,
+      emissiveIntensity: 0.38,
+      roughness: 0.48,
+      metalness: 0.12
+    });
+    this.parcelleDrawTube = new THREE.Mesh(tubeGeom, tubeMat);
+    this.parcelleDrawTube.renderOrder = 14;
+    this.parcelleDrawTube.castShadow = true;
+    this.scene.add(this.parcelleDrawTube);
 
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({ color: 0xff2222, depthTest: true });
-    material.linewidth = 2;
-    this.parcelleLine = new THREE.Line(geometry, material);
-    this.parcelleLine.renderOrder = 10;
-    this.scene.add(this.parcelleLine);
+    if (this.parcellePoints.length >= 3) {
+      try {
+        const shape = new THREE.Shape();
+        shape.moveTo(lifted[0].x, lifted[0].z);
+        for (let i = 1; i < lifted.length; i++) {
+          shape.lineTo(lifted[i].x, lifted[i].z);
+        }
+        const fillGeom = new THREE.ShapeGeometry(shape);
+        fillGeom.rotateX(-Math.PI / 2);
+        const avgH = lifted.reduce((s, p) => s + p.y, 0) / lifted.length + 0.05;
+        const fillMat = new THREE.MeshStandardMaterial({
+          color: 0x1f7a45,
+          transparent: true,
+          opacity: 0.36,
+          roughness: 0.9,
+          metalness: 0,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          polygonOffset: true,
+          polygonOffsetFactor: -1,
+          polygonOffsetUnits: -1
+        });
+        this.parcelleDrawPreviewFill = new THREE.Mesh(fillGeom, fillMat);
+        this.parcelleDrawPreviewFill.position.y = avgH;
+        this.parcelleDrawPreviewFill.renderOrder = 13;
+        this.scene.add(this.parcelleDrawPreviewFill);
+      } catch {
+        /* ignore invalid shapes */
+      }
+    }
   }
 
   private updateParcelleGeom(): void {

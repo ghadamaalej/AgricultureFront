@@ -8,13 +8,15 @@ import { FarmAddComponent } from './pages/farm-add/farm-add.component';
 import { FarmListComponent } from './pages/farm-list/farm-list.component';
 import { Farm3dComponent } from './pages/farm-3d/farm-3d.component';
 import { TerrainFormComponent } from './components/terrain-form/terrain-form.component';
+import { FarmCalendarComponent } from './pages/farm-calendar/farm-calendar.component';
 
 @NgModule({
   declarations: [
     FarmAddComponent,
     FarmListComponent,
     Farm3dComponent,
-    TerrainFormComponent
+    TerrainFormComponent,
+    FarmCalendarComponent
   ],
   imports: [
     CommonModule,

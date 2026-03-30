@@ -1,0 +1,148 @@
+<section class="calendar-page">
+  <h2>Farm Calendar</h2>
+  <p class="subtitle">Click any day to add an important farm event. Days with events are highlighted.</p>
+
+  <div class="card">
+    <div class="calendar-header">
+      <button class="secondary" (click)="previousMonth()">Previous</button>
+      <h3>{{ monthLabel }}</h3>
+      <button class="secondary" (click)="nextMonth()">Next</button>
+    </div>
+
+    <div class="weekdays">
+      <div class="weekday" *ngFor="let wd of weekDays">{{ wd }}</div>
+    </div>
+
+    <div class="month-grid">
+      <button
+        class="day-cell"
+        *ngFor="let day of calendarDays"
+        [class.outside]="!day.inCurrentMonth"
+        [class.active]="isSelectedDay(day.dateKey)"
+        [class.has-events]="hasEvents(day.dateKey)"
+        (click)="selectDay(day)">
+        <span class="day-number">{{ day.date.getDate() }}</span>
+        <span class="event-dot" *ngIf="hasEvents(day.dateKey)"></span>
+      </button>
+    </div>
+
+    <div class="selected-events">
+      <h4>Events on {{ selectedDateKey || 'selected day' }}</h4>
+      <div *ngIf="getEventsForDay(selectedDateKey).length === 0" class="empty">No events for this day.</div>
+      <div class="event-list">
+        <article class="event-item" *ngFor="let event of getEventsForDay(selectedDateKey)">
+          <div>
+            <strong>{{ event.title }}</strong>
+            <div>{{ getEventTypeLabel(event.crop) }}</div>
+            <small *ngIf="event.notes">{{ event.notes }}</small>
+          </div>
+          <div class="event-actions">
+            <button class="secondary" (click)="editEvent(event)">Edit</button>
+            <button class="danger" (click)="deleteEvent(event.id)">Delete</button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <h3>{{ editingEventId ? 'Edit Event' : 'Add Event' }}</h3>
+      <div class="form-grid">
+        <label>
+          Date
+          <input type="date" [(ngModel)]="newEvent.date" />
+        </label>
+        <label>
+          Title
+          <input type="text" [(ngModel)]="newEvent.title" placeholder="e.g. Irrigation block A" />
+        </label>
+        <label>
+          Event Type
+          <select [(ngModel)]="newEvent.crop" name="eventType">
+            <option *ngFor="let opt of eventTypeOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+          </select>
+        </label>
+        <label>
+          Reminder (minutes before)
+          <input type="number" min="0" [(ngModel)]="reminderMinutes" />
+        </label>
+        <label class="full">
+          Notes
+          <textarea rows="3" [(ngModel)]="newEvent.notes" placeholder="Optional notes"></textarea>
+        </label>
+      </div>
+      <div class="actions">
+        <button (click)="saveEvent()">{{ editingEventId ? 'Update Event' : 'Save Event' }}</button>
+        <button class="secondary" (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>All Important Dates</h3>
+    <div *ngIf="events.length === 0" class="empty">No dates yet.</div>
+    <div class="event-list">
+      <article class="event-item" *ngFor="let event of events">
+        <div>
+          <strong>{{ event.title }}</strong>
+          <div>{{ event.date }} — {{ getEventTypeLabel(event.crop) }}</div>
+          <small *ngIf="event.notes">{{ event.notes }}</small>
+        </div>
+        <div class="event-actions">
+          <button class="secondary" (click)="editEvent(event)">Edit</button>
+          <button class="danger" (click)="deleteEvent(event.id)">Delete</button>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Weather + Irrigation (Open-Meteo)</h3>
+    <label>
+      Terrain
+      <select [(ngModel)]="selectedTerrainId" (change)="refreshAgriData()">
+        <option *ngFor="let t of terrains" [ngValue]="t.idTerrain">{{ t.nom }} ({{ t.localisation }})</option>
+      </select>
+    </label>
+
+    <div *ngIf="loading">Loading weather...</div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <div class="weather-grid" *ngIf="!loading && weather.length > 0">
+      <article class="weather-day" *ngFor="let day of weather; let i = index">
+        <h4>{{ day.date }}</h4>
+        <p>Temp: {{ day.tempMin }}C to {{ day.tempMax }}C</p>
+        <p>Rain: {{ day.precipitation }} mm</p>
+        <p>ET0: {{ day.evapotranspiration }}</p>
+        <p class="advice">
+          <strong>{{ irrigationAdvice[i].advice }}</strong> - {{ irrigationAdvice[i].reason }}
+        </p>
+      </article>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Crop Periods (FAO Calendar integration)</h3>
+    <div class="inline-form">
+      <input type="text" [(ngModel)]="selectedCrop" placeholder="Enter crop (wheat, tomato, olive...)" />
+      <button (click)="loadCropWindows()">Load Periods</button>
+    </div>
+
+    <div *ngIf="cropWindows.length === 0" class="empty">No crop periods loaded yet.</div>
+    <div *ngFor="let window of cropWindows" class="crop-window">
+      <strong>{{ window.crop | titlecase }}</strong> ({{ window.source }})
+      <div>Planting: {{ window.plantingStart }} to {{ window.plantingEnd }}</div>
+      <div>Harvest: {{ window.harvestStart }} to {{ window.harvestEnd }}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Tunisia climate pages (optional)</h3>
+    <ul>
+      <li *ngFor="let source of climateSources">
+        <a [href]="source.url" target="_blank" rel="noopener noreferrer">{{ source.label }}</a>
+      </li>
+    </ul>
+  </div>
+</section>

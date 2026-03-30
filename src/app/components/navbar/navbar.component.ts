@@ -36,7 +36,7 @@ export class NavbarComponent implements OnInit {
       { label: 'My Terrains',  icon: 'fas fa-list',           route: '/farm/list'     }
     ]},
     { label: 'Inventory',    icon: 'fas fa-boxes',          route: '/inventory'    },
-    { label: 'Appointments', icon: 'fas fa-calendar-check', route: '/appointments' },
+    { label: 'Appointments', icon: 'fas fa-calendar-check', route: '/farm/calendar' },
     { label: 'Animals',      icon: 'fas fa-paw',            route: '/animals'      },
     { label: 'Help Request', icon: 'fas fa-hands-helping',  route: '/help-request' },
   ];
@@ -91,7 +91,18 @@ export class NavbarComponent implements OnInit {
   }
 
   isDropdownActive(): boolean {
-    return this.dropdownLinks.some(l => this.activeLink === l.route);
+    return this.dropdownLinks.some((l) => this.isDropdownLinkActive(l));
+  }
+
+  /** Highlights More items when on that route or (for Terrain) any /farm/* path */
+  isDropdownLinkActive(link: { route: string; hasSubmenu?: boolean }): boolean {
+    if (this.activeLink === link.route) {
+      return true;
+    }
+    if (link.hasSubmenu) {
+      return this.activeLink.startsWith(`${link.route}/`);
+    }
+    return false;
   }
 
   toggleMobile() { this.isMobileMenuOpen = !this.isMobileMenuOpen; }
