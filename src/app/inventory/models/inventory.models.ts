@@ -57,10 +57,11 @@ export interface AnimalDetail extends Animal {
 
 export interface VaccinationRecord {
   id: number;
-  vaccinName: string;
-  dateVaccination: string;
-  nextDueDate: string;
-  note: string;
+  vaccin: string;        // nom du vaccin (champ backend)
+  dateVaccin: string;    // date vaccination (champ backend)
+  dose: number;
+  status: string;        // PENDING | DONE
+  productId: number;
 }
 
 export interface VaccinationCampaign {

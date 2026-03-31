@@ -48,14 +48,18 @@
         <div class="empty-sub" *ngIf="!(detail.vaccinations && detail.vaccinations.length)">Aucune vaccination enregistrée.</div>
         <table class="sub-table" *ngIf="detail.vaccinations && detail.vaccinations.length">
           <thead>
-            <tr><th>Vaccin</th><th>Date</th><th>Prochaine</th><th>Note</th></tr>
+            <tr><th>Vaccin</th><th>Date</th><th>Dose</th><th>Statut</th></tr>
           </thead>
           <tbody>
             <tr *ngFor="let v of detail.vaccinations">
-              <td>{{ v.vaccinName }}</td>
-              <td>{{ v.dateVaccination | date:'dd/MM/yyyy' }}</td>
-              <td>{{ v.nextDueDate | date:'dd/MM/yyyy' }}</td>
-              <td class="note-cell">{{ v.note || '—' }}</td>
+              <td>{{ v.vaccin || '—' }}</td>
+              <td>{{ v.dateVaccin ? (v.dateVaccin | date:'dd/MM/yyyy') : '—' }}</td>
+              <td>{{ v.dose || '—' }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="v.status === 'DONE' ? 'st-done' : 'st-pending'">
+                  {{ v.status === 'DONE' ? 'Effectuée' : 'En attente' }}
+                </span>
+              </td>
             </tr>
           </tbody>
         </table>
