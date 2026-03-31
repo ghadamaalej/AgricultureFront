@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AppComponent }          from './app.component';
 import { AppRoutingModule }      from './app-routing.module';
-import { NavbarComponent }       from './components/navbar/navbar.component';
+import { SharedModule }          from './shared/shared.module';
 import { HeroComponent }         from './components/hero/hero.component';
 import { AboutComponent }        from './components/about/about.component';
 import { ServicesComponent }     from './components/services/services.component';
@@ -25,7 +25,6 @@ import { provideHttpClient } from '@angular/common/http';
   declarations: [
     AppComponent,
     AuthComponent,
-    NavbarComponent,
     HeroComponent,
     AboutComponent,
     ServicesComponent,
@@ -46,7 +45,7 @@ import { provideHttpClient } from '@angular/common/http';
     ReactiveFormsModule,
     HttpClientModule,
     AppRoutingModule,
-      
+    SharedModule
   ],
   providers: [ provideHttpClient()],
   bootstrap: [AppComponent]

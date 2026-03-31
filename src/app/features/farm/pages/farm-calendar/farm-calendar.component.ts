@@ -1,20 +1,23 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Terrain } from '../../models/terrain.model';
 import { TerrainService } from '../../services/terrain.service';
 import { AgriCalendarService } from '../../services/agri-calendar.service';
 import {
+  CalendarDayCell,
   CalendarEvent,
-  CropWindow,
   EvenementCalendrierApi,
   EventTypeAgricole,
   IrrigationAdvice,
   PrioriteEvent,
   RappelApi,
   StatutEvent,
-  WeatherForecastDay
+  WeatherForecastDay,
+  ClimateMonthSummary
 } from '../../models/calendar.model';
 import { CalendarEventService } from '../../services/calendar-event.service';
 import { AuthService } from '../../../../services/auth/auth.service';
+import { EVENT_TYPE_OPTIONS } from '../../utils/calendar-labels';
 
 @Component({
   selector: 'app-farm-calendar',
@@ -22,12 +25,7 @@ import { AuthService } from '../../../../services/auth/auth.service';
   styleUrls: ['./farm-calendar.component.css']
 })
 export class FarmCalendarComponent implements OnInit {
-  eventTypeOptions: { value: EventTypeAgricole; label: string }[] = [
-    { value: 'SEMIS', label: 'Semis' },
-    { value: 'IRRIGATION', label: 'Irrigation' },
-    { value: 'FERTILISATION', label: 'Fertilisation' },
-    { value: 'AUTRE', label: 'Autre' }
-  ];
+  readonly eventTypeOptions = EVENT_TYPE_OPTIONS;
 
   weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   monthNames = [
@@ -42,7 +40,6 @@ export class FarmCalendarComponent implements OnInit {
   terrains: Terrain[] = [];
   selectedTerrainId: number | null = null;
   events: CalendarEvent[] = [];
-  selectedCrop = '';
 
   newEvent: Omit<CalendarEvent, 'id'> = {
     title: '',
@@ -55,8 +52,9 @@ export class FarmCalendarComponent implements OnInit {
   reminderMinutes = 60;
   weather: WeatherForecastDay[] = [];
   irrigationAdvice: IrrigationAdvice[] = [];
-  cropWindows: CropWindow[] = [];
-  climateSources: { label: string; url: string }[] = [];
+  climateMonthly: ClimateMonthSummary[] = [];
+  climateYear = '';
+  climateLoading = false;
   loading = false;
   error = '';
 
@@ -64,12 +62,12 @@ export class FarmCalendarComponent implements OnInit {
     private terrainService: TerrainService,
     private agriCalendarService: AgriCalendarService,
     private calendarEventService: CalendarEventService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadEvents();
-    this.climateSources = this.agriCalendarService.getTunisiaClimateSources();
     this.loadTerrains();
     this.buildCalendar();
   }
@@ -97,6 +95,7 @@ export class FarmCalendarComponent implements OnInit {
     }
 
     this.loading = true;
+    this.climateLoading = true;
     this.error = '';
     this.agriCalendarService.getWeatherForecast(terrain.latitude, terrain.longitude).subscribe({
       next: (forecast) => {
@@ -110,18 +109,36 @@ export class FarmCalendarComponent implements OnInit {
         this.loading = false;
       }
     });
-  }
 
-  loadCropWindows(): void {
-    this.agriCalendarService.getCropWindows(this.selectedCrop).subscribe({
-      next: (windows) => {
-        this.cropWindows = windows;
+    this.agriCalendarService.getLocalClimateMonthly(terrain.latitude, terrain.longitude).subscribe({
+      next: (rows) => {
+        this.climateMonthly = rows;
+        this.climateYear = `${new Date().getFullYear() - 1}`;
+        this.climateLoading = false;
       },
       error: (err) => {
         console.error(err);
-        this.cropWindows = [];
+        this.climateMonthly = [];
+        this.climateLoading = false;
       }
     });
+  }
+
+  onTerrainIdChange(id: number | null): void {
+    this.selectedTerrainId = id;
+    this.refreshAgriData();
+  }
+
+  onNavbarAuth(mode: 'signin' | 'signup'): void {
+    this.router.navigate(['/'], { queryParams: { openAuth: mode } });
+  }
+
+  scrollToSection(id: string): void {
+    const el = document.getElementById(id);
+    if (!el) {
+      return;
+    }
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   saveEvent(): void {
@@ -214,7 +231,7 @@ export class FarmCalendarComponent implements OnInit {
     this.buildCalendar();
   }
 
-  selectDay(day: { date: Date; dateKey: string; inCurrentMonth: boolean }): void {
+  selectDay(day: CalendarDayCell): void {
     this.selectedDateKey = day.dateKey;
     this.editingEventId = null;
     this.newEvent = {
@@ -242,10 +259,6 @@ export class FarmCalendarComponent implements OnInit {
 
   isSelectedDay(dateKey: string): boolean {
     return this.selectedDateKey === dateKey;
-  }
-
-  getEventTypeLabel(code: string): string {
-    return this.eventTypeOptions.find((o) => o.value === code)?.label ?? code;
   }
 
   private normalizeEventTypeForForm(code: string): EventTypeAgricole {

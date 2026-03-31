@@ -6,6 +6,13 @@ export interface CalendarEvent {
   notes?: string;
 }
 
+/** One cell in the month grid (local calendar UI). */
+export interface CalendarDayCell {
+  date: Date;
+  dateKey: string;
+  inCurrentMonth: boolean;
+}
+
 /** Values used in the app / calendar form (subset; align backend enum if you want only these). */
 export type EventTypeAgricole =
   | 'SEMIS'
@@ -57,4 +64,15 @@ export interface CropWindow {
   harvestStart: string;
   harvestEnd: string;
   source: 'FAO' | 'Fallback';
+  /** Agro-ecological zone (FAO Tunisia) */
+  aezName?: string;
+  sessionNotes?: string;
+}
+
+/** Monthly summary from Open-Meteo archive (local climate context). */
+export interface ClimateMonthSummary {
+  month: string;
+  avgTempMin: number;
+  avgTempMax: number;
+  totalRainMm: number;
 }

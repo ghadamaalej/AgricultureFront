@@ -1,0 +1,15 @@
+<h2>Toutes mes dates importantes</h2>
+<div *ngIf="events.length === 0" class="empty">Aucune date enregistrée.</div>
+<div class="event-list">
+  <article class="event-item" *ngFor="let event of events">
+    <div>
+      <strong>{{ event.title }}</strong>
+      <div>{{ event.date }} — {{ labelType(event.crop) }}</div>
+      <small *ngIf="event.notes">{{ event.notes }}</small>
+    </div>
+    <div class="event-actions">
+      <button type="button" class="secondary" (click)="editEvent.emit(event)">Modifier</button>
+      <button type="button" class="danger" (click)="deleteEvent.emit(event.id)">Supprimer</button>
+    </div>
+  </article>
+</div>

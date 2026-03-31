@@ -1,0 +1,57 @@
+h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.muted {
+  color: #6b7280;
+}
+
+.small {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+select {
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.error {
+  color: #b91c1c;
+  margin-top: 8px;
+}
+
+.weather-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.weather-day {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f9fafb;
+}
+
+.weather-day h4 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.advice {
+  margin-top: 6px;
+}

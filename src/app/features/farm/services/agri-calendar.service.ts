@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { CropWindow, IrrigationAdvice, WeatherForecastDay } from '../models/calendar.model';
+import { ClimateMonthSummary, CropWindow, IrrigationAdvice, WeatherForecastDay } from '../models/calendar.model';
 
 interface OpenMeteoDailyResponse {
   daily: {
@@ -14,15 +14,42 @@ interface OpenMeteoDailyResponse {
   };
 }
 
+interface ArchiveDailyResponse {
+  daily: {
+    time: string[];
+    temperature_2m_min: number[];
+    temperature_2m_max: number[];
+    precipitation_sum: number[];
+  };
+}
+
+interface FaoSowingHarvest {
+  month: string;
+  day: string;
+}
+
+interface FaoSession {
+  comments?: string;
+  early_sowing?: FaoSowingHarvest;
+  later_sowing?: FaoSowingHarvest;
+  early_harvest?: FaoSowingHarvest;
+  late_harvest?: FaoSowingHarvest;
+}
+
+interface FaoCalendarEntry {
+  id_country: string;
+  crop: { id: string; name: string };
+  aez: { id: string; name: string };
+  sessions: FaoSession[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AgriCalendarService {
   private readonly openMeteoApi = 'https://api.open-meteo.com/v1/forecast';
-
-  // Optional proxy endpoint for FAO crop calendar integration.
-  // Set this to your backend proxy when available.
-  private readonly faoCropCalendarProxy = '';
+  private readonly archiveApi = 'https://archive-api.open-meteo.com/v1/archive';
+  private readonly faoCropCalendarApi = 'https://api-cropcalendar.apps.fao.org/api/v1/cropCalendar';
 
   constructor(private http: HttpClient) {}
 
@@ -48,6 +75,33 @@ export class AgriCalendarService {
       }),
       catchError((error) => {
         console.error('Open-Meteo fetch failed:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Last full calendar year of daily archive → monthly averages / totals at the farm coordinates.
+   * Complements the short forecast; INM bulletins are not available from the browser (CORS).
+   */
+  getLocalClimateMonthly(latitude: number, longitude: number): Observable<ClimateMonthSummary[]> {
+    const end = new Date();
+    const year = end.getFullYear() - 1;
+    const startDate = `${year}-01-01`;
+    const endDate = `${year}-12-31`;
+    const params = [
+      `latitude=${latitude}`,
+      `longitude=${longitude}`,
+      `start_date=${startDate}`,
+      `end_date=${endDate}`,
+      'daily=temperature_2m_min,temperature_2m_max,precipitation_sum',
+      'timezone=auto'
+    ].join('&');
+
+    return this.http.get<ArchiveDailyResponse>(`${this.archiveApi}?${params}`).pipe(
+      map((res) => this.aggregateMonthly(res.daily.time, res.daily.temperature_2m_min, res.daily.temperature_2m_max, res.daily.precipitation_sum)),
+      catchError((err) => {
+        console.error('Open-Meteo archive failed:', err);
         return of([]);
       })
     );
@@ -79,19 +133,26 @@ export class AgriCalendarService {
     });
   }
 
+  /**
+   * FAO crop calendar for Tunisia (official API). Filters by crop name (substring match).
+   */
   getCropWindows(crop: string, countryCode: string = 'TUN'): Observable<CropWindow[]> {
-    const normalizedCrop = (crop || '').trim().toLowerCase();
+    const normalizedCrop = this.normalizeSearch(crop);
     if (!normalizedCrop) {
       return of([]);
     }
 
-    if (!this.faoCropCalendarProxy) {
-      return of(this.getFallbackCropWindows(normalizedCrop));
-    }
+    const faoCountry = countryCode.toUpperCase() === 'TUN' || countryCode.toUpperCase() === 'TN' ? 'TN' : countryCode;
 
-    const url = `${this.faoCropCalendarProxy}?country=${countryCode}&crop=${encodeURIComponent(normalizedCrop)}`;
-    return this.http.get<CropWindow[]>(url).pipe(
-      map((rows) => rows?.length ? rows : this.getFallbackCropWindows(normalizedCrop)),
+    return this.http.get<FaoCalendarEntry[]>(`${this.faoCropCalendarApi}?countries=${faoCountry}`).pipe(
+      map((rows) => {
+        const filtered = rows.filter((r) => {
+          const name = this.normalizeSearch(r.crop?.name || '');
+          return name.includes(normalizedCrop) || r.crop?.id === normalizedCrop;
+        });
+        const mapped = filtered.flatMap((entry) => this.entryToWindows(entry));
+        return mapped.length ? mapped : this.getFallbackCropWindows(normalizedCrop);
+      }),
       catchError((error) => {
         console.error('FAO crop calendar fetch failed:', error);
         return of(this.getFallbackCropWindows(normalizedCrop));
@@ -99,11 +160,80 @@ export class AgriCalendarService {
     );
   }
 
-  getTunisiaClimateSources(): { label: string; url: string }[] {
-    return [
-      { label: 'INM Tunisia (official portal)', url: 'https://www.meteo.tn/' },
-      { label: 'Open-Meteo Tunisia forecast map', url: 'https://open-meteo.com/' }
-    ];
+  private entryToWindows(entry: FaoCalendarEntry): CropWindow[] {
+    const refYear = new Date().getFullYear();
+    const out: CropWindow[] = [];
+    for (const session of entry.sessions || []) {
+      const plantingStart = this.sessionPartToIso(session.early_sowing, refYear);
+      const plantingEnd = this.sessionPartToIso(session.later_sowing, refYear);
+      const harvestStart = this.sessionPartToIso(session.early_harvest, refYear);
+      const harvestEnd = this.sessionPartToIso(session.late_harvest, refYear);
+      if (!plantingStart && !plantingEnd && !harvestStart && !harvestEnd) {
+        continue;
+      }
+      out.push({
+        crop: entry.crop?.name || '—',
+        plantingStart: plantingStart || plantingEnd || '—',
+        plantingEnd: plantingEnd || plantingStart || '—',
+        harvestStart: harvestStart || harvestEnd || '—',
+        harvestEnd: harvestEnd || harvestStart || '—',
+        source: 'FAO',
+        aezName: entry.aez?.name,
+        sessionNotes: session.comments
+      });
+    }
+    return out;
+  }
+
+  private sessionPartToIso(part: FaoSowingHarvest | undefined, year: number): string {
+    if (!part?.month || !part?.day) {
+      return '';
+    }
+    const m = `${part.month}`.padStart(2, '0');
+    const d = `${part.day}`.padStart(2, '0');
+    return `${year}-${m}-${d}`;
+  }
+
+  private aggregateMonthly(
+    times: string[],
+    tMin: number[],
+    tMax: number[],
+    precip: number[]
+  ): ClimateMonthSummary[] {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const buckets = monthNames.map((month) => ({
+      month,
+      mins: [] as number[],
+      maxs: [] as number[],
+      rain: 0
+    }));
+
+    for (let i = 0; i < times.length; i++) {
+      const date = new Date(times[i]);
+      const mi = date.getMonth();
+      if (tMin[i] != null && !Number.isNaN(tMin[i])) {
+        buckets[mi].mins.push(tMin[i]);
+      }
+      if (tMax[i] != null && !Number.isNaN(tMax[i])) {
+        buckets[mi].maxs.push(tMax[i]);
+      }
+      buckets[mi].rain += precip[i] ?? 0;
+    }
+
+    return buckets.map((b) => ({
+      month: b.month,
+      avgTempMin: b.mins.length ? Math.round((b.mins.reduce((a, x) => a + x, 0) / b.mins.length) * 10) / 10 : 0,
+      avgTempMax: b.maxs.length ? Math.round((b.maxs.reduce((a, x) => a + x, 0) / b.maxs.length) * 10) / 10 : 0,
+      totalRainMm: Math.round(b.rain * 10) / 10
+    }));
+  }
+
+  private normalizeSearch(value: string): string {
+    return (value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
   }
 
   private getFallbackCropWindows(crop: string): CropWindow[] {
@@ -131,6 +261,15 @@ export class AgriCalendarService {
         harvestStart: '2026-10-01',
         harvestEnd: '2027-01-31',
         source: 'Fallback'
+      },
+      ble: {
+        crop: 'Blé (approx.)',
+        plantingStart: '2026-11-01',
+        plantingEnd: '2027-01-15',
+        harvestStart: '2027-06-01',
+        harvestEnd: '2027-07-15',
+        source: 'Fallback',
+        sessionNotes: 'Approximation locale — vérifiez les données FAO lorsque la connexion fonctionne.'
       }
     };
 
