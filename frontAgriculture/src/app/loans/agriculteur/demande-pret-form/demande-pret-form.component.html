@@ -1,0 +1,151 @@
+<app-navbar></app-navbar>
+
+<!-- HERO — EN DEHORS du .pg -->
+<div class="hero-band">
+  <div class="hero-overlay-shape"></div>
+  <div class="hero-overlay-shape2"></div>
+
+  <div class="hero-left">
+    <div class="hero-badge">
+      
+    </div>
+    <h1>{{ service?.nom }}</h1>
+    <p>Fast, affordable financing for small agricultural businesses across Tunisia.</p>
+    <div class="hero-chips">
+      <div class="chip" *ngIf="service">
+        <span class="chip-label">Amount</span>
+        <span class="chip-val">{{ service.montantMin | number }} – {{ service.montantMax | number }} DT</span>
+      </div>
+      <div class="chip" *ngIf="service">
+        <span class="chip-label">Rate</span>
+        <span class="chip-val">{{ service.tauxInteret }}% fixed</span>
+      </div>
+      <div class="chip" *ngIf="service">
+        <span class="chip-label">Duration</span>
+        <span class="chip-val">Up to {{ service.dureeMaxMois }} months</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="calc-card" *ngIf="service">
+      <div class="calc-title">Quick Estimate</div>
+      <div class="calc-row">
+        <span class="calc-key">Amount</span>
+        <span class="calc-val">{{ form.get('montantDemande')?.value || service.montantMin | number }} DT</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-key">Duration</span>
+        <span class="calc-val">{{ form.get('dureeMois')?.value || 6 }} months</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-key">Purpose</span>
+        <span class="calc-val calc-val--purpose">{{ form.get('objet')?.value || '—' }}</span>
+      </div>
+      <div class="calc-divider"></div>
+      <div class="calc-monthly">
+        <div class="calc-monthly-label">Est. monthly payment</div>
+        <div class="calc-monthly-val">{{ mensualite | number:'1.0-0' }} DT</div>
+        <div class="calc-monthly-sub">/ month</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENU — dans .pg -->
+<div class="pg">
+  <div class="breadcrumb">Loans › Institutions › <span>Loan Application</span></div>
+
+  <ng-template #loading>
+    <div class="loading-card">Loading service details...</div>
+  </ng-template>
+
+  <div class="card" *ngIf="service; else loading">
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <div class="section-label">Loan Details</div>
+
+      <div class="field" [class.has-error]="form.get('montantDemande')?.invalid && form.get('montantDemande')?.touched">
+        <label>Requested Amount (DT)</label>
+        <input type="number" formControlName="montantDemande" placeholder="e.g. 5000" (input)="updateRecap()">
+        <div class="hint">Between {{ service.montantMin | number }} and {{ service.montantMax | number }} DT</div>
+        <div class="error" *ngIf="form.get('montantDemande')?.errors?.['min']">Minimum: {{ service.montantMin | number }} DT</div>
+        <div class="error" *ngIf="form.get('montantDemande')?.errors?.['max']">Maximum: {{ service.montantMax | number }} DT</div>
+        <div class="error" *ngIf="form.get('montantDemande')?.errors?.['required'] && form.get('montantDemande')?.touched">This field is required</div>
+      </div>
+
+      <div class="field" [class.has-error]="form.get('dureeMois')?.invalid && form.get('dureeMois')?.touched">
+        <label>Repayment Duration (months)</label>
+        <input type="number" formControlName="dureeMois" placeholder="e.g. 6" (input)="updateRecap()">
+        <div class="hint">Between 1 and {{ service.dureeMaxMois }} months</div>
+        <div class="error" *ngIf="form.get('dureeMois')?.errors?.['min']">Minimum: 1 month</div>
+        <div class="error" *ngIf="form.get('dureeMois')?.errors?.['max']">Maximum: {{ service.dureeMaxMois }} months</div>
+        <div class="error" *ngIf="form.get('dureeMois')?.errors?.['required'] && form.get('dureeMois')?.touched">This field is required</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">Project Details</div>
+
+      <div class="field" [class.has-error]="form.get('objet')?.invalid && form.get('objet')?.touched">
+        <label>Loan Purpose</label>
+        <input type="text" formControlName="objet"
+          placeholder="e.g. Purchase of seeds and irrigation equipment"
+          (input)="updateRecap()">
+        <div class="hint">Briefly describe the intended use of the funds (min. 5 characters)</div>
+        <div class="error" *ngIf="form.get('objet')?.errors?.['minlength']">Minimum 5 characters</div>
+        <div class="error" *ngIf="form.get('objet')?.errors?.['required'] && form.get('objet')?.touched">This field is required</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">Required Documents</div>
+
+      <div class="required-docs" *ngIf="service.documentsRequis">
+        <div class="req-title">Please upload the following documents:</div>
+        <ul class="req-list">
+          <li *ngFor="let doc of getDocumentsList()">
+            <span class="req-dot"></span>{{ doc }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="field">
+        <label>Upload Documents</label>
+        <div class="upload-area"
+          (click)="fileInput.click()"
+          (dragover)="$event.preventDefault()"
+          (drop)="onDrop($event)">
+          <div class="upload-icon">📎</div>
+          <div class="upload-text">Click to browse or drag & drop files here</div>
+          <div class="upload-hint">PDF, JPG, PNG — max 5 MB each</div>
+          <input #fileInput type="file" multiple accept=".pdf,.jpg,.jpeg,.png"
+            style="display:none" (change)="onFileChange($event)">
+        </div>
+        <div class="file-list" *ngIf="uploadedFiles.length > 0">
+          <div class="file-item" *ngFor="let file of uploadedFiles; let i = index">
+            <span class="file-icon">📄</span>
+            <span class="file-name">{{ file.name }}</span>
+            <span class="file-size">{{ (file.size / 1024).toFixed(1) }} KB</span>
+            <button type="button" class="file-remove" (click)="removeFile(i)">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="error-banner" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <button type="submit" class="btn" [disabled]="form.invalid || isLoading">
+        {{ isLoading ? 'Submitting...' : 'Submit Application' }}
+      </button>
+
+    </form>
+  </div>
+
+  <div class="success-msg" *ngIf="submitted">
+    <div class="success-icon">🌱</div>
+    <h3>Application Submitted!</h3>
+    <p>Your loan application is being reviewed. You will be contacted within 15 business days.</p>
+  </div>
+
+</div>
+<app-footer></app-footer>

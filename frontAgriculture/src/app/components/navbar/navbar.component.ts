@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit, Output, EventEmitter } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-
+import { AuthService } from '../../services/auth/auth.service';
 @Component({
   selector: 'app-navbar',
   standalone: false,
@@ -36,7 +36,8 @@ export class NavbarComponent implements OnInit {
     { label: 'Help Request', icon: 'fas fa-hands-helping',  route: '/help-request' },
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router,
+    private authService:AuthService) {}
 
   ngOnInit() {
     this.isLoggedIn = !!localStorage.getItem('token');
@@ -84,4 +85,7 @@ export class NavbarComponent implements OnInit {
   signIn()  { localStorage.setItem('authMode', 'signin');  this.onAuthOpen.emit('signin');  }
   signUp()  { localStorage.setItem('authMode', 'signup');  this.onAuthOpen.emit('signup');  }
   logout()  { localStorage.clear(); this.isLoggedIn = false; this.router.navigate(['/']); }
+
+  
+ 
 }

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Institution } from '../../models/institution';
 import { InstitutionService } from '../../../services/loans/institution.service';
 import { ServicePretService } from '../../../services/loans/service-pret.service';
-
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-institutions-list',
   standalone: false,
@@ -18,7 +18,8 @@ export class InstitutionsListComponent implements OnInit {
 
   constructor(
     private institutionService: InstitutionService,
-    private agentService: ServicePretService
+    private agentService: ServicePretService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -58,8 +59,7 @@ export class InstitutionsListComponent implements OnInit {
   }
 
   demanderPret(service: any) {
-    // Navigate or open modal for loan request
     console.log('Demande pour:', service);
-    // this.router.navigate(['/loans/apply', service.id]);
+     this.router.navigate(['/loans/application', service.id]);
   }
 }

@@ -7,7 +7,7 @@
   position: fixed;
   inset: 0;
   /* Image de fond qui simule la page derrière */
-  background-image: url('/assets/images/bgflou.png');
+  background-image: url('/assets/images/bgflou5.png');
   background-size: cover;
   background-position: center;
   display: flex;

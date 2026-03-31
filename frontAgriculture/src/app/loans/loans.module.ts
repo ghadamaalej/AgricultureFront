@@ -6,10 +6,13 @@ import { ServicesListComponent } from './agent/services-list/services-list.compo
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import {InstitutionsListComponent} from'../loans/agriculteur/institutions-list/institutions-list.component'
+import { DemandePretFormComponent } from './agriculteur/demande-pret-form/demande-pret-form.component';
+
 @NgModule({
   declarations: [
     ServicesListComponent,
-    InstitutionsListComponent
+    InstitutionsListComponent,
+    DemandePretFormComponent 
 
    
   ],

@@ -1,3 +1,5 @@
+import { Institution } from './institution';
+
 export interface Service {
   id?: number;
 
@@ -17,4 +19,5 @@ export interface Service {
 
   agentId: number;
   nombreDemandes?: number;
+  institution: Institution;
 }
