@@ -19,6 +19,9 @@ import { BlogDetailComponent }   from './components/blog-detail/blog-detail.comp
 import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
+import { FarmerModule } from './farmer/farmer.module';
+import { AnimalsModule } from './animals/animals.module';
+import { AgriModule } from './agri/agri.module';
 
 @NgModule({
   declarations: [
@@ -44,7 +47,10 @@ import { RegisterExtraComponent } from './components/register-extra/register-ext
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    AppRoutingModule  
+    AppRoutingModule,
+    FarmerModule,
+    AnimalsModule,
+    AgriModule  
   ],
   providers: [],
   bootstrap: [AppComponent]

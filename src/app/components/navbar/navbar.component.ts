@@ -65,6 +65,14 @@ export class NavbarComponent implements OnInit {
   }
 
   navigate(route: string) {
+     if (route === '/inventory' || route === '/animals') {
+    if (!localStorage.getItem('authToken')) {
+      this.router.navigate(['/auth']);
+      return;
+    }
+    this.router.navigate(['/agri', route.replace('/', '')]);
+    return;
+  }
     this.router.navigate([route]);
     this.isMobileMenuOpen = false;
     this.moreDropdownOpen = false;

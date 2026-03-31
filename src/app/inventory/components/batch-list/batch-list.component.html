@@ -1,0 +1,47 @@
+<div class="page-header">
+  <div class="back-row">
+    <button class="back-btn" (click)="back.emit()">
+      <i class="fas fa-arrow-left"></i> Retour
+    </button>
+    <div>
+      <h1 class="page-title">Lots — {{ product.nom }}</h1>
+      <p class="page-sub">{{ product.currentQuantity }} {{ product.unit }} en stock</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-warning" (click)="consume.emit()">
+      <i class="fas fa-minus-circle"></i> Consommer
+    </button>
+    <button class="btn btn-outline" (click)="adjust.emit()">
+      <i class="fas fa-sliders-h"></i> Ajuster stock
+    </button>
+  </div>
+</div>
+
+<div class="empty-state" *ngIf="batches.length === 0">
+  <i class="fas fa-layer-group"></i>
+  <p>Aucun lot enregistré pour ce produit.</p>
+</div>
+
+<table class="data-table" *ngIf="batches.length > 0">
+  <thead>
+    <tr>
+      <th>N° Lot</th>
+      <th>Quantité</th>
+      <th>Date achat</th>
+      <th>Date expiry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let b of batches">
+      <td><span class="lot-badge">{{ b.lotNumber }}</span></td>
+      <td>{{ b.quantity }}</td>
+      <td>{{ b.purchaseDate | date:'dd/MM/yyyy' }}</td>
+      <td>
+        <span [class.expiry-warn]="b.expiryDate">
+          {{ b.expiryDate | date:'dd/MM/yyyy' }}
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>

@@ -1,0 +1,41 @@
+<div class="inv-shell">
+
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <aside class="inv-sidebar">
+    <div class="sidebar-brand">
+      <img src="assets/images/logo.png" alt="GreenRoots" class="sidebar-logo">
+      <span class="sidebar-title">GreenRoots</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item" [class.active]="activeTab === 'inventory'" (click)="setTab('inventory')">
+        <i class="fas fa-boxes"></i>
+        <span>Inventory</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'animals'" (click)="setTab('animals')">
+        <i class="fas fa-paw"></i>
+        <span>Animals</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="user-avatar">{{ user?.username?.charAt(0)?.toUpperCase() }}</div>
+        <div class="user-info">
+          <span class="user-name">{{ user?.username }}</span>
+          <span class="user-role">Agriculteur</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main content ─────────────────────────────────────── -->
+  <main class="inv-main">
+    <app-product-list *ngIf="activeTab === 'inventory'"></app-product-list>
+    <app-animal-list  *ngIf="activeTab === 'animals'"></app-animal-list>
+  </main>
+
+</div>

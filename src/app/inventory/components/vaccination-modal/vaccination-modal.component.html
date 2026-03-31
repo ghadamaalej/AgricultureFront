@@ -1,0 +1,58 @@
+<div class="modal-overlay" (click)="cancelled.emit()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2><i class="fas fa-syringe" style="color:#6a1aa8;margin-right:8px;"></i>
+        Vaccination — <span class="animal-ref">{{ animal.reference }}</span>
+      </h2>
+      <button class="close-btn" (click)="cancelled.emit()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="animal-info">
+      <span><strong>Espèce :</strong> {{ animal.espece }}</span>
+      <span><strong>Poids :</strong> {{ animal.poids }} kg</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="modal-body">
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Nom du vaccin *</label>
+          <input formControlName="vaccinName" placeholder="ex: FMD, Brucellose…"
+                 [class.err]="invalid('vaccinName')">
+          <span class="err-msg" *ngIf="invalid('vaccinName')">Champ requis</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date de vaccination *</label>
+          <input type="date" formControlName="dateVaccination" [class.err]="invalid('dateVaccination')">
+          <span class="err-msg" *ngIf="invalid('dateVaccination')">Date requise</span>
+        </div>
+        <div class="form-group">
+          <label>Prochaine vaccination</label>
+          <input type="date" formControlName="nextDueDate">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Note</label>
+          <input formControlName="note" placeholder="Observations, dose administrée…">
+        </div>
+      </div>
+
+      <div class="err-msg global" *ngIf="error">{{ error }}</div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="cancelled.emit()">Annuler</button>
+        <button type="submit" class="btn btn-vaccine" [disabled]="loading">
+          <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+          Enregistrer
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

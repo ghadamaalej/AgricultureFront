@@ -16,6 +16,17 @@ const routes: Routes = [
     path: 'forums',
     loadChildren: () => import('./forums/forums.module').then(m => m.ForumsModule)
   },
+   {
+    path: 'inventory',
+    loadChildren: () => import('./inventory/inventory.module').then(m => m.InventoryModule)
+  },
+
+   {
+    path: 'agri',
+    loadChildren: () => import('./agri/agri.module').then(m => m.AgriModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['AGRICULTEUR'] }
+  },
   {
     path: 'dashboard', 
     loadChildren: () =>import('./dashboard/dashboard.module').then(m => m.DashboardModule),

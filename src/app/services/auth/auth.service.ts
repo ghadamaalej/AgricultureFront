@@ -108,9 +108,13 @@ export class AuthService {
     switch (role) {
       case 'ADMIN':
         return '/dashboard';
+      case 'AGRICULTEUR':
+        return '/inventory';
+
       default:
         return '/';
     }
+   
   }
 
   private storeToken(token: string): void {

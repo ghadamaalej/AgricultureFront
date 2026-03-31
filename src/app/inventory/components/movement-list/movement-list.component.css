@@ -1,0 +1,18 @@
+.page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;}
+.back-row{display:flex;align-items:center;gap:16px;}
+.back-btn{background:#f0f7f0;border:none;color:#2d6a2d;padding:8px 14px;border-radius:8px;font-size:.85rem;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.back-btn:hover{background:#d8efd8;}
+.page-title{font-size:1.5rem;font-weight:700;color:#1a2e1a;margin:0 0 4px;}
+.page-sub{color:#6b8c6b;font-size:.88rem;margin:0;}
+.state-msg{text-align:center;padding:40px;color:#6b8c6b;}
+.empty-state{text-align:center;padding:60px 20px;color:#6b8c6b;}
+.empty-state i{font-size:2.5rem;margin-bottom:12px;display:block;}
+.data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.data-table th{background:#f4faf4;color:#3a5a3a;font-size:.78rem;font-weight:700;text-transform:uppercase;padding:12px 14px;text-align:left;}
+.data-table td{padding:12px 14px;border-top:1px solid #eef4ee;font-size:.88rem;color:#2a3a2a;}
+.data-table tr:hover td{background:#f8fbf8;}
+.type-badge{font-size:.74rem;font-weight:700;padding:3px 9px;border-radius:20px;}
+.type-in {background:#e8ffec;color:#1a7a2d;}
+.type-out{background:#fff0f0;color:#c0392b;}
+.type-adj{background:#fff8e0;color:#a07000;}
+.note-cell{color:#7a9a7a;font-size:.82rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
