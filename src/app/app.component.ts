@@ -19,7 +19,6 @@ import { Component, OnInit, HostListener } from '@angular/core';
     <button class="back-to-top" [class.visible]="showBackTop" (click)="scrollTop()">
       <i class="fas fa-arrow-up"></i>
     </button>
-
     <!-- Router outlet — gère tout -->
     <router-outlet></router-outlet>
   `,

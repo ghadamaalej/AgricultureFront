@@ -25,7 +25,7 @@ export class NavbarComponent implements OnInit {
     { label: 'Forum',       route: '/forum'       },
     { label: 'Loans',       route: '/loans'       },
     { label: 'Delivery',    route: '/delivery'    },
-    { label: 'Events',      route: '/events'      },
+    { label: 'Events',      route: '/events/listEvents'},
     { label: 'Trainings',   route: '/formations'  },
   ];
 

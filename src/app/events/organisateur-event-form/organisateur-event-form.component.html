@@ -1,0 +1,150 @@
+<div class="form-page">
+  <button class="btn-back" (click)="goBack()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M19 12H5M12 5l-7 7 7 7"/>
+    </svg>
+    Back to events
+  </button>
+
+  <div class="form-page-header">
+    <h1 class="form-page-title">{{ isEditMode ? 'Edit Event' : 'New Event' }}</h1>
+    <p class="form-page-sub">{{ isEditMode ? 'Update the details below.' : 'Fill in the details to create your event.' }}</p>
+  </div>
+
+  <div class="form-card">
+    <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+
+      <!-- ROW 1 : title + type -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Title <span class="req">*</span></label>
+          <input type="text" formControlName="titre" placeholder="Event title" />
+          <span class="err" *ngIf="f['titre'].invalid && f['titre'].touched">
+            Title is required (min 3 characters)
+          </span>
+        </div>
+        <div class="form-group">
+          <label>Type <span class="req">*</span></label>
+          <select formControlName="type">
+            <option value="" disabled>Select type</option>
+            <option value="FAIR">Fair</option>
+            <option value="DEMONSTRATION">Demonstration</option>
+            <option value="MARKET">Market</option>
+            <option value="WORKSHOP">Workshop</option>
+          </select>
+          <span class="err" *ngIf="f['type'].invalid && f['type'].touched">
+            Type is required
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description <span class="req">*</span></label>
+        <textarea formControlName="description" rows="4" placeholder="Describe the event..."></textarea>
+        <span class="err" *ngIf="f['description'].invalid && f['description'].touched">
+          Description is required (min 10 characters)
+        </span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Date <span class="req">*</span></label>
+          <input type="datetime-local" formControlName="dateDebut" />
+          <span class="err" *ngIf="f['dateDebut'].invalid && f['dateDebut'].touched">
+            Start date is required
+          </span>
+        </div>
+        <div class="form-group">
+          <label>End Date <span class="req">*</span></label>
+          <input type="datetime-local" formControlName="dateFin" />
+          <span class="err" *ngIf="f['dateFin'].invalid && f['dateFin'].touched">
+            End date is required
+          </span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Location <span class="req">*</span></label>
+          <input type="text" formControlName="lieu" placeholder="Venue name" />
+          <span class="err" *ngIf="f['lieu'].invalid && f['lieu'].touched">
+            Location is required
+          </span>
+        </div>
+        <div class="form-group">
+          <label>Region <span class="req">*</span></label>
+          <input type="text" formControlName="region" placeholder="City / Region" />
+          <span class="err" *ngIf="f['region'].invalid && f['region'].touched">
+            Region is required
+          </span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Max Capacity <span class="req">*</span></label>
+          <input type="number" formControlName="capaciteMax" placeholder="e.g. 100" min="1" />
+          <span class="err" *ngIf="f['capaciteMax'].invalid && f['capaciteMax'].touched">
+            Capacity must be at least 1
+          </span>
+        </div>
+        <div class="form-group">
+          <label>Ticket Price (DT) <span class="req">*</span></label>
+          <input type="number" formControlName="montant" placeholder="0 for free" min="0" />
+          <span class="err" *ngIf="f['montant'].invalid && f['montant'].touched">
+            Price must be 0 or more
+          </span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Event Image</label>
+          <div class="upload-zone" (click)="imgInput.click()" [class.has-file]="imagePreview">
+            <img *ngIf="imagePreview" [src]="imagePreview" class="upload-preview" />
+            <div *ngIf="!imagePreview" class="upload-placeholder">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <span>Upload image</span>
+              <small>JPG, PNG, WEBP</small>
+            </div>
+            <input #imgInput type="file" accept="image/*" style="display:none"
+                   (change)="onImageChange($event)" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Municipal Authorisation</label>
+          <div class="upload-zone doc-zone" (click)="authInput.click()" [class.has-file]="authFileName">
+            <div class="upload-placeholder">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span *ngIf="!authFileName">Upload PDF / image</span>
+              <span *ngIf="authFileName" class="file-name">{{ authFileName }}</span>
+              <small>PDF, JPG, PNG, JPEG</small>
+            </div>
+            <input #authInput type="file" accept=".pdf,image/png,image/jpeg,image/jpg"
+                   style="display:none" (change)="onAuthChange($event)" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="goBack()">Cancel</button>
+        <button type="submit" class="btn-submit" [disabled]="eventForm.invalid">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+          {{ isEditMode ? 'Save Changes' : 'Create Event' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

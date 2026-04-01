@@ -19,12 +19,13 @@ import { BlogDetailComponent }   from './components/blog-detail/blog-detail.comp
 import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
+import { SharedModule } from './shared/shared.module';
+
 
 @NgModule({
   declarations: [
     AppComponent,
     AuthComponent,
-    NavbarComponent,
     HeroComponent,
     AboutComponent,
     ServicesComponent,
@@ -32,7 +33,6 @@ import { RegisterExtraComponent } from './components/register-extra/register-ext
     CounterComponent,
     TestimonialsComponent,
     BlogComponent,
-    FooterComponent,
     BlogDetailComponent,
     HomeComponent,
     NotFoundComponent,
@@ -44,7 +44,8 @@ import { RegisterExtraComponent } from './components/register-extra/register-ext
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    AppRoutingModule  
+    AppRoutingModule,
+    SharedModule
   ],
   providers: [],
   bootstrap: [AppComponent]

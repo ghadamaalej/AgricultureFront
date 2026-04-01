@@ -13,10 +13,12 @@ const routes: Routes = [
   { path: '',         component: HomeComponent,       pathMatch: 'full' },
   { path: 'auth',     component: AuthComponent, canActivate: [GuestGuard] },
   {
-    path: 'dashboard', 
-    loadChildren: () =>import('./dashboard/dashboard.module').then(m => m.DashboardModule),
+    path: 'dashboard', loadChildren: () =>import('./dashboard/dashboard.module').then(m => m.DashboardModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'events',loadChildren: () =>import('./events/events.module').then(m => m.EventsModule)
   },
   { path: 'register-extra',  component: RegisterExtraComponent  },
   { path: 'blog/:id', component: BlogDetailComponent },
