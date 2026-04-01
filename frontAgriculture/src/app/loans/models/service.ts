@@ -1,7 +1,7 @@
 import { Institution } from './institution';
 
 export interface Service {
-  id?: number;
+  id: number;
 
   nom: string;
   description: string;

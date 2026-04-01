@@ -7,12 +7,13 @@ import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import {InstitutionsListComponent} from'../loans/agriculteur/institutions-list/institutions-list.component'
 import { DemandePretFormComponent } from './agriculteur/demande-pret-form/demande-pret-form.component';
-
+import { ApplicationsListComponent } from './agent/applications-list/applications-list.component';
 @NgModule({
   declarations: [
     ServicesListComponent,
     InstitutionsListComponent,
-    DemandePretFormComponent 
+    DemandePretFormComponent ,
+    ApplicationsListComponent   
 
    
   ],
@@ -21,7 +22,8 @@ import { DemandePretFormComponent } from './agriculteur/demande-pret-form/demand
     CommonModule,
     LoansRoutingModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    
         
   ]
 })

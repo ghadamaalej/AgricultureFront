@@ -169,6 +169,12 @@
         <button class="btn-red" (click)="confirmDelete(s.id)">
           Delete
         </button>
+         <button
+          class="btn-purple"
+          (click)="viewApplications(s.id)"
+          [disabled]="(s.nombreDemandes || 0) === 0">
+          Applications
+        </button>
       </div>
 
     </div>

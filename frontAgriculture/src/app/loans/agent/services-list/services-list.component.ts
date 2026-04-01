@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ServicePretService } from '../../../services/loans/service-pret.service';
 import { Service } from '../../models/service';
 import { Router } from '@angular/router';
-
+import {DemandePretService} from '../../../services/loans/demande-pret.service';
 
 @Component({
   selector: 'app-services-list',
@@ -20,7 +20,8 @@ export class ServicesListComponent implements OnInit {
 
   constructor(
     private agentService: ServicePretService,
-    private router: Router
+    private router: Router,
+    private demandePretService: DemandePretService
   ) {}
  activeTab: { [id: string]: string } = {};
 
@@ -30,6 +31,7 @@ setTab(id: number | undefined, tab: string) {
 }
   ngOnInit(): void {
     this.loadServices();
+
   }
 
   loadServices() {
@@ -40,10 +42,15 @@ setTab(id: number | undefined, tab: string) {
         this.services = data;
         this.loading = false;
         this.services.forEach(s => {
-        if (s.id !== undefined) {
-          this.activeTab[s.id] = 'eligibility';
-        }
-      });
+          if (s.id !== undefined) {
+            this.activeTab[s.id] = 'eligibility';
+            
+            // ← ajoute ça
+            this.demandePretService.countByService(s.id).subscribe(count => {
+              s.nombreDemandes = count;
+            });
+          }
+        });
       },
       error: () => {
         this.errorMsg = "Erreur lors du chargement";
@@ -82,4 +89,10 @@ setTab(id: number | undefined, tab: string) {
       }
     });
   }
+  viewApplications(serviceId: number) {
+  this.router.navigate(['/loans/agent/applications', serviceId]);
+}
+
+
+
 }

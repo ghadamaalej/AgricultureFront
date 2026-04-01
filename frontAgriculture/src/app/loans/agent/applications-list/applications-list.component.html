@@ -1,0 +1,83 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-label">AGENT SPACE</p>
+    <h1 class="hero-title">Review Loan <span class="hero-accent">Applications</span></h1>
+    <p class="hero-sub">Consult submitted files, evaluate solvency scores and make decisions.</p>
+  </div>
+</div>
+
+<!-- SECTION -->
+<div class="section-header">
+  <div class="section-line"></div>
+  <span class="section-tag">APPLICATIONS</span>
+  <div class="section-line"></div>
+</div>
+
+<div class="app-wrap">
+  <div class="toolbar">
+    <input type="text" placeholder="Search by name, amount, duration..."
+      [(ngModel)]="searchText" class="search-bar" />
+    <select [(ngModel)]="selectedStatus" class="filter">
+      <option value="">All status</option>
+      <option value="EN_ATTENTE">Pending</option>
+      <option value="ACCEPTE">Accepted</option>
+      <option value="REFUSE">Refused</option>
+    </select>
+  </div>
+
+  <div id="list">
+    <div class="app-card" *ngFor="let app of filteredApplications()">
+      <div class="card-header">
+        <div>
+          <div class="card-id">DEM-{{ app.id }}</div>
+          <div class="card-name">{{ app.farmerName }}</div>
+          <div class="card-service">{{ app.service }} · submitted on {{ app.dateDemande }}</div>
+        </div>
+        <span class="badge" [ngClass]="badgeClass(app.statut)">{{ badgeLabel(app.statut) }}</span>
+      </div>
+
+      <div class="card-stats">
+        <div>
+          <div class="stat-label">Amount</div>
+          <div class="stat-val">{{ app.montantDemande | number }} DT</div>
+        </div>
+        <div>
+          <div class="stat-label">Duration</div>
+          <div class="stat-val">{{ app.dureeMois }} months</div>
+        </div>
+        <div class="score-bar-wrap">
+          <div class="stat-label">
+            Solvency score
+            <span class="score-num" [style.color]="scoreColor(app.scoreSolvabilite)">
+              {{ app.scoreSolvabilite }}
+            </span>
+          </div>
+          <div class="score-bar-bg">
+            <div class="score-bar"
+              [style.width.%]="app.scoreSolvabilite"
+              [style.background]="scoreColor(app.scoreSolvabilite)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn btn-accept" (click)="acceptAndCreateLoan(app.id)">
+          ✓ Accept — create loan
+        </button>
+        <button class="btn btn-refuse" (click)="refuse(app.id)">
+          ✕ Refuse
+        </button>
+        <button class="btn btn-docs" (click)="viewDocuments(app.id)">
+          Documents
+        </button>
+      </div>
+    </div>
+
+    <div class="empty" *ngIf="filteredApplications().length === 0">
+      No applications found.
+    </div>
+  </div>
+</div>

@@ -26,4 +26,11 @@ export class DemandePretService {
   uploadDocuments(demandeId: number, formData: FormData): Observable<any> {
   return this.http.post(`${this.apiUrl}/${demandeId}/documents`, formData);
 }
+
+countByService(serviceId: number): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/count/${serviceId}`);
+}
+ getByService(serviceId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/service/${serviceId}`);
+  }
 }
