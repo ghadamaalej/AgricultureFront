@@ -1,0 +1,90 @@
+<div class="page-header">
+  <div>
+    <h1 class="pt">Mes rendez-vous</h1>
+    <p class="ps">Historique de toutes vos demandes de consultation</p>
+  </div>
+  <button class="btn-book" (click)="switchView.emit('book')">
+    <i class="fas fa-plus"></i> Prendre un RDV
+  </button>
+</div>
+
+<div *ngIf="loading" class="sm"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>
+<div *ngIf="error"   class="sm err"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+
+<div class="empty" *ngIf="!loading && !error && appointments.length === 0">
+  <i class="fas fa-calendar-times"></i>
+  <p>Aucun rendez-vous pour le moment.</p>
+  <button class="btn-book" (click)="switchView.emit('book')">Prendre un premier RDV</button>
+</div>
+
+<div class="appt-list" *ngIf="!loading && appointments.length > 0">
+  <div class="appt-card" *ngFor="let a of appointments; trackBy:trackById"
+       [class.card-refused]="a.appointmentStatus==='REFUSEE'"
+       [class.card-cancelled]="a.appointmentStatus==='ANNULEE'"
+       [class.card-accepted]="a.appointmentStatus==='ACCEPTEE'">
+
+    <div class="card-top">
+      <span class="status-badge" [ngClass]="statusClass(a.appointmentStatus)">
+        <i [class]="statusIcon(a.appointmentStatus)"></i>
+        {{ statusLabel(a.appointmentStatus) }}
+      </span>
+      <span class="appt-date" *ngIf="a.dateHeure">
+        <i class="fas fa-calendar-alt"></i>
+        {{ a.dateHeure | date:'EEE dd MMM yyyy' }} à {{ a.dateHeure | date:'HH:mm' }}
+      </span>
+      <span class="appt-date" *ngIf="!a.dateHeure">
+        <i class="fas fa-calendar-alt"></i> Date non définie
+      </span>
+    </div>
+
+    <div class="card-body">
+      <div class="info-row">
+        <div class="info-item">
+          <span class="il">Vétérinaire</span>
+          <span class="iv" *ngIf="a.veterinarian">
+            Dr. {{ a.veterinarian.prenom }} {{ a.veterinarian.nom }}
+          </span>
+          <span class="iv empty-val" *ngIf="!a.veterinarian">—</span>
+        </div>
+        <div class="info-item">
+          <span class="il">Animal</span>
+          <span class="iv" *ngIf="a.animal">
+            {{ a.animal.espece }} · <strong>{{ a.animal.reference }}</strong>
+          </span>
+          <span class="iv empty-val" *ngIf="!a.animal">—</span>
+        </div>
+        <div class="info-item">
+          <span class="il">Motif</span>
+          <span class="iv">{{ a.motif || '—' }}</span>
+        </div>
+        <div class="info-item" *ngIf="a.timeSlot">
+          <span class="il">Créneau</span>
+          <span class="iv">
+            {{ a.timeSlot.startTime | slice:0:5 }} – {{ a.timeSlot.endTime | slice:0:5 }}
+          </span>
+        </div>
+      </div>
+
+      <div class="refusal-reason" *ngIf="a.appointmentStatus === 'REFUSEE' && a.refusalReason">
+        <i class="fas fa-times-circle"></i>
+        Motif de refus : <strong>{{ a.refusalReason }}</strong>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <span class="created-at" *ngIf="a.createdAt">
+        Créé le {{ a.createdAt | date:'dd/MM/yyyy' }}
+      </span>
+      <span class="created-at" *ngIf="!a.createdAt"></span>
+      <button *ngIf="canCancel(a)"
+        class="btn-cancel"
+        [disabled]="cancellingId === a.id"
+        (click)="cancel(a)">
+        <i class="fas fa-spinner fa-spin" *ngIf="cancellingId === a.id"></i>
+        <i class="fas fa-times" *ngIf="cancellingId !== a.id"></i>
+        Annuler
+      </button>
+    </div>
+
+  </div>
+</div>

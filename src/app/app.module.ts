@@ -1,4 +1,6 @@
 import { NgModule } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -22,6 +24,9 @@ import { RegisterExtraComponent } from './components/register-extra/register-ext
 import { FarmerModule } from './farmer/farmer.module';
 import { AnimalsModule } from './animals/animals.module';
 import { AgriModule } from './agri/agri.module';
+import { LOCALE_ID } from '@angular/core';
+
+registerLocaleData(localeFr);
 
 @NgModule({
   declarations: [
@@ -52,7 +57,7 @@ import { AgriModule } from './agri/agri.module';
     AnimalsModule,
     AgriModule  
   ],
-  providers: [],
+  providers: [{ provide: LOCALE_ID, useValue: 'fr' }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

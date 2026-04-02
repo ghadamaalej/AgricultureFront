@@ -110,6 +110,9 @@ export class AuthService {
         return '/dashboard';
       case 'AGRICULTEUR':
         return '/inventory';
+      case 'VETERINAIRE':
+        return '/appointments';
+
 
       default:
         return '/';

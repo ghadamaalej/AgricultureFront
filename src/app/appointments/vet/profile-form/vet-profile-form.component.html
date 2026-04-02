@@ -1,0 +1,94 @@
+<div class="page-header">
+  <div>
+    <h1 class="pt">Mon profil</h1>
+    <p class="ps">Mettez à jour vos informations professionnelles</p>
+  </div>
+</div>
+
+<div *ngIf="loading" class="sm"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>
+<div *ngIf="!loading && error" class="sm err"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+
+<div class="profile-wrap" *ngIf="!loading && vet">
+
+  <!-- Avatar -->
+  <div class="avatar-section">
+    <div class="pf-avatar">
+      <img *ngIf="vet.photo" [src]="vet.photo" class="av-img" alt="">
+      <div *ngIf="!vet.photo" class="av-ph">{{ initials }}</div>
+    </div>
+    <div class="av-info">
+      <h2 class="av-name">Dr. {{ vet.prenom }} {{ vet.nom }}</h2>
+      <span class="av-role">Vétérinaire</span>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="form" (ngSubmit)="submit()" class="pf-form">
+
+    <div class="form-section-title">Informations personnelles</div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Prénom *</label>
+        <input formControlName="prenom" placeholder="Votre prénom" [class.err]="invalid('prenom')">
+        <span class="em" *ngIf="invalid('prenom')">Champ requis</span>
+      </div>
+      <div class="fg">
+        <label>Nom *</label>
+        <input formControlName="nom" placeholder="Votre nom" [class.err]="invalid('nom')">
+        <span class="em" *ngIf="invalid('nom')">Champ requis</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Email *</label>
+        <input type="email" formControlName="email" [class.err]="invalid('email')">
+        <span class="em" *ngIf="invalid('email')">Email invalide</span>
+      </div>
+      <div class="fg">
+        <label>Téléphone personnel</label>
+        <input formControlName="telephone" placeholder="ex: 20123456">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Région</label>
+        <input formControlName="region" placeholder="ex: Tunis, Sfax…">
+      </div>
+    </div>
+
+    <div class="form-section-title">Cabinet vétérinaire</div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Adresse du cabinet</label>
+        <input formControlName="adresseCabinet" placeholder="ex: 12 Rue Ibn Khaldoun, Tunis">
+      </div>
+      <div class="fg">
+        <label>Téléphone du cabinet</label>
+        <input formControlName="telephoneCabinet" placeholder="ex: 71123456">
+      </div>
+    </div>
+
+    <div class="form-section-title">Présentation</div>
+    <div class="fg full">
+      <label>Présentation / Carrière</label>
+      <textarea formControlName="presentationCarriere" rows="4"
+        placeholder="Décrivez votre parcours, spécialités, expériences…"></textarea>
+    </div>
+
+    <div class="success-box" *ngIf="success">
+      <i class="fas fa-check-circle"></i> Profil mis à jour avec succès !
+    </div>
+    <div class="err-box" *ngIf="error && !loading">
+      <i class="fas fa-exclamation-circle"></i> {{ error }}
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-save" [disabled]="saving">
+        <i class="fas fa-spinner fa-spin" *ngIf="saving"></i>
+        <i class="fas fa-save" *ngIf="!saving"></i>
+        Enregistrer les modifications
+      </button>
+    </div>
+
+  </form>
+</div>

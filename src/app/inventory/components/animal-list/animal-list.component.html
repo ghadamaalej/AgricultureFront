@@ -12,6 +12,12 @@
       <p class="page-sub">Gérez votre cheptel</p>
     </div>
     <div class="header-actions">
+      <button class="btn btn-appt" (click)="goToAppointments()">
+        <i class="fas fa-calendar-check"></i> Mes rendez-vous
+      </button>
+      <button class="btn btn-appt-book" (click)="goToBookRdv()">
+        <i class="fas fa-user-md"></i> Prendre RDV
+      </button>
       <button class="btn btn-outline" (click)="openCampaigns()">
         <i class="fas fa-syringe"></i> Campagnes vaccination
       </button>

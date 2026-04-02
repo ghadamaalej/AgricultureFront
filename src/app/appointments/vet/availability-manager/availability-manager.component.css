@@ -1,0 +1,59 @@
+.page-header{margin-bottom:20px}
+.pt{font-size:1.7rem;font-weight:700;color:#1a2e1a;margin:0 0 4px}
+.ps{color:#6b8c6b;font-size:.9rem;margin:0}
+.sub-tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:2px solid #e8f0e8;padding-bottom:0}
+.stab{display:flex;align-items:center;gap:6px;padding:10px 18px;border:none;background:transparent;color:#7a9a7a;font-size:.88rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.stab i{font-size:.85rem}
+.stab:hover{color:#2d6a2d}
+.stab.active{color:#2d6a2d;border-bottom-color:#2d6a2d}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.section-header span{font-size:.88rem;color:#7a9a7a}
+.btn-add{display:flex;align-items:center;gap:6px;background:#2d6a2d;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:.84rem;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-add:hover{background:#245524}
+.form-card{background:#fff;border-radius:14px;padding:22px;border:1.5px solid #e8f0e8;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px}
+.form-title{font-size:.95rem;font-weight:700;color:#1a2e1a;margin:0 0 18px;display:flex;align-items:center;gap:8px}
+.form-title i{color:#3d7a3d}
+.form-hint{font-size:.84rem;color:#7a9a7a;margin:0 0 18px}
+.form-row{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;flex-wrap:wrap}
+.fg{flex:1;min-width:160px;display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:.82rem;font-weight:600;color:#3a5a3a}
+.fg input,.fg select{padding:9px 12px;border-radius:8px;border:1.5px solid #d8e8d8;font-size:.9rem;outline:none;background:#fafffe;transition:border-color .2s}
+.fg input:focus{border-color:#2d6a2d}
+.fg input.err{border-color:#e74c3c}
+.check-label{display:flex;align-items:center;gap:8px;font-size:.88rem;color:#3a5a3a;cursor:pointer;padding:8px 0}
+.check-label input{accent-color:#2d6a2d;width:16px;height:16px}
+.err-txt{color:#e74c3c;font-size:.82rem;margin-bottom:8px}
+.success-txt{color:#1a7a2d;font-size:.85rem;display:flex;align-items:center;gap:6px;margin-top:8px}
+.btn-submit{display:flex;align-items:center;gap:8px;background:#2d6a2d;color:#fff;border:none;border-radius:9px;padding:11px 20px;font-size:.88rem;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-submit:hover{background:#245524}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed}
+.sm{text-align:center;padding:30px;color:#6b8c6b}
+.empty{text-align:center;padding:40px 20px;color:#6b8c6b}
+.empty i{font-size:2.5rem;margin-bottom:10px;display:block;color:#b0c8b0}
+/* Availability cards */
+.avail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.avail-card{background:#fff;border-radius:12px;padding:16px;border:1.5px solid #e8f0e8;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.avail-date{font-size:.95rem;font-weight:700;color:#1a2e1a;margin-bottom:10px;text-transform:capitalize}
+.avail-stats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.stat-chip{font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:20px}
+.avail-chip{background:#e8ffec;color:#1a7a2d}
+.total-chip{background:#f0f4f0;color:#555}
+.booked-chip{background:#e8f4ff;color:#1a6aa8}
+.slots-mini{display:flex;flex-wrap:wrap;gap:4px}
+.slot-mini{font-size:.68rem;padding:2px 6px;border-radius:4px;cursor:default}
+.sm-avail{background:#e8ffec;color:#1a7a2d}
+.sm-booked{background:#e8f4ff;color:#1a6aa8}
+.sm-blocked{background:#f4f4f4;color:#999}
+/* Unavailability list */
+.unavail-list{display:flex;flex-direction:column;gap:10px}
+.unavail-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:10px;padding:14px 18px;border:1.5px solid #e8f0e8;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.unavail-info{display:flex;flex-direction:column;gap:5px;flex:1}
+.unavail-dates{font-size:.9rem;font-weight:600;color:#1a2e1a}
+.unavail-chips{display:flex;gap:6px;flex-wrap:wrap}
+.uc{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px}
+.fullday{background:#fff8e0;color:#a07000}
+.recurring{background:#f0e8ff;color:#6a1aa8}
+.time{background:#e8f4ff;color:#1a6aa8}
+.unavail-reason{font-size:.8rem;color:#9aaa9a}
+.btn-del{background:#fff0f0;color:#c0392b;border:1.5px solid #f0c0c0;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:.85rem;transition:all .2s;margin-left:12px}
+.btn-del:hover{background:#c0392b;color:#fff}

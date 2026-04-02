@@ -28,3 +28,8 @@
 .ra-edit:hover{background:#d8efd8;}
 .ra-delete{background:#fff0f0;color:#c0392b;}
 .ra-delete:hover{background:#ffd8d8;}
+
+.btn-appt      { background:#e8f4ff; color:#1a6aa8; border:1.5px solid #a8c8e8; }
+.btn-appt:hover{ background:#1a6aa8; color:#fff; }
+.btn-appt-book { background:#f0e8ff; color:#6a1aa8; border:none; }
+.btn-appt-book:hover{ background:#6a1aa8; color:#fff; }
