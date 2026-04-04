@@ -23,7 +23,7 @@ import { NotFoundComponent }     from './components/not-found/not-found.componen
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
 import { FarmerModule } from './farmer/farmer.module';
 import { AnimalsModule } from './animals/animals.module';
-import { AgriModule } from './agri/agri.module';
+
 import { LOCALE_ID } from '@angular/core';
 
 registerLocaleData(localeFr);
@@ -55,7 +55,7 @@ registerLocaleData(localeFr);
     AppRoutingModule,
     FarmerModule,
     AnimalsModule,
-    AgriModule  
+    
   ],
   providers: [{ provide: LOCALE_ID, useValue: 'fr' }],
   bootstrap: [AppComponent]

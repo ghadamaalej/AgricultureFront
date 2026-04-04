@@ -5,6 +5,8 @@
       <span class="logo-txt">GreenRoots</span>
     </div>
     <nav class="nav">
+
+      <!-- AGRICULTEUR -->
       <ng-container *ngIf="isFarmer">
         <button class="ni" [class.active]="view==='list'" (click)="setView('list')">
           <i class="fas fa-calendar-check"></i><span>Mes rendez-vous</span>
@@ -13,6 +15,8 @@
           <i class="fas fa-user-md"></i><span>Prendre RDV</span>
         </button>
       </ng-container>
+
+      <!-- VÉTÉRINAIRE -->
       <ng-container *ngIf="isVet">
         <button class="ni" [class.active]="view==='list'" (click)="setView('list')">
           <i class="fas fa-calendar-alt"></i><span>Rendez-vous</span>
@@ -20,14 +24,19 @@
         <button class="ni" [class.active]="view==='avail'" (click)="setView('avail')">
           <i class="fas fa-clock"></i><span>Disponibilités</span>
         </button>
+        <button class="ni" [class.active]="view==='records'" (click)="setView('records')">
+          <i class="fas fa-file-medical"></i><span>Dossiers médicaux</span>
+        </button>
         <button class="ni" [class.active]="view==='profile'" (click)="setView('profile')">
           <i class="fas fa-user-circle"></i><span>Mon profil</span>
         </button>
       </ng-container>
+
       <button class="ni back-btn" (click)="goBack()">
         <i class="fas fa-arrow-left"></i><span>Retour</span>
       </button>
     </nav>
+
     <div class="footer">
       <div class="user-pill">
         <div class="av">{{ user?.username?.charAt(0)?.toUpperCase() }}</div>
@@ -39,15 +48,20 @@
       <button class="logout" (click)="logout()"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </aside>
+
   <main class="main">
+    <!-- FARMER views -->
     <ng-container *ngIf="isFarmer">
       <app-my-appointments *ngIf="view==='list'" (switchView)="setView($event)"></app-my-appointments>
       <app-vet-list        *ngIf="view==='book'"  (booked)="setView('list')"></app-vet-list>
     </ng-container>
+
+    <!-- VET views -->
     <ng-container *ngIf="isVet">
-      <app-vet-dashboard       *ngIf="view==='list'"></app-vet-dashboard>
+      <app-vet-dashboard        *ngIf="view==='list'"></app-vet-dashboard>
       <app-availability-manager *ngIf="view==='avail'"></app-availability-manager>
-      <app-vet-profile-form    *ngIf="view==='profile'"></app-vet-profile-form>
+      <app-health-records       *ngIf="view==='records'"></app-health-records>
+      <app-vet-profile-form     *ngIf="view==='profile'"></app-vet-profile-form>
     </ng-container>
   </main>
 </div>

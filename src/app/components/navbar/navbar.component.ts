@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit, Output, EventEmitter } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { AuthService } from 'src/app/services/auth/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -36,7 +37,7 @@ export class NavbarComponent implements OnInit {
     { label: 'Help Request', icon: 'fas fa-hands-helping',  route: '/help-request' },
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router ,  private authService: AuthService) {}
 
   ngOnInit() {
     this.isLoggedIn = !!localStorage.getItem('token');
@@ -65,15 +66,18 @@ export class NavbarComponent implements OnInit {
   }
 
   navigate(route: string) {
-     if (route === '/inventory' || route === '/animals') {
-    if (!localStorage.getItem('authToken')) {
+   const protectedRoutes = ['/inventory', '/animals', '/appointments', '/help-request'];
+    const needsAuth = protectedRoutes.includes(route);
+
+    if (needsAuth && !this.authService.hasActiveSession()) {
+      localStorage.setItem('authMode', 'signin');
+      localStorage.setItem('postLoginRoute', route);
       this.router.navigate(['/auth']);
-      return;
+    } else {
+      this.router.navigate([route]);
     }
-    this.router.navigate(['/agri', route.replace('/', '')]);
-    return;
-  }
-    this.router.navigate([route]);
+
+   
     this.isMobileMenuOpen = false;
     this.moreDropdownOpen = false;
   }

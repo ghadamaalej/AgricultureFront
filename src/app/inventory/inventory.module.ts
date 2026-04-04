@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
+import { RouterModule } from '@angular/router';
 import { InventoryRoutingModule }    from './inventory-routing.module';
 
 // Layout
@@ -44,6 +45,7 @@ import { VaccinationModalComponent } from './components/vaccination-modal/vaccin
     FormsModule,
     ReactiveFormsModule,
     InventoryRoutingModule,
+    RouterModule,
   ]
 })
 export class InventoryModule {}

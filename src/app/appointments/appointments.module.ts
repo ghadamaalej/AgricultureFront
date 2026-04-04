@@ -14,6 +14,7 @@ import { MyAppointmentsComponent }       from './farmer/my-appointments/my-appoi
 
 // Vet
 import { VetDashboardComponent }         from './vet/dashboard/vet-dashboard.component';
+import { HealthRecordsComponent }        from './vet/health-records/health-records.component';
 import { AvailabilityManagerComponent }  from './vet/availability-manager/availability-manager.component';
 import { VetProfileFormComponent }       from './vet/profile-form/vet-profile-form.component';
 
@@ -26,6 +27,7 @@ import { VetProfileFormComponent }       from './vet/profile-form/vet-profile-fo
     VetDashboardComponent,
     AvailabilityManagerComponent,
     VetProfileFormComponent,
+    HealthRecordsComponent,
   ],
   imports: [
     CommonModule,

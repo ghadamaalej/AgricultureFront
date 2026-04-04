@@ -6,7 +6,8 @@ import { AuthService } from '../../services/auth/auth.service';
 import {
   VetUser, VetAvailability, AppointmentResponse,
   CreateAppointmentRequest, CreateAvailabilityRequest,
-  CreateUnavailabilityRequest, UnavailabilityResponse
+  CreateUnavailabilityRequest, UnavailabilityResponse,
+  HealthRecord, CreateHealthRecordRequest, UpdateHealthRecordRequest
 } from '../models/appointments.models';
 
 interface ApiResp<T> { message: string; data: T; }
@@ -15,12 +16,25 @@ interface ApiResp<T> { message: string; data: T; }
  *  Normalize both formats to ISO string. */
 function normDate(v: any): string | null {
   if (!v) return null;
-  if (typeof v === 'string') return v;
-  // Array format: [2026,4,1] or [2026,4,1,9,30,0]
+  // Already an ISO string: "2026-04-26" or "2026-04-26T09:30:00"
+  if (typeof v === 'string') return v.length > 10 ? v : v;
+  // Array format from Jackson without jsr310: [2026,4,26] or [2026,4,26,9,30,0]
   if (Array.isArray(v)) {
     const [y, mo, d, h = 0, mi = 0] = v;
     const pad = (n: number) => String(n).padStart(2, '0');
     return h || mi
+      ? `${y}-${pad(mo)}-${pad(d)}T${pad(h)}:${pad(mi)}:00`
+      : `${y}-${pad(mo)}-${pad(d)}`;
+  }
+  // Object format from Jackson: {year:2026, monthValue:4, dayOfMonth:26}
+  if (typeof v === 'object') {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const y  = v.year       ?? v.Year       ?? 0;
+    const mo = v.monthValue ?? v.month      ?? v.MonthValue ?? 1;
+    const d  = v.dayOfMonth ?? v.day        ?? v.DayOfMonth ?? 1;
+    const h  = v.hour       ?? v.Hour       ?? 0;
+    const mi = v.minute     ?? v.Minute     ?? 0;
+    return (h || mi)
       ? `${y}-${pad(mo)}-${pad(d)}T${pad(h)}:${pad(mi)}:00`
       : `${y}-${pad(mo)}-${pad(d)}`;
   }
@@ -160,5 +174,33 @@ export class AppointmentsApiService {
       `${this.inv}/appointments/${id}/refuse?reason=${encodeURIComponent(reason)}`,
       {}, { headers: this.h() }
     ).pipe(map(r => r.data));
+  }
+
+  // ── Health Records ─────────────────────────────────────────
+  getHealthRecordsByAnimal(animalId: number): Observable<HealthRecord[]> {
+    return this.http.get<ApiResp<HealthRecord[]>>(
+      `${this.inv}/health-records/animal/${animalId}`, { headers: this.h() }
+    ).pipe(map(r => (r.data || []).map((h: any) => ({
+      ...h,
+      dateH: normDate(h.dateH)
+    }))));
+  }
+
+  createHealthRecord(req: CreateHealthRecordRequest): Observable<HealthRecord> {
+    return this.http.post<ApiResp<HealthRecord>>(
+      `${this.inv}/health-records`, req, { headers: this.h() }
+    ).pipe(map(r => r.data));
+  }
+
+  updateHealthRecord(id: number, req: UpdateHealthRecordRequest): Observable<HealthRecord> {
+    return this.http.put<ApiResp<HealthRecord>>(
+      `${this.inv}/health-records/${id}`, req, { headers: this.h() }
+    ).pipe(map(r => r.data));
+  }
+
+  deleteHealthRecord(id: number): Observable<void> {
+    return this.http.delete<ApiResp<void>>(
+      `${this.inv}/health-records/${id}`, { headers: this.h() }
+    ).pipe(map(() => void 0));
   }
 }

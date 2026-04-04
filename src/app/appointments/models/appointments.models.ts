@@ -101,3 +101,25 @@ export interface CreateUnavailabilityRequest {
   dayOfWeek?: string | null;
   reason?: string | null;
 }
+
+// ── Health Records ────────────────────────────────────────────
+export interface HealthRecord {
+  id: number;
+  maladie: string;
+  traitement: string;
+  dateH: string;
+  animal: AnimalSummary | null;
+}
+
+export interface CreateHealthRecordRequest {
+  maladie: string;
+  traitement: string;
+  dateH: string;
+  animalId: number;
+}
+
+export interface UpdateHealthRecordRequest {
+  maladie: string;
+  traitement: string;
+  dateH: string;
+}
