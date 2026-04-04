@@ -1,124 +1,966 @@
-.vp-wrap { max-width: 780px; }
+/* ============================================
+   VARIABLES CSS (thème moderne)
+   ============================================ */
+:root {
+  --primary: #0f5c3f;
+  --primary-dark: #0a3d28;
+  --primary-light: #e6f4ed;
+  --primary-soft: #d1e8df;
+  --secondary: #2c7da0;
+  --secondary-light: #e8f3f8;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --error: #ef4444;
+  --error-light: #fee2e2;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+}
 
-/* Back button */
-.back-btn { display:flex; align-items:center; gap:8px; background:#f0f7f0; border:none; color:#2d6a2d; padding:9px 16px; border-radius:9px; cursor:pointer; font-size:.85rem; font-weight:600; margin-bottom:22px; transition:background .2s; }
-.back-btn:hover { background:#d8efd8; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-/* ── Vet Hero Card ─────────────────────────────────── */
-.vet-hero { display:flex; gap:24px; background:#fff; border-radius:20px; padding:28px; box-shadow:0 4px 20px rgba(0,0,0,.08); margin-bottom:20px; border:1.5px solid #e8f0e8; }
+/* ============================================
+   PAGE PRINCIPALE
+   ============================================ */
+.vp-wrap { 
+  max-width: 880px; 
+  margin: 0 auto;
+  background: var(--gray-50);
+  border-radius: var(--radius-2xl);
+  padding: 32px;
+}
 
-.vet-av-wrap { flex-shrink:0; }
-.vet-av-img  { width:90px; height:90px; border-radius:50%; object-fit:cover; border:3px solid #e0f0e0; box-shadow:0 4px 12px rgba(0,0,0,.1); }
-.vet-av-ph   { width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,#2d6a2d,#4a9a4a); color:#fff; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:800; box-shadow:0 4px 16px rgba(45,106,45,.35); }
+/* ============================================
+   BOUTON RETOUR
+   ============================================ */
+.back-btn { 
+  display: inline-flex;
+  align-items: center; 
+  gap: 10px; 
+  background: white;
+  border: 1px solid var(--gray-200);
+  color: var(--gray-700); 
+  padding: 10px 20px; 
+  border-radius: var(--radius-md); 
+  cursor: pointer; 
+  font-size: 0.875rem; 
+  font-weight: 500; 
+  margin-bottom: 28px; 
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
 
-.vet-hero-body { flex:1; min-width:0; }
-.vet-hero-top  { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:12px; flex-wrap:wrap; }
-.vet-hero-name { font-size:1.4rem; font-weight:800; color:#1a2e1a; margin:0 0 6px; }
-.vet-role-badge { display:inline-flex; align-items:center; gap:6px; background:#f0f7f0; color:#2d6a2d; font-size:.78rem; font-weight:700; padding:4px 12px; border-radius:20px; border:1px solid #d0ecd0; }
-.region-tag { display:inline-flex; align-items:center; gap:5px; background:#e8f4ff; color:#1a6aa8; font-size:.8rem; font-weight:600; padding:5px 12px; border-radius:20px; white-space:nowrap; }
-.region-tag i { font-size:.8rem; }
+.back-btn:hover { 
+  background: var(--gray-50);
+  border-color: var(--gray-300);
+  transform: translateX(-2px);
+  box-shadow: var(--shadow-md);
+}
 
-/* Contact grid */
-.contact-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; margin-bottom:14px; }
-.contact-item { display:flex; align-items:center; gap:10px; padding:8px 12px; background:#f8fbf8; border-radius:10px; border:1px solid #eaf0ea; text-decoration:none; transition:background .2s; }
-.contact-item:hover { background:#f0f7f0; }
-.ci-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.85rem; flex-shrink:0; }
-.email-icon { background:#e8f4ff; color:#1a6aa8; }
-.phone-icon { background:#e8fff0; color:#1a7a3a; }
-.addr-icon  { background:#fff8e0; color:#a07000; }
-.ci-lbl { display:block; font-size:.68rem; text-transform:uppercase; font-weight:700; color:#9aaa9a; letter-spacing:.4px; }
-.ci-val { display:block; font-size:.82rem; color:#2a3a2a; font-weight:500; }
+.back-btn i {
+  font-size: 0.875rem;
+  transition: transform 0.2s ease;
+}
 
-/* Bio */
-.vet-bio { background:linear-gradient(135deg,#f8fbf8,#f0f7f0); border-radius:12px; padding:14px 16px; border-left:3px solid #2d6a2d; position:relative; }
-.bio-quote { position:absolute; top:10px; left:14px; color:#2d6a2d; opacity:.3; font-size:1.1rem; }
-.vet-bio p  { font-size:.88rem; color:#4a6a4a; margin:0; line-height:1.7; padding-left:4px; }
+.back-btn:hover i {
+  transform: translateX(-2px);
+}
 
-/* ── Loading / No avail ─────────────────────────────── */
-.loading-box { display:flex; align-items:center; justify-content:center; gap:14px; padding:50px; color:#7a9a7a; font-size:.95rem; }
-.loader { width:22px; height:22px; border:2.5px solid #d8e8d8; border-top-color:#2d6a2d; border-radius:50%; animation:spin .7s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
-.no-avail-box { text-align:center; padding:40px; background:#fff; border-radius:16px; border:1.5px solid #e8f0e8; color:#9aaa9a; }
-.no-avail-box i { font-size:2.5rem; margin-bottom:10px; display:block; color:#b0c8b0; }
+/* ============================================
+   CARTE VÉTÉRINAIRE (HERO)
+   ============================================ */
+.vet-hero { 
+  display: flex; 
+  gap: 28px; 
+  background: white; 
+  border-radius: var(--radius-xl); 
+  padding: 32px; 
+  box-shadow: var(--shadow-lg); 
+  margin-bottom: 24px; 
+  border: 1px solid var(--gray-100);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-/* ── Booking card ───────────────────────────────────── */
-.booking-card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 4px 16px rgba(0,0,0,.07); border:1.5px solid #e8f0e8; margin-bottom:20px; }
-.booking-card-header { display:flex; align-items:center; gap:10px; margin-bottom:22px; }
-.booking-card-header i { color:#2d6a2d; font-size:1.1rem; }
-.booking-card-header h2 { font-size:1.05rem; font-weight:700; color:#1a2e1a; margin:0; }
-.booking-card-header span { font-size:.82rem; color:#9aaa9a; margin-left:4px; }
-.hdr-back { background:#f0f7f0; border:none; color:#2d6a2d; width:30px; height:30px; border-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; font-size:.85rem; }
-.hdr-back:hover { background:#2d6a2d; color:#fff; }
+.vet-hero:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
 
-/* Calendar */
-.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-.cal-btn { background:#f0f7f0; border:none; color:#2d6a2d; width:34px; height:34px; border-radius:8px; cursor:pointer; font-size:.9rem; display:flex; align-items:center; justify-content:center; transition:all .2s; }
-.cal-btn:hover { background:#2d6a2d; color:#fff; }
-.cal-month-title { font-size:1rem; font-weight:700; color:#1a2e1a; text-transform:capitalize; }
-.cal-wd-row { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:4px; }
-.cal-wd { text-align:center; font-size:.7rem; font-weight:700; color:#b0b8b0; text-transform:uppercase; padding:6px 0; }
-.cal-days-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
-.cal-day-cell { min-height:44px; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:default; transition:all .18s; position:relative; }
-.cal-empty { background:transparent; }
-.cal-day-cell:not(.cal-empty):not(.cal-avail) { color:#ccc; }
-.cal-avail { background:#edfff2; border:1.5px solid #a8ddb8; cursor:pointer; }
-.cal-avail:hover { background:#2d6a2d; border-color:#2d6a2d; transform:scale(1.06); box-shadow:0 4px 12px rgba(45,106,45,.25); }
-.cal-avail:hover .cal-day-num { color:#fff; }
-.cal-avail:hover .cal-dot { background:#fff; }
-.cal-today { outline:2px solid #2d6a2d; outline-offset:2px; }
-.cal-day-num { font-size:.9rem; font-weight:600; color:#2a3a2a; line-height:1; }
-.cal-avail .cal-day-num { color:#1a7a2d; }
-.cal-dot { width:5px; height:5px; border-radius:50%; background:#2d6a2d; }
-.cal-legend { display:flex; gap:16px; margin-top:16px; padding-top:12px; border-top:1px solid #f0f4f0; flex-wrap:wrap; }
-.leg-item { display:flex; align-items:center; gap:6px; font-size:.75rem; color:#7a9a7a; }
-.leg-swatch { display:inline-block; width:14px; height:14px; border-radius:4px; }
-.avail-sw { background:#edfff2; border:1.5px solid #a8ddb8; }
-.none-sw  { background:#f4f4f4; border:1px solid #ddd; }
-.today-sw { background:#fff; border:2px solid #2d6a2d; }
+.vet-av-wrap { 
+  flex-shrink: 0; 
+}
 
-/* Slots */
-.date-chip { background:#e8f4ff; color:#1a6aa8; font-size:.8rem; font-weight:600; padding:3px 10px; border-radius:20px; }
-.no-slots { text-align:center; padding:30px; color:#9aaa9a; }
-.no-slots i { font-size:2rem; margin-bottom:8px; display:block; }
-.slots-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
-.slot-chip { display:flex; align-items:center; justify-content:center; gap:7px; padding:14px 10px; border-radius:12px; border:1.5px solid #d8e8d8; background:#f8fbf8; color:#2d6a2d; font-size:.88rem; font-weight:700; cursor:pointer; transition:all .2s; }
-.slot-chip:hover { background:#2d6a2d; color:#fff; border-color:#2d6a2d; transform:translateY(-2px); box-shadow:0 5px 14px rgba(45,106,45,.22); }
+.vet-av-img { 
+  width: 110px; 
+  height: 110px; 
+  border-radius: 50%; 
+  object-fit: cover; 
+  border: 4px solid white;
+  box-shadow: var(--shadow-lg);
+}
 
-/* Selected slot banner */
-.selected-slot-banner { display:flex; align-items:center; gap:14px; background:linear-gradient(135deg,#edfff2,#f0fff5); border:1.5px solid #a8ddb8; border-radius:14px; padding:16px 20px; margin-bottom:22px; }
-.ssb-icon i { font-size:1.6rem; color:#2d6a2d; }
-.ssb-text { flex:1; display:flex; flex-direction:column; gap:2px; }
-.ssb-text strong { font-size:.95rem; color:#1a2e1a; text-transform:capitalize; }
-.ssb-text span   { font-size:.82rem; color:#5a7a5a; }
-.ssb-vet { text-align:right; display:flex; flex-direction:column; gap:2px; }
-.ssb-vet span   { font-size:.72rem; color:#9aaa9a; text-transform:uppercase; font-weight:600; }
-.ssb-vet strong { font-size:.85rem; color:#2d6a2d; font-weight:700; }
+.vet-av-ph { 
+  width: 110px; 
+  height: 110px; 
+  border-radius: 50%; 
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 2.5rem; 
+  font-weight: 700;
+  box-shadow: var(--shadow-lg);
+}
 
-/* Booking form */
-.rdv-form { display:flex; flex-direction:column; gap:18px; }
-.field-wrap { display:flex; flex-direction:column; gap:7px; }
-.field-label { font-size:.83rem; font-weight:700; color:#3a5a3a; display:flex; align-items:center; gap:6px; }
-.field-label i { color:#3d7a3d; width:14px; font-size:.8rem; }
-.field-input { padding:12px 14px; border-radius:10px; border:1.5px solid #d8e8d8; font-size:.92rem; color:#1a2e1a; outline:none; background:#fafffe; transition:all .2s; width:100%; box-sizing:border-box; font-family:inherit; }
-.field-input:focus { border-color:#2d6a2d; box-shadow:0 0 0 3px rgba(45,106,45,.1); }
-.has-err { border-color:#e74c3c !important; }
-.field-ta { resize:vertical; min-height:100px; }
-.field-err { font-size:.76rem; color:#e74c3c; }
+.vet-hero-body { 
+  flex: 1; 
+  min-width: 0; 
+}
 
-/* Animals hint with clickable refs */
-.animals-hint { display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:.8rem; color:#7a9a7a; }
-.animals-hint i { color:#3d7a3d; }
-.ref-tag { background:#e8ffec; color:#1a7a2d; border:1px solid #a8d8a8; border-radius:12px; padding:2px 10px; font-size:.78rem; font-weight:700; cursor:pointer; transition:all .2s; }
-.ref-tag:hover { background:#2d6a2d; color:#fff; border-color:#2d6a2d; }
+.vet-hero-top { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start; 
+  margin-bottom: 20px; 
+  gap: 16px; 
+  flex-wrap: wrap; 
+}
 
-.booking-err { background:#fff0f0; border:1px solid #f0c0c0; border-radius:8px; padding:10px 14px; font-size:.85rem; color:#c0392b; display:flex; align-items:center; gap:8px; }
-.btn-confirm { width:100%; padding:15px; border-radius:12px; border:none; background:linear-gradient(135deg,#2d6a2d,#3d8a3d); color:#fff; font-size:.96rem; font-weight:700; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:9px; box-shadow:0 4px 16px rgba(45,106,45,.3); }
-.btn-confirm:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 7px 20px rgba(45,106,45,.4); }
-.btn-confirm:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+.vet-hero-name { 
+  font-size: 1.75rem; 
+  font-weight: 700; 
+  color: var(--gray-900);
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
 
-/* Done card */
-.done-card { background:#fff; border-radius:20px; padding:50px 32px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,.08); border:1.5px solid #e8f0e8; }
-.done-anim i { font-size:4rem; color:#2d6a2d; animation:pop .5s ease; display:block; margin-bottom:16px; }
-@keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
-.done-card h3 { font-size:1.3rem; font-weight:800; color:#1a2e1a; margin:0 0 12px; }
-.done-card p  { color:#6b8c6b; font-size:.9rem; margin:0 0 28px; line-height:1.8; }
+.vet-role-badge { 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 8px; 
+  background: var(--primary-light);
+  color: var(--primary); 
+  font-size: 0.75rem; 
+  font-weight: 600; 
+  padding: 6px 14px; 
+  border-radius: 100px;
+  border: none;
+}
+
+.region-tag { 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 8px; 
+  background: var(--secondary-light);
+  color: var(--secondary); 
+  font-size: 0.8125rem; 
+  font-weight: 500; 
+  padding: 6px 14px; 
+  border-radius: 100px;
+  white-space: nowrap; 
+}
+
+.region-tag i { 
+  font-size: 0.75rem; 
+}
+
+/* ============================================
+   CONTACT GRID
+   ============================================ */
+.contact-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+  gap: 12px; 
+  margin-bottom: 20px; 
+}
+
+.contact-item { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  padding: 12px 16px; 
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+  text-decoration: none; 
+  transition: all 0.2s ease;
+}
+
+.contact-item:hover { 
+  background: white;
+  border-color: var(--primary-soft);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.ci-icon { 
+  width: 40px; 
+  height: 40px; 
+  border-radius: var(--radius-md);
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 1rem; 
+  flex-shrink: 0; 
+}
+
+.email-icon { 
+  background: var(--secondary-light);
+  color: var(--secondary);
+}
+
+.phone-icon { 
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.addr-icon { 
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.ci-lbl { 
+  display: block; 
+  font-size: 0.625rem; 
+  text-transform: uppercase; 
+  font-weight: 700; 
+  color: var(--gray-500);
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.ci-val { 
+  display: block; 
+  font-size: 0.875rem; 
+  color: var(--gray-800);
+  font-weight: 500;
+}
+
+/* ============================================
+   BIOGRAPHIE
+   ============================================ */
+.vet-bio { 
+  background: linear-gradient(135deg, var(--primary-light), var(--gray-50));
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  border-left: 4px solid var(--primary);
+  position: relative;
+  margin-top: 8px;
+}
+
+.bio-quote { 
+  position: absolute; 
+  top: 16px; 
+  left: 20px; 
+  color: var(--primary);
+  opacity: 0.2;
+  font-size: 1.25rem;
+}
+
+.vet-bio p { 
+  font-size: 0.875rem; 
+  color: var(--gray-700);
+  margin: 0; 
+  line-height: 1.6;
+  padding-left: 8px;
+}
+
+/* ============================================
+   LOADING / NO AVAIL
+   ============================================ */
+.loading-box { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 16px; 
+  padding: 60px;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  color: var(--gray-500);
+}
+
+.loader { 
+  width: 28px; 
+  height: 28px; 
+  border: 3px solid var(--primary-soft);
+  border-top-color: var(--primary);
+  border-radius: 50%; 
+  animation: spin 0.7s linear infinite; 
+}
+
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
+
+.no-avail-box { 
+  text-align: center; 
+  padding: 60px 40px;
+  background: white; 
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  color: var(--gray-500);
+}
+
+.no-avail-box i { 
+  font-size: 3rem; 
+  margin-bottom: 16px;
+  display: block;
+  color: var(--gray-400);
+  opacity: 0.7;
+}
+
+/* ============================================
+   CALENDRIER (DESIGN MODERNE)
+   ============================================ */
+.cal-section { 
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-100);
+  margin-bottom: 24px;
+}
+
+.cal-nav { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  margin-bottom: 28px;
+}
+
+.cal-btn { 
+  background: var(--gray-100);
+  border: none;
+  color: var(--gray-700);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.cal-btn:hover { 
+  background: var(--primary);
+  color: white;
+  transform: scale(1.05);
+}
+
+.cal-month-title { 
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  text-transform: capitalize;
+}
+
+/* Jours de la semaine */
+.cal-wd-row { 
+  display: grid; 
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 12px;
+  gap: 4px;
+}
+
+.cal-wd { 
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  padding: 12px 0 8px;
+  letter-spacing: 0.5px;
+}
+
+/* Grille des jours */
+.cal-days-grid { 
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  background: white;
+  border-radius: var(--radius-lg);
+}
+
+.cal-day-cell { 
+  min-height: 68px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: default;
+  transition: all 0.2s ease;
+  background: white;
+  position: relative;
+  font-weight: 500;
+}
+
+.cal-day-cell.cal-empty { 
+  background: transparent;
+  cursor: default;
+}
+
+.cal-day-cell:not(.cal-empty):not(.cal-avail) { 
+  background: var(--gray-50);
+  color: var(--gray-400);
+}
+
+/* Jours disponibles */
+.cal-avail { 
+  background: linear-gradient(135deg, var(--primary-light), white);
+  border: 2px solid var(--primary-soft);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.cal-avail::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, transparent 50%, rgba(15, 92, 63, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cal-avail:hover::before {
+  opacity: 1;
+}
+
+.cal-avail:hover { 
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+.cal-avail:hover .cal-day-num { 
+  color: white;
+}
+
+.cal-avail:hover .cal-dot { 
+  background: white;
+}
+
+/* Jour actuel */
+.cal-today { 
+  position: relative;
+  background: var(--warning-light);
+  border: 2px solid var(--warning);
+}
+
+.cal-day-num { 
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  line-height: 1;
+}
+
+.cal-avail .cal-day-num { 
+  color: var(--primary);
+}
+
+.cal-dot { 
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+/* Légende */
+.cal-legend { 
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--gray-200);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.leg-item { 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--gray-600);
+}
+
+.leg-swatch { 
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+}
+
+.avail-sw { 
+  background: linear-gradient(135deg, var(--primary-light), white);
+  border: 2px solid var(--primary-soft);
+}
+
+.none-sw { 
+  background: var(--gray-50);
+  border: 1px solid var(--gray-300);
+}
+
+.today-sw { 
+  background: var(--warning-light);
+  border: 2px solid var(--warning);
+}
+
+/* ============================================
+   BOOKING CARD
+   ============================================ */
+.booking-card { 
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-100);
+  margin-bottom: 24px;
+}
+
+.booking-card-header { 
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--gray-100);
+}
+
+.booking-card-header i { 
+  color: var(--primary);
+  font-size: 1.25rem;
+}
+
+.booking-card-header h2 { 
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.booking-card-header span { 
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  margin-left: auto;
+}
+
+.hdr-back { 
+  background: var(--gray-100);
+  border: none;
+  color: var(--gray-700);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.hdr-back:hover { 
+  background: var(--primary);
+  color: white;
+  transform: translateX(-2px);
+}
+
+/* Date chip */
+.date-chip { 
+  background: var(--secondary-light);
+  color: var(--secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 100px;
+}
+
+/* ============================================
+   CRÉNEAUX (SLOTS)
+   ============================================ */
+.no-slots { 
+  text-align: center;
+  padding: 48px;
+  color: var(--gray-500);
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+}
+
+.no-slots i { 
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  display: block;
+  opacity: 0.5;
+}
+
+.slots-grid { 
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.slot-chip { 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 12px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--gray-200);
+  background: white;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slot-chip:hover { 
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ============================================
+   BANNIÈRE CRÉNEAU SÉLECTIONNÉ
+   ============================================ */
+.selected-slot-banner { 
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, var(--success-light), white);
+  border: 2px solid var(--success);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 28px;
+}
+
+.ssb-icon i { 
+  font-size: 2rem;
+  color: var(--success);
+}
+
+.ssb-text { 
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ssb-text strong { 
+  font-size: 1rem;
+  color: var(--gray-900);
+}
+
+.ssb-text span { 
+  font-size: 0.875rem;
+  color: var(--gray-600);
+}
+
+.ssb-vet { 
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ssb-vet span { 
+  font-size: 0.6875rem;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.ssb-vet strong { 
+  font-size: 0.875rem;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* ============================================
+   FORMULAIRE DE RÉSERVATION
+   ============================================ */
+.rdv-form { 
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.field-wrap { 
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-label { 
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-label i { 
+  color: var(--primary);
+  width: 16px;
+  font-size: 0.875rem;
+}
+
+.field-input { 
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--gray-200);
+  font-size: 0.9375rem;
+  color: var(--gray-800);
+  outline: none;
+  background: white;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.field-input:focus { 
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(15, 92, 63, 0.1);
+}
+
+.has-err { 
+  border-color: var(--error) !important;
+}
+
+.field-ta { 
+  resize: vertical;
+  min-height: 100px;
+}
+
+.field-err { 
+  font-size: 0.75rem;
+  color: var(--error);
+}
+
+/* Animaux hints */
+.animals-hint { 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: var(--gray-600);
+  margin-top: 4px;
+}
+
+.animals-hint i { 
+  color: var(--primary);
+}
+
+.ref-tag { 
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary-soft);
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ref-tag:hover { 
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+/* Messages d'erreur */
+.booking-err { 
+  background: var(--error-light);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  color: var(--error);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Bouton confirmation */
+.btn-confirm { 
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-confirm:hover:not(:disabled) { 
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1.05);
+}
+
+.btn-confirm:disabled { 
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================
+   CARTE DE CONFIRMATION (DONE)
+   ============================================ */
+.done-card { 
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 60px 40px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-100);
+}
+
+.done-anim i { 
+  font-size: 5rem;
+  color: var(--success);
+  animation: pop 0.5s ease;
+  display: block;
+  margin-bottom: 24px;
+}
+
+@keyframes pop { 
+  0% { transform: scale(0); opacity: 0; } 
+  50% { transform: scale(1.1); } 
+  100% { transform: scale(1); opacity: 1; } 
+}
+
+.done-card h3 { 
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0 0 12px;
+}
+
+.done-card p { 
+  color: var(--gray-600);
+  font-size: 0.9375rem;
+  margin: 0 0 32px;
+  line-height: 1.6;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 768px) {
+  .vp-wrap {
+    padding: 16px;
+  }
+  
+  .vet-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+  }
+  
+  .vet-hero-top {
+    justify-content: center;
+  }
+  
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cal-days-grid {
+    gap: 4px;
+  }
+  
+  .cal-day-cell {
+    min-height: 52px;
+  }
+  
+  .cal-day-num {
+    font-size: 0.875rem;
+  }
+  
+  .slots-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  
+  .selected-slot-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .ssb-vet {
+    text-align: center;
+  }
+  
+  .cal-legend {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cal-day-cell {
+    min-height: 44px;
+  }
+  
+  .cal-wd {
+    font-size: 0.6875rem;
+  }
+  
+  .slot-chip {
+    padding: 10px;
+    font-size: 0.8125rem;
+  }
+  
+  .done-card {
+    padding: 40px 24px;
+  }
+}

@@ -66,46 +66,49 @@
     <p>Ce vétérinaire n'a pas encore de disponibilités.</p>
   </div>
 
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- STEP: Calendar                                  -->
-  <!-- ══════════════════════════════════════════════ -->
-  <div class="booking-card" *ngIf="!loading && step === 'calendar' && availabilities.length > 0">
-    <div class="booking-card-header">
-      <i class="fas fa-calendar-alt"></i>
-      <h2>Choisir une date</h2>
-      <span>Sélectionnez une date disponible (en vert)</span>
-    </div>
+  <!-- ── STEP: Calendar ── -->
+<div class="cal-section" *ngIf="!loading && step==='calendar' && availabilities.length > 0">
+  <div class="cal-nav">
+    <button class="cal-btn" (click)="prevMonth()">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <span class="cal-month-title">{{ monthLabel }}</span>
+    <button class="cal-btn" (click)="nextMonth()">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
 
-    <div class="cal-box">
-      <div class="cal-nav">
-        <button class="cal-btn" (click)="prevMonth()"><i class="fas fa-chevron-left"></i></button>
-        <span class="cal-month-title">{{ monthLabel }}</span>
-        <button class="cal-btn" (click)="nextMonth()"><i class="fas fa-chevron-right"></i></button>
-      </div>
+  <div class="cal-wd-row">
+    <div class="cal-wd" *ngFor="let d of weekDays">{{ d }}</div>
+  </div>
 
-      <div class="cal-wd-row">
-        <div *ngFor="let d of weekDays" class="cal-wd">{{ d }}</div>
-      </div>
-
-      <div class="cal-days-grid">
-        <div *ngFor="let day of calDays"
-          class="cal-day-cell"
-          [class.cal-empty]="!day.date.getTime()"
-          [class.cal-avail]="day.valid"
-          [class.cal-today]="day.date.getTime() && isToday(day.date)"
-          (click)="selectDay(day)">
-          <span *ngIf="day.date.getTime()" class="cal-day-num">{{ day.date.getDate() }}</span>
-          <span *ngIf="day.valid" class="cal-dot"></span>
-        </div>
-      </div>
-
-      <div class="cal-legend">
-        <div class="leg-item"><span class="leg-swatch avail-sw"></span> Disponible</div>
-        <div class="leg-item"><span class="leg-swatch none-sw"></span> Indisponible</div>
-        <div class="leg-item"><span class="leg-swatch today-sw"></span> Aujourd'hui</div>
-      </div>
+  <div class="cal-days-grid">
+    <div *ngFor="let day of calDays"
+      class="cal-day-cell"
+      [class.cal-empty]="!day.date.getTime()"
+      [class.cal-avail]="day.valid && day.date.getTime()"
+      [class.cal-today]="day.date.getTime() && isToday(day.date)"
+      (click)="selectDay(day)">
+      <span class="cal-day-num" *ngIf="day.date.getTime()">{{ day.date.getDate() }}</span>
+      <span class="cal-dot" *ngIf="day.valid"></span>
     </div>
   </div>
+
+  <div class="cal-legend">
+    <div class="leg-item">
+      <span class="leg-swatch avail-sw"></span>
+      <span>Disponible</span>
+    </div>
+    <div class="leg-item">
+      <span class="leg-swatch none-sw"></span>
+      <span>Indisponible</span>
+    </div>
+    <div class="leg-item">
+      <span class="leg-swatch today-sw"></span>
+      <span>Aujourd'hui</span>
+    </div>
+  </div>
+</div>
 
   <!-- ══════════════════════════════════════════════ -->
   <!-- STEP: Slots                                     -->
