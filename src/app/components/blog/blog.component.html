@@ -1,0 +1,57 @@
+<section class="blog section-padding" id="blog">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">
+        <i class="fas fa-newspaper"></i> Latest News
+      </div>
+      <h2 class="section-title">
+        GreenRoots <span>Blog</span> & Insights
+      </h2>
+      <p class="section-desc">
+        Stay updated with the latest in smart farming, agricultural technology,
+        and sustainable practices from around the world.
+      </p>
+    </div>
+
+    <div class="blog-grid">
+      <article class="blog-card reveal"
+               *ngFor="let post of posts; let i = index"
+               [style.animation-delay]="(i * 0.15) + 's'">
+
+        <div class="blog-img">
+          <img [src]="post.image" [alt]="post.title">
+          <span class="blog-category">{{ post.category }}</span>
+        </div>
+
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span><i class="fas fa-calendar"></i> {{ post.date }}</span>
+            <span><i class="fas fa-clock"></i> {{ post.readTime }}</span>
+          </div>
+          <h3 class="blog-title">{{ post.title }}</h3>
+          <p class="blog-excerpt">{{ post.excerpt }}</p>
+          <div class="blog-footer">
+            <div class="blog-author">
+              <i class="fas fa-globe"></i>
+              <span>{{ post.source }}</span>
+            </div>
+
+            <!-- ↓ Ajoute (click) et cursor:pointer -->
+            <a class="read-more"
+               (click)="goToDetail(post)"
+               style="cursor: pointer;">
+              Read More <i class="fas fa-arrow-right"></i>
+            </a>
+
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="reveal" style="text-align:center; margin-top:50px;">
+      <button class="btn btn-primary">
+        <i class="fas fa-th-large"></i> View All Articles
+      </button>
+    </div>
+  </div>
+</section>
