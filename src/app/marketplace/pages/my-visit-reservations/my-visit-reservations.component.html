@@ -1,0 +1,272 @@
+<app-navbar></app-navbar>
+
+<section class="section-padding marketplace-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Marketplace</span>
+      <h2 class="section-title">
+        Discover <span>Products</span> & Rentals
+      </h2>
+      <p class="section-desc">
+        Buy agricultural products or rent equipment easily.
+      </p>
+    </div>
+  </div>
+</section>
+<div class="container">
+    <div class="back-wrapper">
+    <button class="back-btn" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    </div>
+</div>
+<div class="reservations-page">
+
+  <div class="page-header">
+    <div>
+      <h1>My Visit Reservations</h1>
+      <p>See your visit reservations with their status and article details.</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-number">{{ getTotalCount() }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">{{ getCountByStatus('PENDING') + getCountByStatus('EN_ATTENTE') }}</span>
+      <span class="stat-label">Pending</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">{{ getCountByStatus('CONFIRMED') + getCountByStatus('CONFIRMEE') }}</span>
+      <span class="stat-label">Confirmed</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">{{ getCountByStatus('REFUSED') + getCountByStatus('REFUSEE') }}</span>
+      <span class="stat-label">Refused</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="selectedTab === 'ALL'" (click)="setTab('ALL')">All</button>
+    <button [class.active]="selectedTab === 'UPCOMING'" (click)="setTab('UPCOMING')">Upcoming</button>
+    <button [class.active]="selectedTab === 'PAST'" (click)="setTab('PAST')">Past</button>
+  </div>
+
+  <div class="filters-bar">
+    <input
+      type="text"
+      placeholder="Search by article or location..."
+      [(ngModel)]="searchTerm"
+      (input)="applyFilters()"
+    />
+
+    <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+      <option value="ALL">All</option>
+      <option value="EN_ATTENTE">Pending</option>
+      <option value="CONFIRMEE">Confirmed</option>
+      <option value="REFUSEE">Refused</option>
+      <option value="ANNULEE">Cancelled</option>
+      <option value="TERMINEE">Completed</option>
+    </select>
+  </div>
+
+  <div *ngIf="loading" class="empty-box">Loading...</div>
+  <div *ngIf="errorMessage" class="empty-box">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading && !errorMessage && filteredReservations.length === 0" class="empty-box">
+    No reservations found.
+  </div>
+
+  <div class="reservation-list" *ngIf="filteredReservations.length > 0">
+  <div class="reservation-card" *ngFor="let reservation of filteredReservations">
+
+    <div class="card-image">
+      <img [src]="getImage(reservation)" [alt]="getArticleName(reservation)">
+    </div>
+
+    <div class="card-content">
+      <div class="card-top">
+        <div>
+          <h2>{{ getArticleName(reservation) }}</h2>
+          <p class="type">Visit reservation</p>
+        </div>
+
+        <span class="status-badge" [ngClass]="getStatusClass(getStatus(reservation))">
+          {{ getStatusLabel(getStatus(reservation)) }}
+        </span>
+      </div>
+
+      <div class="info-grid">
+        <div><strong>Date:</strong> {{ getVisitDate(reservation) }}</div>
+        <div><strong>Time:</strong> {{ getStartTime(reservation) }} - {{ getEndTime(reservation) }}</div>
+        <div><strong>Location:</strong> {{ getLocationName(reservation) }}</div>
+      </div>
+
+      <div class="card-actions">
+        <button class="details-btn" [routerLink]="['/marketplace', 'rent', reservation.location?.id]">
+          View Article
+        </button>
+
+        <button
+          class="action-btn"
+          *ngIf="canEditReservation(reservation)"
+          (click)="editReservation(reservation)">
+          <i class="fas fa-edit"></i>
+        </button>
+
+        <button
+          class="delete-btn"
+          *ngIf="canDeleteReservation(reservation)"
+          (click)="deleteReservation(reservation)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="edit-overlay" *ngIf="editOpen" (click)="closeEditForm()">
+  <div class="edit-modal" (click)="$event.stopPropagation()">
+
+    <h3 class="booking-title">Update Reservation</h3>
+
+    <!-- Day selection -->
+    <div class="day-picker">
+      <button
+        *ngFor="let day of daysOfWeek"
+        type="button"
+        class="day-btn"
+        [class.active]="selectedDay === day.value"
+        (click)="selectEditDay(day.value)">
+        {{ day.label }}
+      </button>
+    </div>
+
+    <!-- Slots -->
+    <div *ngIf="selectedDay" class="slot-section">
+      <h4>Available Time Slots</h4>
+
+      <div *ngIf="filteredAvailabilities.length > 0" class="slot-list">
+        <button
+          *ngFor="let slot of filteredAvailabilities"
+          type="button"
+          class="slot-btn"
+          [class.active]="selectedSlot?.heureDebut === slot.heureDebut && selectedSlot?.heureFin === slot.heureFin"
+          (click)="selectEditSlot(slot)">
+          {{ slot.heureDebut }} - {{ slot.heureFin }}
+        </button>
+      </div>
+
+      <p *ngIf="filteredAvailabilities.length === 0">
+        No slots available for this day.
+      </p>
+    </div>
+
+    <!-- Date -->
+    <div *ngIf="selectedSlot" class="visit-date-box">
+      <label>Visit Date</label>
+      <input type="date" [(ngModel)]="selectedDate">
+    </div>
+
+    <!-- Actions -->
+    <div class="booking-actions" *ngIf="selectedSlot">
+      <button type="button" class="btn btn-secondary" (click)="closeEditForm()">
+        Cancel
+      </button>
+        <button type="button" class="btn btn-primary" (click)="confirmUpdateReservation()">
+            Update Reservation
+        </button>
+    </div>
+
+  </div>
+</div>
+</div>
+<div
+  *ngIf="showReservationPopup"
+  (click)="closeReservationPopup()"
+  style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    padding: 20px;
+  ">
+
+  <div
+    (click)="$event.stopPropagation()"
+    [ngStyle]="{
+      width: '100%',
+      'max-width': '460px',
+      background: 'white',
+      'border-radius': '24px',
+      padding: '32px 28px',
+      'text-align': 'center',
+      'box-shadow': reservationPopupType === 'success'
+        ? '0 25px 60px rgba(76,175,80,0.18)'
+        : '0 25px 60px rgba(220,53,69,0.18)'
+    }">
+
+    <div
+      [ngStyle]="{
+        width: '72px',
+        height: '72px',
+        margin: '0 auto 18px',
+        'border-radius': '50%',
+        display: 'flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        background: reservationPopupType === 'success'
+          ? 'rgba(76,175,80,0.12)'
+          : 'rgba(220,53,69,0.12)'
+      }">
+
+      <i
+        class="fas"
+        [class.fa-check-circle]="reservationPopupType === 'success'"
+        [class.fa-times-circle]="reservationPopupType === 'error'"
+        [ngStyle]="{
+          'font-size': '34px',
+          color: reservationPopupType === 'success' ? '#4caf50' : '#dc3545'
+        }">
+      </i>
+    </div>
+
+    <h3
+      [ngStyle]="{
+        margin: '0 0 10px',
+        'font-size': '24px',
+        'font-weight': '700',
+        color: reservationPopupType === 'success' ? '#222' : '#b02a37'
+      }">
+      {{ reservationPopupTitle }}
+    </h3>
+
+    <p
+      [ngStyle]="{
+        margin: '0 0 24px',
+        'font-size': '15px',
+        'line-height': '1.6',
+        color: '#555'
+      }">
+      {{ reservationPopupMessage }}
+    </p>
+
+    <button
+      type="button"
+      class="btn"
+      [ngClass]="reservationPopupType === 'success' ? 'btn-primary' : 'btn-danger'"
+      (click)="closeReservationPopup()">
+      OK
+    </button>
+  </div>
+</div>
+<app-footer></app-footer>

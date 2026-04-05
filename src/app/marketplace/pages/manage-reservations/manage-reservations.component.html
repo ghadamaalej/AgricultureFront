@@ -1,0 +1,139 @@
+<app-navbar></app-navbar>
+
+<section class="section-padding marketplace-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Reservations</span>
+      <h2 class="section-title">
+        Manage <span>Visit Requests</span>
+      </h2>
+      <p class="section-desc">
+        Accept or refuse reservations for your listings.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="back-wrapper">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+  </div>
+</div>
+
+<div class="reservations-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1>Manage Reservations</h1>
+      <p>Handle visit requests for your listings.</p>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-number">{{ reservations.length }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">
+        {{ getCountByStatus('EN_ATTENTE') }}
+      </span>
+      <span class="stat-label">Pending</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">
+        {{ getCountByStatus('CONFIRMEE') }}
+      </span>
+      <span class="stat-label">Confirmed</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">
+        {{ getCountByStatus('ANNULEE') }}
+      </span>
+      <span class="stat-label">Cancelled</span>
+    </div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="tabs">
+    <button [class.active]="selectedFilter === 'ALL'" (click)="setFilter('ALL')">All</button>
+    <button [class.active]="selectedFilter === 'PENDING'" (click)="setFilter('PENDING')">Pending</button>
+    <button [class.active]="selectedFilter === 'CONFIRMED'" (click)="setFilter('CONFIRMED')">Accepted</button>
+    <button [class.active]="selectedFilter === 'REFUSED'" (click)="setFilter('REFUSED')">Refused</button>
+  </div>
+
+  <!-- EMPTY -->
+  <div *ngIf="getFilteredReservations().length === 0" class="empty-box">
+    No reservations found.
+  </div>
+
+  <!-- LIST -->
+  <div class="reservation-list" *ngIf="getFilteredReservations().length > 0">
+    <div class="reservation-card" *ngFor="let reservation of getFilteredReservations()">
+
+      <!-- IMAGE -->
+      <div class="card-image">
+        <img [src]="getImage(reservation)" />
+      </div>
+
+      <!-- CONTENT -->
+      <div class="card-content">
+
+        <div class="card-top">
+          <div>
+            <h2>{{ reservation.location?.nom }}</h2>
+            <p class="type">Client: {{ getClientName(reservation) }}</p>
+          </div>
+
+          <span class="status-badge" [ngClass]="getStatusClass(getStatus(reservation))">
+            {{ getStatusLabel(getStatus(reservation)) }}
+          </span>
+        </div>
+
+        <!-- INFO -->
+        <div class="info-grid">
+          <div><strong>Date:</strong> {{ reservation.dateVisite }}</div>
+          <div><strong>Time:</strong> {{ reservation.heureDebut }} - {{ reservation.heureFin }}</div>
+          <div><strong>Location:</strong> {{ reservation.location?.localisation || 'N/A' }}</div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="card-actions">
+
+          <button class="details-btn"
+                  [routerLink]="['/marketplace', 'rent', reservation.location?.id]">
+            View Article
+          </button>
+
+          <!-- ACCEPT -->
+          <button
+            class="action-btn"
+            *ngIf="canManage(reservation)"
+            (click)="confirm(reservation)">
+            <i class="fas fa-check"></i>
+          </button>
+
+          <!-- REFUSE -->
+          <button
+            class="delete-btn"
+            *ngIf="canManage(reservation)"
+            (click)="refuse(reservation)">
+            <i class="fas fa-times"></i>
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<app-footer></app-footer>

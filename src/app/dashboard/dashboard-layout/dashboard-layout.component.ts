@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -28,7 +29,10 @@ export class DashboardLayoutComponent implements OnInit {
     { icon: 'fas fa-paw',                label: 'Animals',     key: 'Animals',     route: '/dashboard/Animals'     },
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     // Sync activeMenu with current URL on load and navigation
@@ -49,6 +53,11 @@ export class DashboardLayoutComponent implements OnInit {
   setActive(key: string, route: string): void {
     this.activeMenu = key;
     this.router.navigate([route]);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth']);
   }
 
   toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
