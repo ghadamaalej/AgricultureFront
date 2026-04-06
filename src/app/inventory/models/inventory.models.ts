@@ -25,8 +25,9 @@ export interface Batch {
   id: number;
   lotNumber: string;
   quantity: number;
-  expiryDate: string;
+  expiryDate: string | null;
   purchaseDate: string;
+  note?: string | null;
 }
 
 export interface StockMovement {
@@ -111,4 +112,11 @@ export interface ConsumeStockRequest {
 export interface AdjustStockRequest {
   quantity: number;
   note?: string;
+}
+
+export interface AddStockRequest {
+  quantity: number;
+  purchaseDate: string;
+  expiryDate?: string | null;
+  note?: string | null;
 }

@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 import {
   ApiResponse, InventoryProduct, Batch, StockMovement,
   Animal, AnimalDetail, VaccinationCampaign,
-  CreateProductRequest, UpdateProductRequest,
+  CreateProductRequest, UpdateProductRequest, AddStockRequest,
   CreateAnimalRequest, ConsumeStockRequest, AdjustStockRequest
 } from '../models/inventory.models';
 import { AuthService } from '../../services/auth/auth.service';
@@ -69,6 +69,12 @@ export class InventoryApiService {
   adjustStock(productId: number, req: AdjustStockRequest): Observable<InventoryProduct> {
     return this.http.post<ApiResponse<InventoryProduct>>(
       `${this.base}/inventory/${productId}/adjust`, req, { headers: this.headers() }
+    ).pipe(map(r => r.data));
+  }
+
+  addStock(productId: number, req: AddStockRequest): Observable<InventoryProduct> {
+    return this.http.post<ApiResponse<InventoryProduct>>(
+      `${this.base}/inventory/${productId}/add-stock`, req, { headers: this.headers() }
     ).pipe(map(r => r.data));
   }
 
