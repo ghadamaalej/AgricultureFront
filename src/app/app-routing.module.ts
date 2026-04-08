@@ -24,6 +24,10 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   { path: 'register-extra',  component: RegisterExtraComponent  },
+  {
+    path: 'training',
+    loadChildren: () => import('./training/training.module').then(m => m.TrainingModule)
+  },
   { path: 'blog/:id', component: BlogDetailComponent },
   { path: '404',      component: NotFoundComponent   },
   { path: '**',       redirectTo: '/404'             }

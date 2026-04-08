@@ -19,6 +19,7 @@ export interface LoginResponse {
   username: string | null;
   email: string;
   role: string | null;
+  statutCompte?: string | null;
   message: string;
 }
 
@@ -27,13 +28,14 @@ export interface AuthUser {
   username: string;
   email: string;
   role: BackendRole;
+  statutCompte?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8081/api/auth';
+  private apiUrl = 'http://localhost:8089/user/api/auth';
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(this.getUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -50,11 +52,20 @@ export class AuthService {
             userId: response.userId,
             username: response.username || response.email,
             email: response.email,
-            role: response.role as BackendRole
+            role: response.role as BackendRole,
+            statutCompte: response.statutCompte || undefined
           };
           this.storeToken(response.token);
           this.storeUser(user);
           this.currentUserSubject.next(user);
+
+          // Log user role and account status to console
+          console.log('🔐 User logged in successfully!');
+          console.log('👤 User Role:', response.role);
+          console.log('🆔 User ID:', response.userId);
+          console.log('📧 User Email:', response.email);
+          console.log('📊 Account Status (Statut Compte):', response.statutCompte || 'Not provided');
+          console.log('✅ Is Approved:', response.statutCompte === 'APPROUVE');
         }
         return response;
       })
@@ -88,6 +99,14 @@ export class AuthService {
 
   getCurrentUserId(): number | null {
     return this.getCurrentUser()?.userId ?? null;
+  }
+
+  getAccountStatus(): string | undefined {
+    return this.getCurrentUser()?.statutCompte;
+  }
+
+  isAccountApproved(): boolean {
+    return this.getCurrentUser()?.statutCompte === 'APPROUVE';
   }
 
   hasRole(role: BackendRole): boolean {

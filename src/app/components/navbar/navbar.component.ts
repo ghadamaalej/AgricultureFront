@@ -27,7 +27,7 @@ export class NavbarComponent implements OnInit {
     { label: 'Loans',       route: '/loans'       },
     { label: 'Delivery',    route: '/delivery'    },
     { label: 'Events',      route: '/events'      },
-    { label: 'Trainings',   route: '/formations'  },
+    { label: 'Trainings',   route: '/training'    },
   ];
 
   dropdownLinks = [

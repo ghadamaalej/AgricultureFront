@@ -1,0 +1,268 @@
+<div class="detail-container">
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement...</p>
+  </div>
+
+  <div *ngIf="error && !isLoading" class="error-state">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error }}</p>
+    <button (click)="goBack()" class="btn-secondary">Retour</button>
+  </div>
+
+  <div *ngIf="formation && !isLoading && !error">
+    <button (click)="goBack()" class="btn-back">
+      <i class="fas fa-arrow-left"></i> Retour
+    </button>
+
+    <div class="detail-header">
+      <div class="header-image">
+        <img [src]="formation.imageUrl || 'assets/images/formation-default.jpg'" [alt]="formation.titre" />
+      </div>
+      <div class="header-info">
+        <h1>{{ formation.titre }}</h1>
+        <div class="badges-group">
+          <span class="badge badge-niveau" [ngClass]="'niveau-' + (formation.niveau?.toLowerCase() || 'debutant')">
+            {{ formation.niveau }}
+          </span>
+          <span class="badge badge-type" [ngClass]="'type-' + (formation.type?.toLowerCase() || 'theorique')">
+            {{ formation.type }}
+          </span>
+          <span class="badge badge-status">{{ formation.statut }}</span>
+        </div>
+        <p class="formation-description">{{ formation.description }}</p>
+
+        <div class="action-buttons">
+          <button *ngIf="!isInscribed && !canManage()" (click)="inscribeFormation()" class="btn-primary">
+            <i class="fas fa-check-circle"></i> S'inscrire
+          </button>
+          <span *ngIf="isInscribed && !canManage()" class="inscribed-label">
+            <i class="fas fa-check-double"></i> Inscrit
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs-section">
+      <div class="tabs">
+        <button
+          [class.active]="activeTab === 'overview'"
+          (click)="activeTab = 'overview'"
+          class="tab-button"
+        >
+          <i class="fas fa-info-circle"></i> Aperçu
+        </button>
+        <button
+          [class.active]="activeTab === 'modules'"
+          (click)="activeTab = 'modules'"
+          class="tab-button"
+        >
+          <i class="fas fa-cubes"></i> Modules
+        </button>
+        <button
+          [class.active]="activeTab === 'resources'"
+          (click)="activeTab = 'resources'"
+          class="tab-button"
+        >
+          <i class="fas fa-file-download"></i> Ressources
+        </button>
+      </div>
+
+      <div *ngIf="activeTab === 'overview'" class="tab-content">
+        <div class="info-grid">
+          <div class="info-card">
+            <i class="fas fa-tag"></i>
+            <h3>Thématique</h3>
+            <p>{{ formation.thematique }}</p>
+          </div>
+          <div class="info-card">
+            <i class="fas fa-globe"></i>
+            <h3>Langue</h3>
+            <p>{{ formation.langue }}</p>
+          </div>
+          <div class="info-card">
+            <i class="fas fa-cubes"></i>
+            <h3>Modules</h3>
+            <p>{{ formation.modules?.length || 0 }}</p>
+          </div>
+          <div class="info-card">
+            <i class="fas fa-file-download"></i>
+            <h3>Ressources</h3>
+            <p>{{ formation.ressources?.length || 0 }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'modules'" class="tab-content">
+        <div *ngIf="canManage()" class="management-section">
+          <button (click)="toggleModuleForm()" class="btn-action btn-add">
+            <i class="fas fa-plus"></i> Ajouter un module
+          </button>
+
+          <div *ngIf="showModuleForm" class="form-container">
+            <h3>{{ editingModuleId ? 'Modifier le module' : 'Nouveau module' }}</h3>
+            <div class="form-group">
+              <label>Titre du module</label>
+              <input [(ngModel)]="newModule.titre" type="text" placeholder="Titre" />
+            </div>
+            <div class="form-group">
+              <label>Ordre</label>
+              <input [(ngModel)]="newModule.ordre" type="number" placeholder="Ordre" />
+            </div>
+            <div class="form-actions">
+              <button (click)="saveModule()" class="btn-save">
+                <i class="fas fa-save"></i> Enregistrer
+              </button>
+              <button (click)="toggleModuleForm()" class="btn-cancel">
+                <i class="fas fa-times"></i> Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modules-list">
+          <div *ngIf="!formation.modules || formation.modules.length === 0" class="empty-message">
+            <p>Aucun module</p>
+          </div>
+
+          <div *ngFor="let module of formation.modules" class="module-card">
+            <div class="module-header">
+              <h3><i class="fas fa-cube"></i> {{ module.titre }}</h3>
+              <div *ngIf="canManage()" class="module-actions">
+                <button (click)="editModule(module)" class="btn-icon">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button (click)="deleteModule(module.idModule)" class="btn-icon btn-delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="lecons-section">
+              <div class="lecons-header">
+                <h4><i class="fas fa-video"></i> Leçons ({{ module.lecons?.length || 0 }})</h4>
+                <button *ngIf="canManage()" (click)="toggleLeconForm()" class="btn-icon btn-add">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+
+              <div *ngIf="showLeconForm && canManage()" class="form-container">
+                <h4>{{ editingLeconId ? 'Modifier la leçon' : 'Nouvelle leçon' }}</h4>
+                <div class="form-group">
+                  <label>Titre</label>
+                  <input [(ngModel)]="newLecon.titre" type="text" placeholder="Titre" />
+                </div>
+                <div class="form-group">
+                  <label>URL Vidéo</label>
+                  <input [(ngModel)]="newLecon.urlVideo" type="text" placeholder="https://..." />
+                </div>
+                <div class="form-group">
+                  <label>Durée (secondes)</label>
+                  <input [(ngModel)]="newLecon.dureeSecondes" type="number" placeholder="Durée" />
+                </div>
+                <div class="form-group">
+                  <label>Ordre</label>
+                  <input [(ngModel)]="newLecon.ordre" type="number" placeholder="Ordre" />
+                </div>
+                <div class="form-actions">
+                  <button (click)="saveLecon(module)" class="btn-save">
+                    <i class="fas fa-save"></i> Enregistrer
+                  </button>
+                  <button (click)="toggleLeconForm()" class="btn-cancel">
+                    <i class="fas fa-times"></i> Annuler
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="!module.lecons || module.lecons.length === 0" class="empty-message">
+                Aucune leçon
+              </div>
+              <div *ngFor="let lecon of module.lecons; let i = index" class="lecon-item">
+                <div class="lecon-info">
+                  <span class="lecon-index">{{ i + 1 }}</span>
+                  <div class="lecon-details">
+                    <h5>{{ lecon.titre }}</h5>
+                    <p><i class="fas fa-clock"></i> {{ getDurationDisplay(lecon.dureeSecondes) }}</p>
+                  </div>
+                </div>
+                <div *ngIf="canManage()" class="lecon-actions">
+                  <button (click)="editLecon(lecon)" class="btn-icon">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button (click)="deleteLecon(module, lecon.idLecon)" class="btn-icon btn-delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'resources'" class="tab-content">
+        <div *ngIf="canManage()" class="management-section">
+          <button (click)="toggleRessourceForm()" class="btn-action btn-add">
+            <i class="fas fa-plus"></i> Ajouter une ressource
+          </button>
+
+          <div *ngIf="showRessourceForm" class="form-container">
+            <h3>{{ editingRessourceId ? 'Modifier' : 'Nouvelle ressource' }}</h3>
+            <div class="form-group">
+              <label>Titre</label>
+              <input [(ngModel)]="newRessource.titre" type="text" placeholder="Titre" />
+            </div>
+            <div class="form-group">
+              <label>Type</label>
+              <select [(ngModel)]="newRessource.type">
+                <option *ngFor="let type of resourceTypes">{{ type }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>URL</label>
+              <input [(ngModel)]="newRessource.url" type="text" placeholder="https://..." />
+            </div>
+            <div class="form-actions">
+              <button (click)="saveRessource()" class="btn-save">
+                <i class="fas fa-save"></i> Enregistrer
+              </button>
+              <button (click)="toggleRessourceForm()" class="btn-cancel">
+                <i class="fas fa-times"></i> Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="resources-list">
+          <div *ngIf="!formation.ressources || formation.ressources.length === 0" class="empty-message">
+            <p>Aucune ressource</p>
+          </div>
+
+          <div *ngFor="let ressource of formation.ressources" class="resource-card">
+            <div class="resource-icon">
+              <i *ngIf="ressource.type === 'PDF'" class="fas fa-file-pdf"></i>
+              <i *ngIf="ressource.type === 'VIDEO'" class="fas fa-video"></i>
+              <i *ngIf="ressource.type === 'LIEN'" class="fas fa-link"></i>
+              <i *ngIf="ressource.type === 'DOCUMENT'" class="fas fa-file-word"></i>
+              <i *ngIf="ressource.type === 'IMAGE'" class="fas fa-image"></i>
+            </div>
+            <div class="resource-info">
+              <h4>{{ ressource.titre }}</h4>
+              <span class="resource-type">{{ ressource.type }}</span>
+            </div>
+            <div class="resource-actions">
+              <a [href]="ressource.url" target="_blank" class="btn-icon btn-download">
+                <i class="fas fa-download"></i>
+              </a>
+              <button *ngIf="canManage()" (click)="editRessource(ressource)" class="btn-icon">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button *ngIf="canManage()" (click)="deleteRessource(ressource.idRessource)" class="btn-icon btn-delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
