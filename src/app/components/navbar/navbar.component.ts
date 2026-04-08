@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit, Output, EventEmitter } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -12,49 +13,59 @@ export class NavbarComponent implements OnInit {
 
   @Output() onAuthOpen = new EventEmitter<'signin' | 'signup'>();
 
-  isScrolled       = false;
+  isScrolled = false;
   isMobileMenuOpen = false;
-  isLoggedIn       = false;
-  isHomePage       = true;
-  activeLink       = '/';
+  isLoggedIn = false;
+  isHomePage = true;
+  activeLink = '/';
   moreDropdownOpen = false;
 
   navLinks = [
-    { label: 'Home',        route: '/'            },
+    { label: 'Home',        route: '/' },
     { label: 'Marketplace', route: '/marketplace' },
-    { label: 'Forum',       route: '/forum'       },
-    { label: 'Loans',       route: '/loans'       },
-    { label: 'Delivery',    route: '/delivery'    },
-    { label: 'Events',      route: '/events'      },
-    { label: 'Trainings',   route: '/formations'  },
+    { label: 'Forum',       route: '/forum' },
+    { label: 'Loans',       route: '/loans' },
+    { label: 'Delivery',    route: '/delivery' },
+    { label: 'Events',      route: '/events' },
+    { label: 'Trainings',   route: '/formations' },
   ];
 
   dropdownLinks = [
-    { label: 'Inventory',    icon: 'fas fa-boxes',          route: '/inventory'    },
+    { label: 'Inventory',    icon: 'fas fa-boxes',          route: '/inventory' },
     { label: 'Appointments', icon: 'fas fa-calendar-check', route: '/appointments' },
-    { label: 'Animals',      icon: 'fas fa-paw',            route: '/animals'      },
+    { label: 'Animals',      icon: 'fas fa-paw',            route: '/animals' },
     { label: 'Help Request', icon: 'fas fa-hands-helping',  route: '/help-request' },
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
-    this.isLoggedIn = !!localStorage.getItem('token');
+    this.isLoggedIn = this.authService.hasActiveSession();
     this.isHomePage = this.router.url === '/';
     this.activeLink = this.router.url;
+
+    this.authService.currentUser$.subscribe(user => {
+      this.isLoggedIn = !!user && this.authService.hasActiveSession();
+    });
 
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: any) => {
-        this.isHomePage       = e.urlAfterRedirects === '/';
-        this.activeLink       = e.urlAfterRedirects;
+        this.isHomePage = e.urlAfterRedirects === '/';
+        this.activeLink = e.urlAfterRedirects;
         this.moreDropdownOpen = false;
         this.isMobileMenuOpen = false;
+        this.isLoggedIn = this.authService.hasActiveSession();
       });
   }
 
   @HostListener('window:scroll', [])
-  onScroll() { this.isScrolled = window.scrollY > 80; }
+  onScroll() {
+    this.isScrolled = window.scrollY > 80;
+  }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
@@ -79,9 +90,25 @@ export class NavbarComponent implements OnInit {
     return this.dropdownLinks.some(l => this.activeLink === l.route);
   }
 
-  toggleMobile() { this.isMobileMenuOpen = !this.isMobileMenuOpen; }
+  toggleMobile() {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
 
-  signIn()  { localStorage.setItem('authMode', 'signin');  this.onAuthOpen.emit('signin');  }
-  signUp()  { localStorage.setItem('authMode', 'signup');  this.onAuthOpen.emit('signup');  }
-  logout()  { localStorage.clear(); this.isLoggedIn = false; this.router.navigate(['/']); }
+  signIn() {
+    localStorage.setItem('authMode', 'signin');
+    this.onAuthOpen.emit('signin');
+  }
+
+  signUp() {
+    localStorage.setItem('authMode', 'signup');
+    this.onAuthOpen.emit('signup');
+  }
+
+  logout() {
+    this.authService.logout();
+    this.isLoggedIn = false;
+    this.isMobileMenuOpen = false;
+    this.moreDropdownOpen = false;
+    this.router.navigate(['/auth']);
+  }
 }

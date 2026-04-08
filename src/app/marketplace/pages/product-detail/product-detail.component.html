@@ -15,6 +15,12 @@
 </section>
 
 <section class="section-padding product-detail">
+  <div class="container" style="margin-bottom: 20px;">
+  <button class="back-btn" (click)="goBack()">
+    <i class="fas fa-arrow-left"></i>
+    Back
+  </button>
+</div>
   <div class="container detail-layout">
 
     <!-- LEFT -->
@@ -25,8 +31,12 @@
     <!-- RIGHT -->
     <div class="detail-info">
 
-      <span class="badge">
+      <span class="badge" *ngIf="mode === 'rent' || canBuyProduct()">
         {{ mode === 'buy' ? 'For Sale' : 'For Rent' }}
+      </span>
+
+      <span class="badge sold-out-badge" *ngIf="mode === 'buy' && !canBuyProduct()">
+        Sold Out
       </span>
 
       <h1 class="product-title">{{ product.name }}</h1>
@@ -65,8 +75,8 @@
           Available Until: {{ product.endDate }}
         </span>
 
-        <span *ngIf="product.type === 'terrain' && product.location">
-          Location: {{ product.location }}
+        <span *ngIf="product.type === 'terrain' && product.localisation">
+          Location: {{ product.localisation }}
         </span>
 
         <span *ngIf="product.type === 'terrain' && product.surface">
@@ -83,12 +93,59 @@
         {{ product.description || 'No description available.' }}
       </p>
 
-      <button class="add-to-cart" (click)="mode === 'rent' ? openBooking() : null">
-        <i class="fas"
-           [class.fa-shopping-cart]="mode === 'buy'"
-           [class.fa-calendar]="mode === 'rent'"></i>
-        {{ mode === 'buy' ? 'Add to Cart' : 'Book Now' }}
-      </button>
+      <!-- BUY ACTION -->
+      <div *ngIf="mode === 'buy'" class="cart-panel">
+
+        <button
+          *ngIf="!showQuantitySelector"
+          class="add-to-cart"
+          [disabled]="!canBuyProduct()"
+          (click)="openQuantitySelector()">
+          <i class="fas fa-shopping-cart"></i>
+          {{ canBuyProduct() ? 'Add to Cart' : 'Out of Stock' }}
+        </button>
+
+        <div *ngIf="showQuantitySelector" class="quantity-box">
+          <h4>Select Quantity</h4>
+
+          <div class="quantity-controls">
+            <button type="button" class="qty-btn" (click)="decreaseQuantity()">-</button>
+
+            <span class="qty-value">{{ selectedQuantity }}</span>
+
+            <button
+              type="button"
+              class="qty-btn"
+              (click)="increaseQuantity()"
+              [disabled]="selectedQuantity >= (product.quantity || 0)">
+              +
+            </button>
+          </div>
+
+          <div class="quantity-meta">
+            <span>Available: {{ product.quantity || 0 }} KG</span>
+            <span>Total: {{ cartTotal | number:'1.2-2' }} DT</span>
+          </div>
+
+          <div class="booking-actions">
+            <button type="button" class="btn btn-secondary" (click)="cancelQuantitySelection()">
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" (click)="addProductToCart()">
+              Confirm Add
+            </button>
+          </div>
+        </div>
+      </div>
+
+<!-- RENT BUTTON -->
+<button
+  *ngIf="mode === 'rent'"
+  class="add-to-cart"
+  (click)="openBooking()">
+  <i class="fas fa-calendar"></i>
+  Book Now
+</button>
       <!-- RENT BOOKING PANEL -->
       <div *ngIf="mode === 'rent' && bookingOpen" class="booking-panel">
 

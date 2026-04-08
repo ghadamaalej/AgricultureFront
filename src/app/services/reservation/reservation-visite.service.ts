@@ -10,12 +10,12 @@ export class ReservationVisiteService {
 
   constructor(private http: HttpClient) {}
 
-  create(locationId: number, data: any) {
-  return this.http.post(
-    `http://localhost:8089/Vente/reservations/add/${locationId}`,
-    data
-  );
-}
+  create(locationId: number, userId: number, data: any) {
+    return this.http.post(
+      `${this.api}/add/${locationId}?userId=${userId}`,
+      data
+    );
+  }
 
   getAll(): Observable<any> {
     return this.http.get(this.api);
@@ -28,29 +28,28 @@ export class ReservationVisiteService {
   getByUser(idUser: number): Observable<any> {
     return this.http.get(`${this.api}/user/${idUser}`);
   }
+
   update(reservationId: number, data: any) {
-  return this.http.put(`${this.api}/update/${reservationId}`, data);
+    return this.http.put(`${this.api}/update/${reservationId}`, data);
   }
 
   deleteReservation(id: number) {
-  return this.http.delete(`${this.api}/delete/${id}`);
+    return this.http.delete(`${this.api}/delete/${id}`);
   }
 
   getByOwner(idUser: number) {
-  return this.http.get(`${this.api}/owner/${idUser}`);
-}
+    return this.http.get(`${this.api}/owner/${idUser}`);
+  }
 
-confirmReservation(id: number) {
-  return this.http.put(`${this.api}/confirm/${id}`, {});
-}
+  confirmReservation(id: number) {
+    return this.http.put(`${this.api}/confirm/${id}`, {});
+  }
 
-refuseReservation(id: number) {
-  return this.http.put(`${this.api}/refuse/${id}`, {});
-}
+  refuseReservation(id: number) {
+    return this.http.put(`${this.api}/refuse/${id}`, {});
+  }
 
-getReservationsByLocation(id: number) {
-  return this.http.get<any[]>(
-    `${this.api}/location/${id}`
-  );
-}
+  getReservationsByLocation(id: number) {
+    return this.http.get<any[]>(`${this.api}/location/${id}`);
+  }
 }

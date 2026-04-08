@@ -4,6 +4,10 @@ import { ProductService } from '../../services/product.service';
 import { LocationService } from '../../../services/location/location.service';
 import { DisponibiliteService } from '../../../services/disponibilite/disponibilite.service';
 import { ReservationVisiteService } from '../../../services/reservation/reservation-visite.service';
+import { CartService } from '../../../services/cart/cart.service';
+import { AuthService } from '../../../services/auth/auth.service';
+import { Location } from '@angular/common';
+
 @Component({
   selector: 'app-product-detail',
   templateUrl: './product-detail.component.html',
@@ -42,6 +46,7 @@ reservationPopupType: 'success' | 'error' = 'success';
 selectedDay = '';
 selectedDate = '';
 selectedSlot: any = null;
+isOwner = false;
 
 daysOfWeek = [
   { label: 'Monday', value: 'LUNDI' },
@@ -57,19 +62,28 @@ daysOfWeek = [
   reservationPopupTitle = '';
   reservationPopupMessage = '';
 
-  currentUserId = 2; // replace later with auth user
+  currentUserId: number | null = null;
   bookingSuccess = false;
   bookingSuccessMessage = '';
+
+
+  showQuantitySelector = false;
+  selectedQuantity = 1;
+  cartTotal = 0;
 
   constructor(
     private route: ActivatedRoute,
     private productService: ProductService,
     private locationService: LocationService,
     private disponibiliteService: DisponibiliteService,
-    private reservationVisiteService: ReservationVisiteService
+    private reservationVisiteService: ReservationVisiteService,
+    private cartService: CartService,
+    private authService: AuthService,
+    private location: Location
   ) {}
 
   ngOnInit() {
+    this.currentUserId = this.authService.getCurrentUserId();
   const id = this.route.snapshot.paramMap.get('id');
   const mode = this.route.snapshot.paramMap.get('mode');
 
@@ -83,10 +97,15 @@ daysOfWeek = [
     this.loadRental(+id);
   }
 }
+extractId(url: string): number {
+  return Number(url.split('/').pop());
+}
 
   loadProduct(id: number) {
+    
     this.productService.getById(id).subscribe((p: any) => {
       this.product = {
+        id: this.extractId(p._links.self.href),
         name: p.nom,
         price: p.prix,
         image: p.photoProduit
@@ -95,6 +114,7 @@ daysOfWeek = [
         description: p.description,
         quantity: p.quantiteDisponible
       };
+      this.isOwner = p.idUser === this.currentUserId;
     });
   }
 
@@ -120,8 +140,11 @@ daysOfWeek = [
       surface: r.superficie,
       unit: r.uniteSuperficie,
       soilType: r.typeSol,
-      type: r.type
+      type: r.type,
+      idUser: r.idUser,
+      hasReservation: r.hasActiveReservations
     };
+    this.isOwner = r.idUser === this.currentUserId;
 
     this.loadAvailabilities(id);
   });
@@ -158,6 +181,14 @@ closeReservationPopup() {
   this.showReservationPopup = false;
 }
 openBooking() {
+  if (!this.currentUserId) {
+  this.openReservationPopup(
+    'Login Required',
+    'Please sign in first to book a visit.',
+    'error'
+  );
+  return;
+}
   this.bookingOpen = true;
   this.bookingSuccess = false;
   this.bookingSuccessMessage = '';
@@ -188,6 +219,14 @@ selectSlot(slot: any) {
 }
 
 confirmBooking() {
+  if (!this.currentUserId) {
+  this.openReservationPopup(
+    'Login Required',
+    'Please sign in first to reserve a visit.',
+    'error'
+  );
+  return;
+}
   if (!this.product?.id) {
     this.openReservationPopup(
       'Reservation Failed',
@@ -263,7 +302,7 @@ confirmBooking() {
 
       console.log('Reservation payload:', reservation);
 
-      this.reservationVisiteService.create(this.product.id, reservation).subscribe({
+      this.reservationVisiteService.create(this.product.id, this.currentUserId!, reservation).subscribe({
         next: () => {
           this.openReservationPopup(
             'Reservation Sent',
@@ -341,5 +380,114 @@ hasAlreadyReservedThisProduct(reservations: any[]): boolean {
 
     return reservedLocationId === this.product.id;
   });
+}
+openQuantitySelector(): void {
+  if (!this.currentUserId) {
+  this.openReservationPopup(
+    'Login Required',
+    'Please sign in first to add products to cart.',
+    'error'
+  );
+  return;
+}
+  if (this.mode !== 'buy') return;
+
+  if (!this.product?.id) {
+    this.openReservationPopup('Cart Error', 'Product not found.', 'error');
+    return;
+  }
+
+  if (!this.product?.quantity || this.product.quantity <= 0) {
+    this.openReservationPopup('Out of Stock', 'This product is currently unavailable.', 'error');
+    return;
+  }
+
+  this.showQuantitySelector = true;
+  this.selectedQuantity = 1;
+  this.updateCartTotal();
+}
+increaseQuantity(): void {
+  if (this.selectedQuantity < (this.product?.quantity || 0)) {
+    this.selectedQuantity++;
+    this.updateCartTotal();
+  }
+}
+
+decreaseQuantity(): void {
+  if (this.selectedQuantity > 1) {
+    this.selectedQuantity--;
+    this.updateCartTotal();
+  }
+}
+
+cancelQuantitySelection(): void {
+  this.showQuantitySelector = false;
+  this.selectedQuantity = 1;
+  this.cartTotal = 0;
+}
+
+updateCartTotal(): void {
+  this.cartTotal = (this.product?.price || 0) * this.selectedQuantity;
+}
+addProductToCart(): void {
+  if (!this.currentUserId) {
+  this.openReservationPopup(
+    'Login Required',
+    'Please sign in first to add products to cart.',
+    'error'
+  );
+  return;
+}
+  if (!this.product?.id) {
+    this.openReservationPopup('Cart Error', 'Product not found.', 'error');
+    return;
+  }
+
+  if (!this.selectedQuantity || this.selectedQuantity <= 0) {
+    this.openReservationPopup('Cart Error', 'Please select a valid quantity.', 'error');
+    return;
+  }
+
+  if (this.selectedQuantity > (this.product?.quantity || 0)) {
+    this.openReservationPopup(
+      'Stock Error',
+      `Only ${this.product?.quantity || 0} KG available.`,
+      'error'
+    );
+    return;
+  }
+
+  this.cartService.addToCart(this.currentUserId, this.product.id, this.selectedQuantity)
+    .subscribe({
+      next: () => {
+
+        this.cartService.refreshCartCount();
+
+        this.openReservationPopup(
+          'Added to Cart',
+          `${this.selectedQuantity} KG of ${this.product.name} added successfully.`,
+          'success'
+        );
+
+        this.showQuantitySelector = false;
+        this.selectedQuantity = 1;
+        this.cartTotal = 0;
+      },
+      error: (err) => {
+        this.openReservationPopup(
+          'Cart Error',
+          typeof err === 'string' ? err : 'Failed to add product to cart.',
+          'error'
+        );
+      }
+    });
+}
+
+canBuyProduct(): boolean {
+  return this.mode === 'buy' && (this.product?.quantity || 0) > 0;
+}
+
+goBack(): void {
+  this.location.back();
 }
 }

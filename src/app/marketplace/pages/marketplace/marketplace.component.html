@@ -1,4 +1,5 @@
 <app-navbar></app-navbar>
+
 <!-- HERO -->
 <section class="section-padding marketplace-hero">
   <div class="container">
@@ -12,17 +13,12 @@
       </p>
     </div>
 
-    
-    
-
-    <!-- Toggle -->
     <div class="toggle-mode">
-        <div class="toggle-pill">
-            <div class="toggle-bg" [class.right]="mode === 'rent'"></div>
-
-            <button (click)="setMode('buy')">Buy</button>
-            <button (click)="setMode('rent')">Rent</button>
-        </div>
+      <div class="toggle-pill">
+        <div class="toggle-bg" [class.right]="mode === 'rent'"></div>
+        <button (click)="setMode('buy')">Buy</button>
+        <button (click)="setMode('rent')">Rent</button>
+      </div>
     </div>
   </div>
 </section>
@@ -31,222 +27,327 @@
 <section class="section-padding">
   <div class="container marketplace-layout">
 
-    <!-- FILTER -->
-    <aside class="filters reveal-left">
-      <h3>Filters</h3>
-
-      <input type="text"
-       placeholder="Search products..."
-       [(ngModel)]="searchTerm"
-       (input)="onSearchChange()"
-       class="filter-input"/>
-
-      <label>Max Price: {{ maxPrice }} DT</label>
-    <input type="range"
-        min="0"
-        max="1000"
-        [(ngModel)]="maxPrice"
-        (change)="onPriceChange()">
-
-      <div class="chips">
-        <span class="chip"
-                (click)="selectCategory('Machine')">Machine</span>
-
-        <span class="chip"
-                (click)="selectCategory('Terrain')">Land</span>
-
-        <span class="chip"
-                (click)="selectCategory('')">All</span>
-                <span class="chip" routerLink="/marketplace/my-visit-reservations">
-          <i class="fas fa-calendar-check"></i>
-          My Visit Reservations
-        </span>
-
-        <span class="chip" routerLink="/marketplace/manage-reservations">
-          <i class="fas fa-tasks"></i>
-          Manage Reservations
-        </span>
-
+    <!-- FILTERS -->
+    <aside class="filters-panel reveal-left">
+      <div class="filters-card">
+        <div class="filters-head">
+          <h3>Filters</h3>
+          <p>Refine what you want to see</p>
         </div>
+
+        <!-- QUICK FILTER TABS -->
+        <div class="market-filter-tabs">
+          <button
+            *ngIf="mode === 'buy'"
+            class="market-filter-btn"
+            [class.active]="selectedBuyCategory === ''"
+            (click)="selectedBuyCategory = ''; applyFilters()">
+            All
+          </button>
+
+          <button
+            *ngIf="mode === 'buy'"
+            class="market-filter-btn"
+            [class.active]="selectedBuyCategory === 'Fruits'"
+            (click)="selectedBuyCategory = 'Fruits'; applyFilters()">
+            Fruits
+          </button>
+
+          <button
+            *ngIf="mode === 'buy'"
+            class="market-filter-btn"
+            [class.active]="selectedBuyCategory === 'Vegetables'"
+            (click)="selectedBuyCategory = 'Vegetables'; applyFilters()">
+            Vegetables
+          </button>
+
+          <button
+            *ngIf="mode === 'buy'"
+            class="market-filter-btn"
+            [class.active]="selectedBuyCategory === 'Cereals'"
+            (click)="selectedBuyCategory = 'Cereals'; applyFilters()">
+            Cereals
+          </button>
+
+          <button
+            *ngIf="mode === 'rent'"
+            class="market-filter-btn"
+            [class.active]="selectedCategory === ''"
+            (click)="selectCategory('')">
+            All
+          </button>
+
+          <button
+            *ngIf="mode === 'rent'"
+            class="market-filter-btn"
+            [class.active]="selectedCategory === 'Materiel'"
+            (click)="selectCategory('Materiel')">
+            Machine
+          </button>
+
+          <button
+            *ngIf="mode === 'rent'"
+            class="market-filter-btn"
+            [class.active]="selectedCategory === 'Terrain'"
+            (click)="selectCategory('Terrain')">
+            Land
+          </button>
+
+
+        <button
+          *ngIf="isAgriculteur"
+          class="market-filter-btn"
+          [class.active]="showOnlyMine"
+          (click)="toggleMyPosts()">
+          {{ showOnlyMine ? 'All Posts' : 'My Posts' }}
+        </button>
+      </div>
+
+        <!-- ADVANCED FILTERS -->
+        <div class="advanced-filters-box">
+          <div class="filter-field">
+            <label>Search</label>
+            <div class="filter-input-wrap">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                placeholder="Search products..."
+                [(ngModel)]="searchTerm"
+                (input)="onSearchChange()"
+                class="filter-input" />
+            </div>
+          </div>
+
+          <div class="filter-field">
+            <label>Max Price: <strong>{{ maxPrice }} DT</strong></label>
+            <input
+              type="range"
+              min="0"
+              max="1000"
+              [(ngModel)]="maxPrice"
+              (change)="onPriceChange()"
+              class="price-range" />
+          </div>
+        </div>
+
+        <!-- SHORTCUTS -->
+        <div class="filter-shortcuts">
+          <a class="shortcut-btn" routerLink="/marketplace/my-visit-reservations">
+            <i class="fas fa-calendar-check"></i>
+            <span>My Visit Reservations</span>
+          </a>
+
+          <a
+            *ngIf="isAgriculteur"
+            class="shortcut-btn"
+            routerLink="/marketplace/manage-reservations">
+            <i class="fas fa-tasks"></i>
+            <span>Manage Reservations</span>
+          </a>
+        </div>
+      </div>
     </aside>
-    
+
+    <!-- PRODUCTS -->
     <div class="products-section">
 
-        <div class="add-product-wrapper">
-  <button class="btn btn-primary" (click)="openForm()">
-    <i class="fas fa-plus"></i>
-    {{ mode === 'buy' ? 'Add Product' : 'Add Rental' }}
-  </button>
-</div>
+      <div class="add-product-wrapper" *ngIf="isAgriculteur">
+        <button class="btn btn-primary" (click)="openForm()">
+          <i class="fas fa-plus"></i>
+          {{ mode === 'buy' ? 'Add Product' : 'Add Rental' }}
+        </button>
+      </div>
 
-        <!-- GRID -->
-        <div class="products-grid">
-            <div class="product-card reveal"
-                *ngFor="let p of filteredItems; let i = index"
-                [style.animation-delay]="(i * 0.08) + 's'">
+      <div class="products-grid">
+        <div class="product-card reveal"
+             *ngFor="let p of filteredItems; let i = index"
+             [style.animation-delay]="(i * 0.08) + 's'">
 
-                <!-- Image -->
-                <div class="product-img">
-                <img [src]="p.image" [alt]="p.name">
+          <div class="product-img">
+            <img [src]="p.image" [alt]="p.name">
 
-                <!-- ONLY change badge -->
-                <span class="product-badge badge-organic">
-                    {{ mode === 'buy' ? 'For Sale' : 'For Rent' }}
-                </span>
-                <!-- 🔥 NEW BOOKED BADGE -->
-                <span class="product-badge badge-sale" *ngIf="mode === 'rent' && p.hasReservation">
-                  Booked
-                </span>
-                <!-- KEEP overlay actions (optional remove later) -->
-                <div class="product-actions">
-                    <button class="action-btn" (click)="viewProduct(p)">
-                    <i class="far fa-eye"></i>
-                    </button>
-                    <!-- EDIT (ONLY OWNER) -->
-                    <button class="action-btn"
-                            *ngIf="p.idUser === currentUserId"
-                            (click)="editProduct(p)">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <!-- DELETE -->
-                    <button class="action-btn delete-btn"
-                            *ngIf="p.idUser === currentUserId"
-                            (click)="deleteProduct(p)">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-                </div>
+            <span
+              class="product-badge"
+              [ngClass]="{
+                'badge-organic': mode === 'rent' || (mode === 'buy' && p.quantity > 0),
+                'badge-sale': mode === 'buy' && p.quantity === 0
+              }">
+              {{
+                mode === 'buy'
+                  ? (p.quantity === 0 ? 'Out of Stock' : 'For Sale')
+                  : 'For Rent'
+              }}
+            </span>
 
-                <!-- Info -->
-                <div class="product-info">
+            <span
+              class="product-badge badge-sale badge-booked"
+              *ngIf="mode === 'rent' && p.hasReservation && canManageItem(p)">
+              Booked
+            </span>
 
-                <!-- CHANGE category -->
-                <span class="product-category">
-                    {{ p.type || 'Equipment' }}
-                </span>
+            <div class="product-actions">
+              <button class="action-btn" (click)="viewProduct(p)">
+                <i class="far fa-eye"></i>
+              </button>
 
-                <h3 class="product-name">{{ p.name }}</h3>
+              <button class="action-btn"
+                      *ngIf="canManageItem(p)"
+                      (click)="editProduct(p)">
+                <i class="fas fa-edit"></i>
+              </button>
 
-
-                <div class="product-price-row">
-                    <div class="product-price">
-                    <span class="price-current">
-                        {{ p.price }}
-                        <span *ngIf="mode === 'rent'">/Month</span>
-                    </span>
-                    </div>
-
-                    <button class="add-to-cart" (click)="action(p)">
-                    <i class="fas"
-                        [class.fa-shopping-cart]="mode === 'buy'"
-                        [class.fa-calendar]="mode === 'rent'"></i>
-
-                    {{ mode === 'buy' ? 'Add to Cart' : 'Book Now' }}
-                    </button>
-                </div>
-
-                </div>
+              <button class="action-btn delete-btn"
+                      *ngIf="canManageItem(p)"
+                      (click)="deleteProduct(p)">
+                <i class="fas fa-trash"></i>
+              </button>
             </div>
+          </div>
+
+          <div class="product-info">
+            <span class="product-category">
+              {{
+                mode === 'buy'
+                  ? (p.category || 'Uncategorized')
+                  : (p.type === 'materiel'
+                      ? 'Machine'
+                      : p.type === 'terrain'
+                        ? 'Land'
+                        : 'Equipment')
+              }}
+            </span>
+
+            <h3 class="product-name">{{ p.name }}</h3>
+
+            <div class="product-price-row">
+              <div class="product-price">
+                <span class="price-current">
+                  {{ p.price }} DT
+                  <span *ngIf="mode === 'buy'">/kg</span>
+                  <span *ngIf="mode === 'rent'">/Month</span>
+                </span>
+              </div>
+
+              <button class="add-to-cart" (click)="action(p)">
+                <i class="fas"
+                   [class.fa-shopping-cart]="mode === 'buy'"
+                   [class.fa-calendar]="mode === 'rent'"></i>
+                {{ mode === 'buy' ? 'Add to Cart' : 'Book Now' }}
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="modal" *ngIf="showForm">
-            <div class="modal-content advanced">
+      </div>
 
-                <h3>
-                    {{ isEditMode
-                        ? (mode === 'buy' ? 'Edit Product' : 'Edit Rental')
-                        : (mode === 'buy' ? 'Add New Product' : 'Add Rental') }}
-                </h3>
+      <!-- FORM MODAL -->
+      <div class="modal" *ngIf="showForm">
+        <div class="modal-content advanced">
 
-                <!-- ================= STEP 1: CHOICE ================= -->
-                <div *ngIf="mode === 'rent' && rentalStep === 'choice' && !isEditMode"
-                class="rental-choice">
+          <h3>
+            {{ isEditMode
+                ? (mode === 'buy' ? 'Edit Product' : 'Edit Rental')
+                : (mode === 'buy' ? 'Add New Product' : 'Add Rental') }}
+          </h3>
 
-                <h3 class="choice-title">What do you want to rent?</h3>
+          <div *ngIf="mode === 'rent' && rentalStep === 'choice' && !isEditMode"
+               class="rental-choice">
 
-                <div class="choice-buttons">
+            <h3 class="choice-title">What do you want to rent?</h3>
 
-                    <!-- MACHINE -->
-                    <div class="choice-card" (click)="selectRentalType('machine')">
-                    <i class="fas fa-tractor"></i>
-                    <h4>Machine</h4>
-                    <p>Rent agricultural equipment</p>
-                    </div>
+            <div class="choice-buttons">
+              <div class="choice-card" (click)="selectRentalType('machine')">
+                <i class="fas fa-tractor"></i>
+                <h4>Machine</h4>
+                <p>Rent agricultural equipment</p>
+              </div>
 
-                    <!-- TERRAIN -->
-                    <div class="choice-card" (click)="selectRentalType('terrain')">
-                    <i class="fas fa-seedling"></i>
-                    <h4>Land</h4>
-                    <p>Rent agricultural land</p>
-                    </div>
-                    <div class="form-actions full">
-                    <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-                    </div>
-                </div>
+              <div class="choice-card" (click)="selectRentalType('terrain')">
+                <i class="fas fa-seedling"></i>
+                <h4>Land</h4>
+                <p>Rent agricultural land</p>
+              </div>
 
-                </div>
+              <div class="form-actions full">
+                <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+              </div>
+            </div>
+          </div>
 
-                <div *ngIf="mode === 'buy' || (mode === 'rent' && rentalStep === 'form')">
-
+          <div *ngIf="mode === 'buy' || (mode === 'rent' && rentalStep === 'form')">
 
             <form (ngSubmit)="saveProduct()" class="form-main">
 
-            <div class="form-left">
+              <div class="form-left">
 
-                <!-- ================= COMMON (BUY ONLY) ================= -->
                 <div *ngIf="mode === 'buy'" class="form-grid">
+  <div class="form-group">
+    <label>Product Name</label>
+    <input
+      type="text"
+      [(ngModel)]="newProduct.nom"
+      name="nom"
+      required>
+  </div>
 
-                <div class="form-group">
-                    <label>Product Name</label>
-                    <input type="text"
-                        [(ngModel)]="newProduct.nom"
-                        name="nom"
-                        required>
-                </div>
+  <div class="form-group">
+    <label>Category</label>
+    <select
+      [(ngModel)]="newProduct.category"
+      name="category"
+      required>
+      <option value="" disabled>Select category</option>
+      <option value="Fruits">Fruits</option>
+      <option value="Vegetables">Vegetables</option>
+      <option value="Cereals">Cereals</option>
+      <option value="Legumes">Legumes</option>
+      <option value="Dairy">Dairy</option>
+      <option value="Oil">Extracted Oil</option>
+      <option value="Seeds">Seeds</option>
+    </select>
+  </div>
+</div>
 
-                </div>
+      <div *ngIf="mode === 'buy'" class="form-group full">
+        <label>Description</label>
+        <textarea
+          [(ngModel)]="newProduct.description"
+          name="description"
+          required></textarea>
+      </div>
 
-                <!-- Description (ONLY BUY) -->
-                <div *ngIf="mode === 'buy'" class="form-group full">
-                    <label>Description</label>
-                    <textarea [(ngModel)]="newProduct.description"
-                            name="description"></textarea>
-                </div>
+      <div *ngIf="mode === 'buy'" class="form-grid">
+        <div class="form-group">
+          <label>Price (per KG)</label>
+          <div class="input-with-unit">
+            <input
+              type="number"
+              [(ngModel)]="newProduct.prix"
+              name="prix"
+              min="0.001"
+              required>
+            <span>DT/KG</span>
+          </div>
+        </div>
 
-                <!-- ================= BUY MODE ================= -->
-                <div *ngIf="mode === 'buy'" class="form-grid">
+        <div class="form-group">
+          <label>Quantity Available (KG)</label>
+          <div class="input-with-unit">
+            <input
+              type="number"
+              [(ngModel)]="newProduct.quantiteDisponible"
+              name="quantiteDisponible"
+              min="0.001"
+              required>
+            <span>KG</span>
+          </div>
+        </div>
+      </div>
 
-                    <!-- Price -->
-                    <div class="form-group">
-                    <label>Price (per KG)</label>
-                    <div class="input-with-unit">
-                        <input type="number"
-                            [(ngModel)]="newProduct.prix"
-                            name="prix">
-                        <span>DT/KG</span>
-                    </div>
-                    </div>
-
-                    <!-- Quantity -->
-                    <div class="form-group">
-                    <label>Quantity Available (KG)</label>
-                    <div class="input-with-unit">
-                        <input type="number"
-                            [(ngModel)]="newProduct.quantiteDisponible"
-                            name="quantiteDisponible">
-                        <span>KG</span>
-                    </div>
-                    </div>
-
-                </div>
-                <!-- ================= RENT MODE ================= -->
                 <div *ngIf="mode === 'rent'" class="rent-container">
 
-                  <!-- ================= STEP 1 : RENTAL INFO ================= -->
                   <div *ngIf="rentFormStep === 1">
 
-                    <!-- ================= MACHINE ================= -->
                     <div *ngIf="newProduct.type === 'machine'">
-
                       <h3 class="form-title">
                         <i class="fas fa-tractor title-icon"></i>
                         Machine Rental
@@ -254,81 +355,70 @@
 
                       <h4 class="section-title">Machine Information</h4>
                       <div class="form-grid">
-
                         <div class="form-group">
                           <label>Machine Name</label>
-                          <input
-                            type="text"
-                            [(ngModel)]="newProduct.nom"
-                            name="nom"
-                            placeholder="e.g. Tractor"
-                            required>
+                          <input type="text"
+                                 [(ngModel)]="newProduct.nom"
+                                 name="nom"
+                                 placeholder="e.g. Tractor"
+                                 required>
                         </div>
 
                         <div class="form-group">
                           <label>Brand</label>
-                          <input
-                            type="text"
-                            [(ngModel)]="newProduct.marque"
-                            name="marque"
-                            placeholder="e.g. New Holland"
-                            required>
+                          <input type="text"
+                                 [(ngModel)]="newProduct.marque"
+                                 name="marque"
+                                 placeholder="e.g. New Holland"
+                                 required>
                         </div>
 
                         <div class="form-group">
                           <label>Model</label>
-                          <input
-                            type="text"
-                            [(ngModel)]="newProduct.modele"
-                            name="modele"
-                            placeholder="e.g. T4 Electric"
-                            required>
+                          <input type="text"
+                                 [(ngModel)]="newProduct.modele"
+                                 name="modele"
+                                 placeholder="e.g. T4 Electric"
+                                 required>
                         </div>
-
                       </div>
 
                       <h4 class="section-title">Rental Details</h4>
                       <div class="form-grid">
-
                         <div class="form-group">
                           <label>Price per Month</label>
                           <div class="input-with-unit">
-                            <input
-                              type="number"
-                              [(ngModel)]="newProduct.prix"
-                              [disabled]="hasActiveReservations"
-                              name="prix"
-                              placeholder="Enter monthly price"
-                              required>
+                            <input type="number"
+                                   [(ngModel)]="newProduct.prix"
+                                   [disabled]="hasActiveReservations"
+                                   name="prix"
+                                   placeholder="Enter monthly price"
+                                   required>
                             <span>DT/month</span>
                           </div>
                         </div>
 
                         <div class="form-group">
                           <label>Available From</label>
-                          <input
-                            type="date"
-                            [(ngModel)]="newProduct.dateDebutLocation"
-                            [disabled]="hasActiveReservations"
-                            name="dateDebutLocation"
-                            required>
+                          <input type="date"
+                                 [(ngModel)]="newProduct.dateDebutLocation"
+                                 [disabled]="hasActiveReservations"
+                                 name="dateDebutLocation"
+                                 required>
                         </div>
 
                         <div class="form-group">
                           <label>Available Until</label>
-                          <input
-                            type="date"
-                            [(ngModel)]="newProduct.dateFinLocation"
-                            [disabled]="hasActiveReservations"
-                            name="dateFinLocation"
-                            required>
+                          <input type="date"
+                                 [(ngModel)]="newProduct.dateFinLocation"
+                                 [disabled]="hasActiveReservations"
+                                 name="dateFinLocation"
+                                 required>
                         </div>
-
                       </div>
 
                       <h4 class="section-title">Condition</h4>
                       <div class="condition-selector">
-
                         <div class="condition-card"
                              [class.active]="newProduct.etat === 'neuf'"
                              (click)="newProduct.etat = 'neuf'">
@@ -349,14 +439,10 @@
                           <i class="fas fa-tools"></i>
                           <span>Used</span>
                         </div>
-
                       </div>
-
                     </div>
 
-                    <!-- ================= TERRAIN ================= -->
                     <div *ngIf="newProduct.type === 'terrain'">
-
                       <h3 class="form-title">
                         <i class="fas fa-seedling title-icon"></i>
                         Land Rental
@@ -364,94 +450,77 @@
 
                       <h4 class="section-title">Land Information</h4>
                       <div class="form-grid">
-
                         <div class="form-group">
                           <label>Location</label>
-                          <input
-                            type="text"
-                            [(ngModel)]="newProduct.localisation"
-                            name="localisation"
-                            placeholder="e.g. Sidi Bouzid"
-                            required>
+                          <input type="text"
+                                 [(ngModel)]="newProduct.localisation"
+                                 name="localisation"
+                                 placeholder="e.g. Sidi Bouzid"
+                                 required>
                         </div>
 
                         <div class="form-group">
                           <label>Surface Area</label>
-                          <input
-                            type="number"
-                            [(ngModel)]="newProduct.superficie"
-                            name="superficie"
-                            placeholder="Enter surface area"
-                            required>
+                          <input type="number"
+                                 [(ngModel)]="newProduct.superficie"
+                                 name="superficie"
+                                 placeholder="Enter surface area"
+                                 required>
                         </div>
 
                         <div class="form-group">
                           <label>Surface Unit</label>
-                          <input
-                            type="text"
-                            [(ngModel)]="newProduct.uniteSuperficie"
-                            name="uniteSuperficie"
-                            placeholder="e.g. hectare"
-                            required>
+                          <input type="text"
+                                 [(ngModel)]="newProduct.uniteSuperficie"
+                                 name="uniteSuperficie"
+                                 placeholder="e.g. hectare"
+                                 required>
                         </div>
 
                         <div class="form-group">
                           <label>Soil Type</label>
-                          <input
-                            type="text"
-                            [(ngModel)]="newProduct.typeSol"
-                            name="typeSol"
-                            placeholder="e.g. clay"
-                            required>
+                          <input type="text"
+                                 [(ngModel)]="newProduct.typeSol"
+                                 name="typeSol"
+                                 placeholder="e.g. clay"
+                                 required>
                         </div>
-
                       </div>
 
                       <h4 class="section-title">Rental Details</h4>
                       <div class="form-grid">
-
                         <div class="form-group">
                           <label>Price per Month</label>
                           <div class="input-with-unit">
-                            <input
-                              type="number"
-                              [(ngModel)]="newProduct.prix"
-                              name="prix"
-                              placeholder="Enter monthly price"
-                              required>
+                            <input type="number"
+                                   [(ngModel)]="newProduct.prix"
+                                   name="prix"
+                                   placeholder="Enter monthly price"
+                                   required>
                             <span>DT/month</span>
                           </div>
                         </div>
 
                         <div class="form-group">
                           <label>Available From</label>
-                          <input
-                            type="date"
-                            [(ngModel)]="newProduct.dateDebutLocation"
-                            
-                            name="dateDebutLocation"
-                            required>
+                          <input type="date"
+                                 [(ngModel)]="newProduct.dateDebutLocation"
+                                 name="dateDebutLocation"
+                                 required>
                         </div>
 
                         <div class="form-group">
                           <label>Available Until</label>
-                          <input
-                            type="date"
-                            [(ngModel)]="newProduct.dateFinLocation"
-                          
-                            name="dateFinLocation"
-                            required>
+                          <input type="date"
+                                 [(ngModel)]="newProduct.dateFinLocation"
+                                 name="dateFinLocation"
+                                 required>
                         </div>
-
                       </div>
-
                     </div>
-
                   </div>
 
-                  <!-- ================= STEP 2 : AVAILABILITY ================= -->
                   <div *ngIf="rentFormStep === 2">
-
                     <h3 class="form-title">
                       <i class="fas fa-calendar-alt title-icon"></i>
                       Weekly Availability
@@ -462,152 +531,147 @@
                     </p>
 
                     <div class="availability-week">
+  <div class="availability-row" *ngFor="let day of weekAvailability">
 
-                      <div class="availability-row"
-                          *ngFor="let day of weekAvailability"
-                          [ngClass]="{'locked-slot': isSlotBlocked(day)}">
+    <div class="day-left">
+      <label class="day-toggle">
+        <input
+          type="checkbox"
+          [(ngModel)]="day.active"
+          [name]="'active_' + day.jourSemaine">
+        <span>{{ day.jourSemaine }}</span>
+      </label>
+    </div>
 
-                        <div class="day-left">
-                          <label class="day-toggle">
-                            <input
-                              type="checkbox"
-                              [(ngModel)]="day.active"
-                              [disabled]="isSlotBlocked(day)"
-                              [name]="'active_' + day.jourSemaine">
-                            <span>{{ day.jourSemaine }}</span>
-                          </label>
-                        </div>
+    <div class="day-slots" *ngIf="day.active">
 
-                        <div class="day-times" *ngIf="day.active">
+      <div
+        class="day-times"
+        *ngFor="let slot of day.slots; let i = index"
+        [ngClass]="{'locked-slot': isSlotBlocked(day, slot)}">
 
-                          <input
-                            type="time"
-                            step="3600"
-                            min="07:00"
-                            max="18:00"
-                            [(ngModel)]="day.heureDebut"
-                            [disabled]="isSlotBlocked(day)"
-                            [name]="'debut_' + day.jourSemaine">
+        <input
+          type="time"
+          step="3600"
+          min="07:00"
+          max="18:00"
+          [(ngModel)]="slot.heureDebut"
+          [disabled]="isSlotBlocked(day, slot)"
+          [name]="'debut_' + day.jourSemaine + '_' + i">
 
-                          <input
-                            type="time"
-                            step="3600"
-                            min="08:00"
-                            max="19:00"
-                            [(ngModel)]="day.heureFin"
-                            [disabled]="isSlotBlocked(day)"
-                            [name]="'fin_' + day.jourSemaine">
+        <input
+          type="time"
+          step="3600"
+          min="08:00"
+          max="19:00"
+          [(ngModel)]="slot.heureFin"
+          [disabled]="isSlotBlocked(day, slot)"
+          [name]="'fin_' + day.jourSemaine + '_' + i">
 
-                             <!-- 🔥 DELETE BUTTON -->
-                            <button type="button"
-                                    class="delete-slot-btn"
-                                    *ngIf="!isSlotBlocked(day)"
-                                    (click)="removeAvailability(day)">
-                              ✖
-                            </button>
+        <button
+          type="button"
+          class="delete-slot-btn"
+          *ngIf="!isSlotBlocked(day, slot)"
+          (click)="removeSlot(day, i)">
+          ✖
+        </button>
 
-                          <!-- 🔥 MESSAGE -->
-                          <small class="locked-msg" *ngIf="isSlotBlocked(day)">
-                            This time slot is already reserved (pending) and cannot be modified.
-                          </small>
+        <small class="locked-msg" *ngIf="isSlotBlocked(day, slot)">
+          This time slot is already reserved (pending) and cannot be modified.
+        </small>
+      </div>
 
-                        </div>
-
-                      </div>
-
-                    </div>
-
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="addSlot(day)">
+        + Add slot
+      </button>
+    </div>
+  </div>
+</div>
                   </div>
 
                 </div>
+              </div>
 
-                </div>
+              <div class="form-right">
+                <label>{{ mode === 'buy' ? 'Product Image' : 'Rental Image' }}</label>
 
-                <!-- RIGHT SIDE UPLOAD -->
-                <div class="form-right">
+                <div class="upload-box"
+                     (click)="fileInput.click()"
+                     (dragover)="onDragOver($event)"
+                     (drop)="onDrop($event)">
 
-                  <label>{{ mode === 'buy' ? 'Product Image' : 'Rental Image' }}</label>
-
-                  <div class="upload-box"
-                       (click)="fileInput.click()"
-                       (dragover)="onDragOver($event)"
-                       (drop)="onDrop($event)">
-
-                    <div *ngIf="!imagePreview" class="upload-placeholder">
-                      <i class="fas fa-cloud-upload-alt"></i>
-                      <p>Browse files to upload</p>
-                    </div>
-
-                    <img *ngIf="imagePreview" [src]="imagePreview" class="preview-img">
-
-                    <input
-                      type="file"
-                      #fileInput
-                      hidden
-                      (change)="onFileSelected($event)">
+                  <div *ngIf="!imagePreview" class="upload-placeholder">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Browse files to upload</p>
                   </div>
 
-                  <div class="file-info" *ngIf="selectedFile">
-                    {{ selectedFile.name }}
-                    <button type="button" (click)="removeImage()">✖</button>
-                  </div>
+                  <img *ngIf="imagePreview" [src]="imagePreview" class="preview-img">
 
+                  <input type="file"
+                         #fileInput
+                         hidden
+                         (change)="onFileSelected($event)">
                 </div>
 
-                <!-- ACTIONS -->
-                <div class="form-actions full">
-
-                  <!-- BUY -->
-                  <button *ngIf="mode === 'buy'"
-                          type="submit"
-                          class="btn btn-primary">
-                    Save Product
-                  </button>
-
-                  <!-- RENT STEP 1 -->
-                  <button *ngIf="mode === 'rent' && rentFormStep === 1"
-                          type="button"
-                          class="btn btn-secondary"
-                          (click)="rentalStep = 'choice'">
-                    Back
-                  </button>
-
-                  <button *ngIf="mode === 'rent' && rentFormStep === 1"
-                          type="button"
-                          class="btn btn-primary"
-                          (click)="rentFormStep = 2">
-                    Next
-                  </button>
-
-                  <!-- RENT STEP 2 -->
-                  <button *ngIf="mode === 'rent' && rentFormStep === 2"
-                          type="button"
-                          class="btn btn-secondary"
-                          (click)="rentFormStep = 1">
-                    Previous
-                  </button>
-
-                  <button *ngIf="mode === 'rent' && rentFormStep === 2"
-                          type="submit"
-                          class="btn btn-primary">
-                    Save Rental
-                  </button>
-
-                  <button type="button"
-                          class="btn btn-secondary"
-                          (click)="closeForm()">
-                    Cancel
-                  </button>
-
+                <div class="file-info" *ngIf="selectedFile">
+                  {{ selectedFile.name }}
+                  <button type="button" (click)="removeImage()">✖</button>
                 </div>
+              </div>
+
+              <div class="form-actions full">
+                <button *ngIf="mode === 'buy'"
+                        type="submit"
+                        class="btn btn-primary">
+                  Save Product
+                </button>
+
+                <button *ngIf="mode === 'rent' && rentFormStep === 1"
+                        type="button"
+                        class="btn btn-secondary"
+                        (click)="rentalStep = 'choice'">
+                  Back
+                </button>
+
+                <button *ngIf="mode === 'rent' && rentFormStep === 1"
+                        type="button"
+                        class="btn btn-primary"
+                        (click)="rentFormStep = 2">
+                  Next
+                </button>
+
+                <button *ngIf="mode === 'rent' && rentFormStep === 2"
+                        type="button"
+                        class="btn btn-secondary"
+                        (click)="rentFormStep = 1">
+                  Previous
+                </button>
+
+                <button *ngIf="mode === 'rent' && rentFormStep === 2"
+                        type="submit"
+                        class="btn btn-primary">
+                  Save Rental
+                </button>
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        (click)="closeForm()">
+                  Cancel
+                </button>
+              </div>
 
             </form>
-            </div>
-            </div>
-            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
+
 <div
   *ngIf="showReservationPopup"
   (click)="closeReservationPopup()"
@@ -690,4 +754,5 @@
     </button>
   </div>
 </div>
+
 <app-footer></app-footer>

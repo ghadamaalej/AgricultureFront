@@ -10,12 +10,14 @@ import { AppModule } from '../app.module';
 import { ProductDetailComponent } from './pages/product-detail/product-detail.component';
 import { MyVisitReservationsComponent } from './pages/my-visit-reservations/my-visit-reservations.component';
 import { ManageReservationsComponent } from './pages/manage-reservations/manage-reservations.component';
+import { CartComponent } from './pages/cart/cart.component';
 @NgModule({
   declarations: [
     MarketplaceComponent,
     ProductDetailComponent,
     MyVisitReservationsComponent,
-    ManageReservationsComponent
+    ManageReservationsComponent,
+    CartComponent
   ],
   imports: [
     CommonModule,

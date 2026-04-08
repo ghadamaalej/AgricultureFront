@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReservationVisiteService } from '../../../services/reservation/reservation-visite.service';
 import { DisponibiliteService } from '../../../services/disponibilite/disponibilite.service';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-my-visit-reservations',
@@ -21,7 +22,7 @@ export class MyVisitReservationsComponent implements OnInit {
   loading = false;
   errorMessage = '';
 
-  currentUserId: number = 1;
+  currentUserId: number | null = null;
 
   editOpen = false;
   editingReservation: any = null;
@@ -50,10 +51,18 @@ export class MyVisitReservationsComponent implements OnInit {
   constructor(
     private reservationVisiteService: ReservationVisiteService,
     private disponibiliteService: DisponibiliteService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.currentUserId = this.authService.getCurrentUserId();
+
+    if (!this.currentUserId) {
+      this.errorMessage = 'Please sign in first to view your reservations.';
+      return;
+    }
+
     this.loadReservations();
   }
 
@@ -62,12 +71,16 @@ export class MyVisitReservationsComponent implements OnInit {
   }
 
   loadReservations(): void {
+    if (!this.currentUserId) {
+      this.errorMessage = 'Please sign in first to view your reservations.';
+      return;
+    }
+
     this.loading = true;
     this.errorMessage = '';
 
     this.reservationVisiteService.getByUser(this.currentUserId).subscribe({
       next: (data: any) => {
-        console.log('My reservations:', data);
         this.reservations = Array.isArray(data) ? data : [];
         this.applyFilters();
         this.loading = false;
@@ -120,45 +133,51 @@ export class MyVisitReservationsComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
-  switch (status) {
-    case 'CONFIRMED':
-    case 'CONFIRMEE':
-      return 'status-confirmed';
+    switch (status) {
+      case 'CONFIRMED':
+      case 'CONFIRMEE':
+        return 'status-confirmed';
 
-    case 'REFUSED':
-    case 'REFUSEE':
-      return 'status-refused';
+      case 'REFUSED':
+      case 'REFUSEE':
+        return 'status-refused';
 
-    case 'CANCELLED':
-    case 'ANNULEE':
-      return 'status-cancelled';
+      case 'CANCELLED':
+      case 'ANNULEE':
+        return 'status-cancelled';
 
-    case 'DONE':
-    case 'TERMINEE':
-      return 'status-done';
+      case 'DONE':
+      case 'TERMINEE':
+        return 'status-done';
 
-    default:
-      return 'status-pending';
+      default:
+        return 'status-pending';
+    }
   }
-}
 
-getStatusLabel(status: string): string {
-  switch (status) {
-    case 'CONFIRMED': return 'Confirmed';
-    case 'CONFIRMEE': return 'Confirmed';
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'CONFIRMED':
+      case 'CONFIRMEE':
+        return 'Confirmed';
 
-    case 'REFUSED': return 'Refused';
-    case 'REFUSEE': return 'Refused';
+      case 'REFUSED':
+      case 'REFUSEE':
+        return 'Refused';
 
-    case 'CANCELLED': return 'Cancelled';
-    case 'ANNULEE': return 'Cancelled';
+      case 'CANCELLED':
+      case 'ANNULEE':
+        return 'Cancelled';
 
-    case 'DONE': return 'Done';
-    case 'TERMINEE': return 'Done';
+      case 'DONE':
+      case 'TERMINEE':
+        return 'Done';
 
-    default: return 'Pending';
+      default:
+        return 'Pending';
+    }
   }
-}
+
   getArticleName(r: any): string {
     return (
       r.location?.nom ||
@@ -216,279 +235,266 @@ getStatusLabel(status: string): string {
   }
 
   canEditReservation(reservation: any): boolean {
-  const status = this.getStatus(reservation);
-  return status === 'PENDING' || status === 'EN_ATTENTE';
-}
-getDayValueFromDate(dateStr: string): string {
-  if (!dateStr) return '';
-
-  const jsDay = new Date(dateStr).getDay();
-
-  const map: any = {
-    0: 'DIMANCHE',
-    1: 'LUNDI',
-    2: 'MARDI',
-    3: 'MERCREDI',
-    4: 'JEUDI',
-    5: 'VENDREDI',
-    6: 'SAMEDI'
-  };
-
-  return map[jsDay] || '';
-}
-editReservation(reservation: any): void {
-  if (!this.canEditReservation(reservation)) {
-    this.openReservationPopup(
-      'Update Failed',
-      'Only pending reservations can be updated.',
-      'error'
-    );
-    return;
+    const status = this.getStatus(reservation);
+    return status === 'PENDING' || status === 'EN_ATTENTE';
   }
 
-  this.editingReservation = reservation;
-  this.editOpen = true;
+  getDayValueFromDate(dateStr: string): string {
+    if (!dateStr) return '';
 
-  this.selectedDate = this.getVisitDate(reservation);
-  this.selectedDay = this.getDayValueFromDate(this.selectedDate);
-  this.selectedSlot = null;
-  this.filteredAvailabilities = [];
+    const jsDay = new Date(dateStr).getDay();
 
-  const locationId =
-    reservation.location?.id ||
-    reservation.locationId ||
-    reservation.idLocation;
+    const map: any = {
+      0: 'DIMANCHE',
+      1: 'LUNDI',
+      2: 'MARDI',
+      3: 'MERCREDI',
+      4: 'JEUDI',
+      5: 'VENDREDI',
+      6: 'SAMEDI'
+    };
 
-  if (!locationId || !this.selectedDay) return;
-
-  this.disponibiliteService.getByLocationAndDay(locationId, this.selectedDay).subscribe({
-    next: (data: any[]) => {
-      this.filteredAvailabilities = Array.isArray(data) ? data : [];
-
-      const existingSlot = this.filteredAvailabilities.find((slot: any) =>
-        slot.heureDebut === this.getStartTime(reservation) &&
-        slot.heureFin === this.getEndTime(reservation)
-      );
-
-      if (existingSlot) {
-        this.selectedSlot = existingSlot;
-      }
-    },
-    error: (err) => {
-      console.error('Error loading availabilities:', err);
-      this.filteredAvailabilities = [];
-    }
-  });
-}
-
-loadAvailabilitiesForEdit(reservation: any): void {
-  const locationId =
-    reservation.location?.id ||
-    reservation.locationId ||
-    reservation.idLocation;
-
-  if (!locationId || !this.selectedDay) {
-    this.filteredAvailabilities = [];
-    return;
+    return map[jsDay] || '';
   }
 
-  this.disponibiliteService.getByLocationAndDay(locationId, this.selectedDay).subscribe({
-    next: (data: any[]) => {
-      this.filteredAvailabilities = data || [];
-
-      const existingSlot = this.filteredAvailabilities.find((slot: any) =>
-        slot.heureDebut === this.getStartTime(reservation) &&
-        slot.heureFin === this.getEndTime(reservation)
-      );
-
-      if (existingSlot) {
-        this.selectedSlot = existingSlot;
-      }
-    },
-    error: (err) => {
-      console.error('Error loading availabilities:', err);
-      this.filteredAvailabilities = [];
-    }
-  });
-}
-selectEditSlot(slot: any): void {
-  this.selectedSlot = slot;
-}
-isSelectedDateMatchingDay(): boolean {
-  if (!this.selectedDate || !this.selectedDay) return false;
-
-  const jsDay = new Date(this.selectedDate).getDay();
-
-  const map: any = {
-    DIMANCHE: 0,
-    LUNDI: 1,
-    MARDI: 2,
-    MERCREDI: 3,
-    JEUDI: 4,
-    VENDREDI: 5,
-    SAMEDI: 6
-  };
-
-  return jsDay === map[this.selectedDay];
-}
-closeEditForm(): void {
-  this.editOpen = false;
-  this.editingReservation = null;
-  this.selectedDay = '';
-  this.selectedDate = '';
-  this.selectedSlot = null;
-  this.filteredAvailabilities = [];
-}
-openReservationPopup(title: string, message: string, type: 'success' | 'error' = 'success') {
-  this.reservationPopupTitle = title;
-  this.reservationPopupMessage = message;
-  this.reservationPopupType = type;
-  this.showReservationPopup = true;
-}
-
-closeReservationPopup() {
-  this.showReservationPopup = false;
-}
-confirmUpdateReservation(): void {
-  if (!this.editingReservation) {
-    this.openReservationPopup('Update Failed', 'Reservation not found.', 'error');
-    return;
-  }
-
-  if (!this.canEditReservation(this.editingReservation)) {
-    this.openReservationPopup('Update Failed', 'Only pending reservations can be updated.', 'error');
-    return;
-  }
-
-  if (!this.selectedDay) {
-    this.openReservationPopup('Update Failed', 'Please choose a day.', 'error');
-    return;
-  }
-
-  if (!this.selectedDate) {
-    this.openReservationPopup('Update Failed', 'Please choose a visit date.', 'error');
-    return;
-  }
-
-  if (!this.selectedSlot) {
-    this.openReservationPopup('Update Failed', 'Please choose a time slot.', 'error');
-    return;
-  }
-
-  if (!this.isSelectedDateMatchingDay()) {
-    this.openReservationPopup(
-      'Update Failed',
-      'Selected date does not match the chosen day.',
-      'error'
-    );
-    return;
-  }
-
-  if (!this.isSelectedSlotStillValid()) {
-    this.openReservationPopup(
-      'Update Failed',
-      'Please choose a valid available time slot.',
-      'error'
-    );
-    return;
-  }
-
-  
-  const payload = {
-    dateVisite: this.selectedDate,
-    heureDebut: this.selectedSlot.heureDebut,
-    heureFin: this.selectedSlot.heureFin
-  };
-
-  console.log('Update payload:', payload);
-
-  this.reservationVisiteService.update(this.editingReservation.id, payload).subscribe({
-    next: () => {
-      this.closeEditForm();
-      this.loadReservations();
-
-      this.openReservationPopup(
-        'Reservation Updated',
-        'Your visit reservation has been updated successfully.',
-        'success'
-      );
-    },
-    error: (err) => {
-      console.error('Update error:', err);
-
+  editReservation(reservation: any): void {
+    if (!this.currentUserId) {
       this.openReservationPopup(
         'Update Failed',
-        'This reservation could not be updated. The selected slot may already be booked or unavailable.',
+        'Please sign in first.',
         'error'
       );
+      return;
     }
-  });
-}
 
-selectEditDay(day: string): void {
-  this.selectedDay = day;
-  this.selectedSlot = null;
-
-  if (!this.editingReservation) return;
-
-  const locationId =
-    this.editingReservation.location?.id ||
-    this.editingReservation.locationId ||
-    this.editingReservation.idLocation;
-
-  if (!locationId) {
-    this.filteredAvailabilities = [];
-    return;
-  }
-
-  this.disponibiliteService.getByLocationAndDay(locationId, day).subscribe({
-    next: (data: any[]) => {
-      this.filteredAvailabilities = data || [];
-    },
-    error: (err) => {
-      console.error('Error loading availabilities:', err);
-      this.filteredAvailabilities = [];
+    if (!this.canEditReservation(reservation)) {
+      this.openReservationPopup(
+        'Update Failed',
+        'Only pending reservations can be updated.',
+        'error'
+      );
+      return;
     }
-  });
-}
-onEditDateChange(): void {
-  if (!this.selectedDate) return;
 
-  const newDay = this.getDayValueFromDate(this.selectedDate);
+    this.editingReservation = reservation;
+    this.editOpen = true;
 
-  // if user changed the date to another weekday,
-  // update selectedDay and reload slots for that day
-  if (newDay !== this.selectedDay) {
-    this.selectedDay = newDay;
+    this.selectedDate = this.getVisitDate(reservation);
+    this.selectedDay = this.getDayValueFromDate(this.selectedDate);
     this.selectedSlot = null;
-    this.loadSlotsForCurrentEditDay();
-  }
-}
-loadSlotsForCurrentEditDay(): void {
-  if (!this.editingReservation || !this.selectedDay) {
     this.filteredAvailabilities = [];
-    return;
+
+    const locationId =
+      reservation.location?.id ||
+      reservation.locationId ||
+      reservation.idLocation;
+
+    if (!locationId || !this.selectedDay) return;
+
+    this.disponibiliteService.getByLocationAndDay(locationId, this.selectedDay).subscribe({
+      next: (data: any[]) => {
+        this.filteredAvailabilities = Array.isArray(data) ? data : [];
+
+        const existingSlot = this.filteredAvailabilities.find((slot: any) =>
+          slot.heureDebut === this.getStartTime(reservation) &&
+          slot.heureFin === this.getEndTime(reservation)
+        );
+
+        if (existingSlot) {
+          this.selectedSlot = existingSlot;
+        }
+      },
+      error: (err) => {
+        console.error('Error loading availabilities:', err);
+        this.filteredAvailabilities = [];
+      }
+    });
   }
 
-  const locationId =
-    this.editingReservation.location?.id ||
-    this.editingReservation.locationId ||
-    this.editingReservation.idLocation;
+  selectEditSlot(slot: any): void {
+    this.selectedSlot = slot;
+  }
 
-  if (!locationId) {
+  isSelectedDateMatchingDay(): boolean {
+    if (!this.selectedDate || !this.selectedDay) return false;
+
+    const jsDay = new Date(this.selectedDate).getDay();
+
+    const map: any = {
+      DIMANCHE: 0,
+      LUNDI: 1,
+      MARDI: 2,
+      MERCREDI: 3,
+      JEUDI: 4,
+      VENDREDI: 5,
+      SAMEDI: 6
+    };
+
+    return jsDay === map[this.selectedDay];
+  }
+
+  closeEditForm(): void {
+    this.editOpen = false;
+    this.editingReservation = null;
+    this.selectedDay = '';
+    this.selectedDate = '';
+    this.selectedSlot = null;
     this.filteredAvailabilities = [];
-    return;
   }
 
-  this.disponibiliteService.getByLocationAndDay(locationId, this.selectedDay).subscribe({
-    next: (data: any[]) => {
-      this.filteredAvailabilities = Array.isArray(data) ? data : [];
-    },
-    error: (err) => {
-      console.error('Error loading availabilities:', err);
-      this.filteredAvailabilities = [];
+  openReservationPopup(title: string, message: string, type: 'success' | 'error' = 'success') {
+    this.reservationPopupTitle = title;
+    this.reservationPopupMessage = message;
+    this.reservationPopupType = type;
+    this.showReservationPopup = true;
+  }
+
+  closeReservationPopup() {
+    this.showReservationPopup = false;
+  }
+
+  confirmUpdateReservation(): void {
+    if (!this.currentUserId) {
+      this.openReservationPopup('Update Failed', 'Please sign in first.', 'error');
+      return;
     }
-  });
+
+    if (!this.editingReservation) {
+      this.openReservationPopup('Update Failed', 'Reservation not found.', 'error');
+      return;
+    }
+
+    if (!this.canEditReservation(this.editingReservation)) {
+      this.openReservationPopup('Update Failed', 'Only pending reservations can be updated.', 'error');
+      return;
+    }
+
+    if (!this.selectedDay) {
+      this.openReservationPopup('Update Failed', 'Please choose a day.', 'error');
+      return;
+    }
+
+    if (!this.selectedDate) {
+      this.openReservationPopup('Update Failed', 'Please choose a visit date.', 'error');
+      return;
+    }
+
+    if (!this.selectedSlot) {
+      this.openReservationPopup('Update Failed', 'Please choose a time slot.', 'error');
+      return;
+    }
+
+    if (!this.isSelectedDateMatchingDay()) {
+      this.openReservationPopup(
+        'Update Failed',
+        'Selected date does not match the chosen day.',
+        'error'
+      );
+      return;
+    }
+
+    if (!this.isSelectedSlotStillValid()) {
+      this.openReservationPopup(
+        'Update Failed',
+        'Please choose a valid available time slot.',
+        'error'
+      );
+      return;
+    }
+
+    const payload = {
+      dateVisite: this.selectedDate,
+      heureDebut: this.selectedSlot.heureDebut,
+      heureFin: this.selectedSlot.heureFin
+    };
+
+    this.reservationVisiteService.update(this.editingReservation.id, payload).subscribe({
+      next: () => {
+        this.closeEditForm();
+        this.loadReservations();
+
+        this.openReservationPopup(
+          'Reservation Updated',
+          'Your visit reservation has been updated successfully.',
+          'success'
+        );
+      },
+      error: (err) => {
+        console.error('Update error:', err);
+
+        this.openReservationPopup(
+          'Update Failed',
+          'This reservation could not be updated. The selected slot may already be booked or unavailable.',
+          'error'
+        );
+      }
+    });
+  }
+
+  selectEditDay(day: string): void {
+    this.selectedDay = day;
+    this.selectedSlot = null;
+
+    if (!this.editingReservation) return;
+
+    const locationId =
+      this.editingReservation.location?.id ||
+      this.editingReservation.locationId ||
+      this.editingReservation.idLocation;
+
+    if (!locationId) {
+      this.filteredAvailabilities = [];
+      return;
+    }
+
+    this.disponibiliteService.getByLocationAndDay(locationId, day).subscribe({
+      next: (data: any[]) => {
+        this.filteredAvailabilities = data || [];
+      },
+      error: (err) => {
+        console.error('Error loading availabilities:', err);
+        this.filteredAvailabilities = [];
+      }
+    });
+  }
+
+  onEditDateChange(): void {
+    if (!this.selectedDate) return;
+
+    const newDay = this.getDayValueFromDate(this.selectedDate);
+
+    if (newDay !== this.selectedDay) {
+      this.selectedDay = newDay;
+      this.selectedSlot = null;
+      this.loadSlotsForCurrentEditDay();
+    }
+  }
+
+  loadSlotsForCurrentEditDay(): void {
+    if (!this.editingReservation || !this.selectedDay) {
+      this.filteredAvailabilities = [];
+      return;
+    }
+
+    const locationId =
+      this.editingReservation.location?.id ||
+      this.editingReservation.locationId ||
+      this.editingReservation.idLocation;
+
+    if (!locationId) {
+      this.filteredAvailabilities = [];
+      return;
+    }
+
+    this.disponibiliteService.getByLocationAndDay(locationId, this.selectedDay).subscribe({
+      next: (data: any[]) => {
+        this.filteredAvailabilities = Array.isArray(data) ? data : [];
+      },
+      error: (err) => {
+        console.error('Error loading availabilities:', err);
+        this.filteredAvailabilities = [];
+      }
+    });
   }
 
   isSelectedSlotStillValid(): boolean {
@@ -506,42 +512,50 @@ loadSlotsForCurrentEditDay(): void {
   }
 
   deleteReservation(reservation: any): void {
-
-  if (!this.canDeleteReservation(reservation)) {
-    this.openReservationPopup(
-      'Delete Failed',
-      'Only pending reservations can be deleted.',
-      'error'
-    );
-    return;
-  }
-
-  if (!reservation?.id) {
-    this.openReservationPopup(
-      'Delete Failed',
-      'Reservation not found.',
-      'error'
-    );
-    return;
-  }
-
-  this.reservationVisiteService.deleteReservation(reservation.id).subscribe({
-    next: () => {
-      this.openReservationPopup(
-        'Reservation Deleted',
-        'Your reservation has been deleted successfully.',
-        'success'
-      );
-      this.loadReservations();
-    },
-    error: (err) => {
-      console.error('Delete error:', err);
+    if (!this.currentUserId) {
       this.openReservationPopup(
         'Delete Failed',
-        'Unable to delete this reservation.',
+        'Please sign in first.',
         'error'
       );
+      return;
     }
-  });
-}
+
+    if (!this.canDeleteReservation(reservation)) {
+      this.openReservationPopup(
+        'Delete Failed',
+        'Only pending reservations can be deleted.',
+        'error'
+      );
+      return;
+    }
+
+    if (!reservation?.id) {
+      this.openReservationPopup(
+        'Delete Failed',
+        'Reservation not found.',
+        'error'
+      );
+      return;
+    }
+
+    this.reservationVisiteService.deleteReservation(reservation.id).subscribe({
+      next: () => {
+        this.openReservationPopup(
+          'Reservation Deleted',
+          'Your reservation has been deleted successfully.',
+          'success'
+        );
+        this.loadReservations();
+      },
+      error: (err) => {
+        console.error('Delete error:', err);
+        this.openReservationPopup(
+          'Delete Failed',
+          'Unable to delete this reservation.',
+          'error'
+        );
+      }
+    });
+  }
 }

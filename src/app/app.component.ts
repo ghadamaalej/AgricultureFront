@@ -1,5 +1,5 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-
+import { CartService } from './services/cart/cart.service';
 @Component({
   selector: 'app-root',
   standalone: false,
@@ -14,6 +14,14 @@ import { Component, OnInit, HostListener } from '@angular/core';
         </div>
       </div>
     </div>
+
+    <button class="floating-cart" routerLink="/marketplace/cart">
+      <i class="fas fa-shopping-cart"></i>
+
+      <span class="cart-badge" *ngIf="cartCount > 0">
+        {{ cartCount }}
+      </span>
+    </button>
 
     <!-- Back to Top -->
     <button class="back-to-top" [class.visible]="showBackTop" (click)="scrollTop()">
@@ -55,17 +63,89 @@ import { Component, OnInit, HostListener } from '@angular/core';
     }
     .back-to-top.visible { opacity: 1; transform: translateY(0); }
     .back-to-top:hover   { background: var(--primary-dark); transform: translateY(-3px); }
+    .floating-cart {
+  position: fixed;
+  bottom: 95px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(76,175,80,0.4);
+}
+
+.floating-cart:hover {
+  background: var(--primary-dark);
+  transform: translateY(-3px);
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #dc3545;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+}
+
+.floating-cart {
+  position: fixed;
+  bottom: 95px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(76,175,80,0.4);
+  position: fixed;
+}
   `]
 })
 export class AppComponent implements OnInit {
   preloaderHidden = false;
   showBackTop     = false;
+  cartCount = 0;
+
+  constructor(private cartService: CartService) {}
 
   ngOnInit() {
     setTimeout(() => {
       this.preloaderHidden = true;
       this.initScrollAnimations();
     }, 3000);
+
+    this.cartService.cartCount$.subscribe(count => {
+    this.cartCount = count;
+  });
+
+  this.cartService.refreshCartCount();
   }
 
   @HostListener('window:scroll', [])

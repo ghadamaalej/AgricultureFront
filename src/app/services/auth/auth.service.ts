@@ -101,17 +101,27 @@ export class AuthService {
   }
 
   getDefaultRouteForRole(role: BackendRole | null): string {
-    if (!role) {
-      return '/';
-    }
-
-    switch (role) {
-      case 'ADMIN':
-        return '/dashboard';
-      default:
-        return '/';
-    }
+  if (!role) {
+    return '/';
   }
+
+  switch (role) {
+    case 'ADMIN':
+      return '/dashboard';
+
+    case 'AGRICULTEUR':
+    case 'ACHETEUR':
+    case 'EXPERT_AGRICOLE':
+    case 'ORGANISATEUR_EVENEMENT':
+    case 'TRANSPORTEUR':
+    case 'VETERINAIRE':
+    case 'AGENT':
+      return '/marketplace';
+
+    default:
+      return '/';
+  }
+}
 
   private storeToken(token: string): void {
     localStorage.setItem('authToken', token);
