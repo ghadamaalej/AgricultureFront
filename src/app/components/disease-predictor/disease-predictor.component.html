@@ -1,0 +1,129 @@
+<div class="disease-predictor-container">
+  <div class="predictor-header">
+    <h1>🍃 Plant Disease Predictor</h1>
+    <p class="subtitle">Upload a leaf image to detect diseases and get predictions</p>
+  </div>
+
+  <div class="predictor-content">
+    <!-- File Input Section -->
+    <div class="file-section">
+      <div class="file-input-wrapper">
+        <input
+          id="imageInput"
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          class="hidden-input"
+        />
+
+        <div
+          class="file-drop-zone"
+          [class.has-file]="selectedFile"
+          (click)="triggerFileInput()"
+        >
+          <div *ngIf="!selectedFilePreview" class="drop-zone-content">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p class="drop-text">Click to upload or drag and drop</p>
+            <p class="drop-hint">PNG, JPG, GIF up to 10MB</p>
+          </div>
+
+          <div *ngIf="selectedFilePreview" class="preview-wrapper">
+            <img [src]="selectedFilePreview" alt="Preview" class="preview-image" />
+            <p class="filename">{{ selectedFile?.name }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-error">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="button-group">
+      <button
+        class="btn btn-primary"
+        (click)="predictDisease()"
+        [disabled]="!selectedFile || isLoading"
+        [class.loading]="isLoading"
+      >
+        <span *ngIf="!isLoading">
+          <i class="fas fa-flask"></i> Predict Disease
+        </span>
+        <span *ngIf="isLoading">
+          <i class="fas fa-spinner fa-spin"></i> Analyzing...
+        </span>
+      </button>
+
+      <button
+        class="btn btn-secondary"
+        (click)="reset()"
+        [disabled]="!selectedFile && !result"
+      >
+        <i class="fas fa-redo"></i> Reset
+      </button>
+    </div>
+
+    <!-- Results Section -->
+    <div *ngIf="result" class="results-section">
+      <div class="result-card">
+        <div class="result-header">
+          <h2>Prediction Results</h2>
+          <span class="badge">Success</span>
+        </div>
+
+        <div class="primary-result">
+          <div class="result-item">
+            <label>Detected Disease:</label>
+            <h3 class="disease-name">{{ result.predicted_class }}</h3>
+          </div>
+
+          <div class="result-item">
+            <label>Confidence Level:</label>
+            <div class="confidence-bar">
+              <div
+                class="confidence-fill"
+                [style.width.%]="getConfidencePercentage(result.confidence)"
+                [ngClass]="getConfidencePercentage(result.confidence) >= 80 ? 'high' : 'medium'"
+              ></div>
+            </div>
+            <p class="confidence-text">{{ getConfidencePercentage(result.confidence) }}%</p>
+          </div>
+        </div>
+
+        <!-- Top 3 Predictions -->
+        <div class="top3-section" *ngIf="result.top3 && result.top3.length > 0">
+          <h3>Top 3 Predictions</h3>
+          <div class="top3-list">
+            <div
+              *ngFor="let prediction of result.top3; let i = index"
+              class="top3-item"
+              [ngClass]="'rank-' + (i + 1)"
+            >
+              <div class="rank-badge">{{ i + 1 }}</div>
+              <div class="prediction-info">
+                <p class="prediction-class">{{ prediction.class }}</p>
+                <div class="mini-bar">
+                  <div
+                    class="mini-fill"
+                    [style.width.%]="getConfidencePercentage(prediction.confidence)"
+                  ></div>
+                </div>
+                <p class="mini-text">{{ getConfidencePercentage(prediction.confidence) }}%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Analyzing your leaf image...</p>
+    </div>
+  </div>
+</div>
+

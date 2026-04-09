@@ -19,6 +19,7 @@ import { BlogDetailComponent }   from './components/blog-detail/blog-detail.comp
 import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
+import { DiseasePredictorComponent } from './components/disease-predictor/disease-predictor.component';
 import { provideHttpClient } from '@angular/common/http';
 
 @NgModule({
@@ -36,7 +37,8 @@ import { provideHttpClient } from '@angular/common/http';
     BlogDetailComponent,
     HomeComponent,
     NotFoundComponent,
-    RegisterExtraComponent
+    RegisterExtraComponent,
+    DiseasePredictorComponent
   ],
   imports: [
     BrowserModule,

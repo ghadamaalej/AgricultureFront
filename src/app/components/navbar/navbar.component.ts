@@ -38,6 +38,7 @@ export class NavbarComponent implements OnInit {
     { label: 'Inventory',    icon: 'fas fa-boxes',          route: '/inventory'    },
     { label: 'Appointments', icon: 'fas fa-calendar-check', route: '/farm/calendar' },
     { label: 'Animals',      icon: 'fas fa-paw',            route: '/animals'      },
+    { label: 'Disease Predictor', icon: 'fas fa-microscope', route: '/disease-predictor' },
     { label: 'Help Request', icon: 'fas fa-hands-helping',  route: '/help-request' },
   ];
 

@@ -8,10 +8,12 @@ import { AuthComponent }       from './components/auth/auth.component';
 import { AuthGuard }           from './services/auth/auth.guard';
 import { GuestGuard }          from './services/auth/guest.guard';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
+import { DiseasePredictorComponent } from './components/disease-predictor/disease-predictor.component';
 
 const routes: Routes = [
   { path: '',         component: HomeComponent,       pathMatch: 'full' },
   { path: 'auth',     component: AuthComponent, canActivate: [GuestGuard] },
+  { path: 'disease-predictor', component: DiseasePredictorComponent },
   {
     path: 'dashboard',
     loadChildren: () =>import('./dashboard/dashboard.module').then(m => m.DashboardModule),
