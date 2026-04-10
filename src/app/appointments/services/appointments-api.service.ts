@@ -7,10 +7,12 @@ import {
   VetUser, VetAvailability, AppointmentResponse,
   CreateAppointmentRequest, CreateAvailabilityRequest,
   CreateUnavailabilityRequest, UnavailabilityResponse,
-  HealthRecord, CreateHealthRecordRequest, UpdateHealthRecordRequest
+  HealthRecord, CreateHealthRecordRequest, UpdateHealthRecordRequest,
+  ChatConversation, ChatMessage , AppointmentStats
 } from '../models/appointments.models';
 
 interface ApiResp<T> { message: string; data: T; }
+
 
 /** Spring Boot without Jackson config sends LocalDate/LocalDateTime as arrays.
  *  Normalize both formats to ISO string. */
@@ -203,4 +205,52 @@ export class AppointmentsApiService {
       `${this.inv}/health-records/${id}`, { headers: this.h() }
     ).pipe(map(() => void 0));
   }
+
+  // ── CHAT ───────────────────────────────────────────────────
+  getMyConversations(): Observable<ChatConversation[]> {
+    return this.http.get<ApiResp<ChatConversation[]>>(
+      `${this.inv}/messages/conversations`, { headers: this.h() }
+    ).pipe(map(r => (r.data || []).map((c: any) => ({
+      ...c,
+      lastMessageAt: normDate(c.lastMessageAt)
+    }))));
+  }
+
+  createOrGetConversation(veterinarianId: number): Observable<ChatConversation> {
+    return this.http.post<ApiResp<ChatConversation>>(
+      `${this.inv}/messages/conversations`, { veterinarianId }, { headers: this.h() }
+    ).pipe(map(r => ({ ...r.data, lastMessageAt: normDate((r.data as any)?.lastMessageAt) })));
+  }
+
+  getConversationMessages(conversationId: number): Observable<ChatMessage[]> {
+    return this.http.get<ApiResp<ChatMessage[]>>(
+      `${this.inv}/messages/conversations/${conversationId}/messages`, { headers: this.h() }
+    ).pipe(map(r => (r.data || []).map((m: any) => ({ ...m, sentAt: normDate(m.sentAt) }))));
+  }
+
+ sendConversationMessage(conversationId: number, content: string): Observable<ChatMessage> {
+  return this.http.post<ApiResp<ChatMessage>>(
+    `${this.inv}/messages/conversations/${conversationId}/messages`,
+    { content },
+    { headers: this.h() }
+  ).pipe(
+    map(r => ({
+      ...r.data,
+      sentAt: normDate(r.data?.sentAt) ?? ''
+    } as ChatMessage))
+  );
+}
+getVetStats(vetId: number): Observable<AppointmentStats> {
+  return this.http.get<ApiResp<AppointmentStats>>(
+    `${this.inv}/appointments/vet/${vetId}/stats`,
+    { headers: this.h() }
+  ).pipe(map(r => r.data));
+}
+
+getFarmerStats(farmerId: number): Observable<AppointmentStats> {
+  return this.http.get<ApiResp<AppointmentStats>>(
+    `${this.inv}/appointments/farmer/${farmerId}/stats`,
+    { headers: this.h() }
+  ).pipe(map(r => r.data));
+}
 }

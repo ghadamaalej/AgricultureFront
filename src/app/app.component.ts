@@ -21,7 +21,9 @@ import { Component, OnInit, HostListener } from '@angular/core';
     </button>
 
     <!-- Router outlet — gère tout -->
+    
     <router-outlet></router-outlet>
+   
   `,
   styles: [`
     .preloader {

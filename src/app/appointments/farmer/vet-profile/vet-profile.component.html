@@ -46,6 +46,12 @@
         </div>
       </div>
 
+      <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+        <button type="button" class="btn-confirm" (click)="openConversation()">
+          <i class="fas fa-comments"></i> Envoyer un message
+        </button>
+      </div>
+
       <!-- Bio -->
       <div class="vet-bio" *ngIf="vet.presentationCarriere">
         <i class="fas fa-quote-left bio-quote"></i>

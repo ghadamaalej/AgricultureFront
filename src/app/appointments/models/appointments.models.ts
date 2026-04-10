@@ -123,3 +123,33 @@ export interface UpdateHealthRecordRequest {
   traitement: string;
   dateH: string;
 }
+
+
+export interface ChatMessage {
+  id: number;
+  conversationId: number;
+  senderId: number;
+  receiverId: number;
+  content: string;
+  sentAt: string;
+}
+
+export interface ChatConversation {
+  id: number;
+  farmer: UserSummary | null;
+  veterinarian: UserSummary | null;
+  otherParticipant: UserSummary | null;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+  unreadCount: number;
+}
+export interface AppointmentStats {
+  totalAppointments: number;
+  pendingAppointments: number;
+  acceptedAppointments: number;
+  refusedAppointments: number;
+  cancelledAppointments: number;
+  todayAppointments: number;
+  upcomingAppointments: number;
+  distinctAnimals: number;
+}

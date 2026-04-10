@@ -12,7 +12,7 @@ import { AuthService } from '../../services/auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class InventoryApiService {
-  private base = 'http://localhost:8088/inventaires/api'; // port 8088 + context-path /inventaires
+  private base = 'http://localhost:8088/inventaires/api';
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
@@ -21,7 +21,6 @@ export class InventoryApiService {
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  // ── Products ──────────────────────────────────────────────
   getMyProducts(): Observable<InventoryProduct[]> {
     const userId = this.auth.getCurrentUserId();
     return this.http.get<ApiResponse<InventoryProduct[]>>(
@@ -47,7 +46,6 @@ export class InventoryApiService {
     ).pipe(map(() => void 0));
   }
 
-  // ── Inventory (stock ops) ─────────────────────────────────
   getProductBatches(productId: number): Observable<Batch[]> {
     return this.http.get<ApiResponse<Batch[]>>(
       `${this.base}/inventory/${productId}/batches`, { headers: this.headers() }
@@ -78,7 +76,6 @@ export class InventoryApiService {
     ).pipe(map(r => r.data));
   }
 
-  // ── Animals ───────────────────────────────────────────────
   getMyAnimals(): Observable<Animal[]> {
     return this.http.get<ApiResponse<Animal[]>>(
       `${this.base}/animals/my`, { headers: this.headers() }
@@ -109,7 +106,6 @@ export class InventoryApiService {
     ).pipe(map(() => void 0));
   }
 
-  // ── Vaccination Campaigns ─────────────────────────────────
   getAllCampaigns(): Observable<VaccinationCampaign[]> {
     return this.http.get<VaccinationCampaign[]>(
       `${this.base}/vaccinations/campaigns`, { headers: this.headers() }
@@ -127,4 +123,11 @@ export class InventoryApiService {
       `${this.base}/vaccinations`, req, { headers: this.headers() }
     );
   }
+  vaccinateCampaign(campaignId: number) {
+  return this.http.post(
+    `${this.base}/vaccinations/campaign/${campaignId}/vaccinate-all`,
+    {},
+    { headers: this.headers() }
+  );
+}
 }

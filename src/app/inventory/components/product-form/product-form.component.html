@@ -33,26 +33,10 @@
       </div>
 
       <div class="form-row">
-        <div class="form-group">
-          <label>Quantité actuelle *</label>
-          <input type="number" formControlName="currentQuantity" min="0" [class.err]="invalid('currentQuantity')">
-          <span class="err-msg" *ngIf="invalid('currentQuantity')">Valeur ≥ 0 requise</span>
-        </div>
-        <div class="form-group">
+        <div class="form-group full">
           <label>Seuil minimum *</label>
           <input type="number" formControlName="minThreshold" min="0" [class.err]="invalid('minThreshold')">
           <span class="err-msg" *ngIf="invalid('minThreshold')">Valeur ≥ 0 requise</span>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>Prix unitaire (DT)</label>
-          <input type="number" formControlName="price" min="0" step="0.01" placeholder="0.00">
-        </div>
-        <div class="form-group">
-          <label>Date de péremption</label>
-          <input type="date" formControlName="datePeremption">
         </div>
       </div>
 
@@ -61,6 +45,10 @@
           <input type="checkbox" formControlName="isPerishable">
           <span>Produit périssable</span>
         </label>
+      </div>
+
+      <div class="form-hint">
+        Le stock, le prix et les dates de péremption se gèrent ensuite depuis l'interface <strong>Lots</strong>.
       </div>
 
       <div class="err-msg" *ngIf="error" style="margin-top:8px;">{{ error }}</div>

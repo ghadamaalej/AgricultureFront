@@ -1,7 +1,39 @@
 <div class="page-header">
+  
   <div>
     <h1 class="pt">Mes rendez-vous</h1>
     <p class="ps">Gérez vos demandes de consultation</p>
+  </div>
+</div>
+<div class="stats-grid" *ngIf="stats && !loading">
+  <div class="stat-card">
+    <span class="stat-label">Total RDV</span>
+    <strong class="stat-value">{{ stats.totalAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">En attente</span>
+    <strong class="stat-value">{{ stats.pendingAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Acceptés</span>
+    <strong class="stat-value">{{ stats.acceptedAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Aujourd’hui</span>
+    <strong class="stat-value">{{ stats.todayAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">À venir</span>
+    <strong class="stat-value">{{ stats.upcomingAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Animaux suivis</span>
+    <strong class="stat-value">{{ stats.distinctAnimals }}</strong>
   </div>
 </div>
 

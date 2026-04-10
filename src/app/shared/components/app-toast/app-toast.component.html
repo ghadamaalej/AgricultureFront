@@ -1,0 +1,22 @@
+<div class="toast-container">
+  <div
+    class="toast"
+    *ngFor="let toast of (toasts$ | async); trackBy: trackByToastId"
+    [ngClass]="toast.type"
+  >
+    <div class="toast-left">
+      <span class="toast-icon" *ngIf="toast.type === 'success'">✔</span>
+      <span class="toast-icon" *ngIf="toast.type === 'error'">✖</span>
+      <span class="toast-icon" *ngIf="toast.type === 'warning'">⚠</span>
+      <span class="toast-icon" *ngIf="toast.type === 'info'">ℹ</span>
+    </div>
+
+    <div class="toast-content">
+      {{ toast.text }}
+    </div>
+
+    <button class="toast-close" type="button" (click)="closeToast(toast.id)">
+      ×
+    </button>
+  </div>
+</div>

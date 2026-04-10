@@ -14,6 +14,9 @@
         <button class="ni" [class.active]="view==='book'" (click)="setView('book')">
           <i class="fas fa-user-md"></i><span>Prendre RDV</span>
         </button>
+        <button class="ni" [class.active]="view==='messages'" (click)="setView('messages')">
+          <i class="fas fa-comments"></i><span>Messagerie</span>
+        </button>
       </ng-container>
 
       <!-- VÉTÉRINAIRE -->
@@ -29,6 +32,9 @@
         </button>
         <button class="ni" [class.active]="view==='profile'" (click)="setView('profile')">
           <i class="fas fa-user-circle"></i><span>Mon profil</span>
+        </button>
+        <button class="ni" [class.active]="view==='messages'" (click)="setView('messages')">
+          <i class="fas fa-comments"></i><span>Messagerie</span>
         </button>
       </ng-container>
 
@@ -53,7 +59,8 @@
     <!-- FARMER views -->
     <ng-container *ngIf="isFarmer">
       <app-my-appointments *ngIf="view==='list'" (switchView)="setView($event)"></app-my-appointments>
-      <app-vet-list        *ngIf="view==='book'"  (booked)="setView('list')"></app-vet-list>
+      <app-vet-list        *ngIf="view==='book'"  (booked)="setView('list')" (openChatLayout)="setView('messages')"></app-vet-list>
+      <app-chat            *ngIf="view==='messages'"></app-chat>
     </ng-container>
 
     <!-- VET views -->
@@ -62,6 +69,7 @@
       <app-availability-manager *ngIf="view==='avail'"></app-availability-manager>
       <app-health-records       *ngIf="view==='records'"></app-health-records>
       <app-vet-profile-form     *ngIf="view==='profile'"></app-vet-profile-form>
+      <app-chat                 *ngIf="view==='messages'"></app-chat>
     </ng-container>
   </main>
 </div>

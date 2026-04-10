@@ -2,7 +2,8 @@
   *ngIf="selectedVet"
   [vet]="selectedVet"
   (back)="backToList()"
-  (booked)="onBooked()">
+  (booked)="onBooked()"
+  (openChat)="onOpenChat($event)">
 </app-vet-profile>
 
 <ng-container *ngIf="!selectedVet">

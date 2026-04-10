@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { InventoryApiService } from '../../services/inventory-api.service';
 import { InventoryProduct, Batch } from '../../models/inventory.models';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-product-list',
@@ -13,30 +14,28 @@ export class ProductListComponent implements OnInit {
   loading = true;
   error = '';
 
-  // Sub-views
   view: 'list' | 'movements' | 'batches' = 'list';
   selectedProduct: InventoryProduct | null = null;
   batches: Batch[] = [];
 
-  // Modals
   showProductForm = false;
   showConsumeModal = false;
   showAdjustModal = false;
   editingProduct: InventoryProduct | null = null;
 
-  constructor(private api: InventoryApiService) {}
+  constructor(private api: InventoryApiService , private toast: ToastService) {}
 
   ngOnInit() { this.load(); }
 
   load() {
     this.loading = true;
-    this.error   = '';
+    this.error = '';
     this.api.getMyProducts().subscribe({
       next: p => { this.products = p; this.loading = false; },
       error: (e) => {
         this.loading = false;
         if (e.status === 0) {
-          this.error = 'Impossible de joindre le serveur (port 8082). Vérifiez que le backend est démarré.';
+          this.error = 'Impossible de joindre le serveur (port 8088). Vérifiez que le backend est démarré.';
         } else {
           this.error = e.error?.message || 'Erreur de chargement des produits.';
         }
@@ -47,7 +46,10 @@ export class ProductListComponent implements OnInit {
   openAdd() { this.editingProduct = null; this.showProductForm = true; }
   openEdit(p: InventoryProduct) { this.editingProduct = p; this.showProductForm = true; }
 
-  onProductSaved() { this.showProductForm = false; this.load(); }
+  onProductSaved() {
+    this.showProductForm = false;
+    this.load();
+  }
 
   delete(p: InventoryProduct) {
     if (!confirm(`Supprimer "${p.nom}" ?`)) return;
@@ -55,20 +57,41 @@ export class ProductListComponent implements OnInit {
   }
 
   openBatches(p: InventoryProduct) {
-    this.selectedProduct = p;
+    this.selectedProduct = { ...p };
     this.view = 'batches';
     this.api.getProductBatches(p.id).subscribe({ next: b => this.batches = b });
   }
 
   openMovements() { this.view = 'movements'; }
 
-  backToList() { this.view = 'list'; this.selectedProduct = null; }
+  backToList() {
+    this.view = 'list';
+    this.selectedProduct = null;
+    this.load();
+  }
 
-  openConsume(p: InventoryProduct) { this.selectedProduct = p; this.showConsumeModal = true; }
-  openAdjust(p: InventoryProduct)  { this.selectedProduct = p; this.showAdjustModal = true; }
+  openConsume(p: InventoryProduct) { this.selectedProduct = { ...p }; this.showConsumeModal = true; }
+  openAdjust(p: InventoryProduct)  { this.selectedProduct = { ...p }; this.showAdjustModal = true; }
 
-  onConsumed()  { this.showConsumeModal = false; this.load(); }
-  onAdjusted()  { this.showAdjustModal  = false; this.load(); }
+  onConsumed()  {
+    this.showConsumeModal = false;
+    this.load();
+    if (this.view === 'batches' && this.selectedProduct) {
+      this.api.getProductBatches(this.selectedProduct.id).subscribe({ next: b => this.batches = b });
+    }
+  }
+
+  onAdjusted()  {
+    this.showAdjustModal = false;
+    this.load();
+    if (this.view === 'batches' && this.selectedProduct) {
+      this.api.getProductBatches(this.selectedProduct.id).subscribe({ next: b => this.batches = b });
+    }
+  }
+
+  onStockAdded() {
+    this.load();
+  }
 
   isLowStock(p: InventoryProduct) { return p.currentQuantity <= p.minThreshold; }
 
@@ -79,4 +102,8 @@ export class ProductListComponent implements OnInit {
     };
     return map[c] || c;
   }
+get currentStock(): number {
+  return this.batches.reduce((sum, batch) => sum + Number(batch.quantity || 0), 0);
+}
+
 }

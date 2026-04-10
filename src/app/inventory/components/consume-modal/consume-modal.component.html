@@ -5,7 +5,9 @@
       <button class="close-btn" (click)="cancelled.emit()"><i class="fas fa-times"></i></button>
     </div>
     <form [formGroup]="form" (ngSubmit)="submit()" class="modal-body">
-      <div class="stock-info">Stock actuel : <strong>{{ product.currentQuantity }} {{ product.unit }}</strong></div>
+     <div class="stock-info">
+  Stock actuel : <strong>{{ stock }} {{ product.unit }}</strong>
+</div>
 
       <div class="form-row">
         <div class="form-group">

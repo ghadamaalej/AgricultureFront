@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 })
 export class AppointmentsLayoutComponent implements OnInit {
   role = '';
-  view = 'list'; // list | book | avail | profile | records
+  view = 'list'; // list | book | avail | profile | records | messages
 
   constructor(private auth: AuthService, private router: Router) {}
   ngOnInit() {

@@ -207,40 +207,95 @@
     </button>
   </div>
 
+  
   <div class="form-card" *ngIf="showUnavailForm">
-    <h3 class="form-title"><i class="fas fa-calendar-times"></i> Créer une indisponibilité</h3>
-    <form [formGroup]="unavailForm" (ngSubmit)="submitUnavail()">
-      <div class="form-row">
-        <div class="fg">
-          <label>Date début *</label>
-          <input type="date" formControlName="startDate" [class.err]="invalid(unavailForm,'startDate')">
-        </div>
-        <div class="fg">
-          <label>Date fin *</label>
-          <input type="date" formControlName="endDate" [class.err]="invalid(unavailForm,'endDate')">
-        </div>
+  <h3 class="form-title">
+    <i class="fas fa-calendar-times"></i>
+    Créer une indisponibilité
+  </h3>
+
+  <form [formGroup]="unavailForm" (ngSubmit)="submitUnavail()">
+    <div class="form-row">
+      <div class="fg">
+        <label>Date début *</label>
+        <input
+          type="date"
+          formControlName="startDate"
+          [class.err]="invalid(unavailForm,'startDate')"
+        >
       </div>
-      <div class="form-row checks-row">
-        <label class="check-label">
-          <input type="checkbox" formControlName="fullDay"><span>Journée entière</span>
-        </label>
-        <label class="check-label">
-          <input type="checkbox" formControlName="recurringWeekly"><span>Récurrent chaque semaine</span>
-        </label>
+
+      <div class="fg">
+        <label>Date fin *</label>
+        <input
+          type="date"
+          formControlName="endDate"
+          [class.err]="invalid(unavailForm,'endDate')"
+        >
       </div>
-      <div class="form-row" *ngIf="!isFullDay">
-        <div class="fg"><label>Heure début</label><input type="time" formControlName="startTime"></div>
-        <div class="fg"><label>Heure fin</label><input type="time" formControlName="endTime"></div>
+    </div>
+
+    <div class="form-row checks-row">
+      <label class="check-label">
+        <input type="checkbox" formControlName="fullDay">
+        <span>Journée entière</span>
+      </label>
+
+      <label class="check-label">
+        <input type="checkbox" formControlName="recurringWeekly">
+        <span>Récurrent chaque semaine</span>
+      </label>
+    </div>
+
+    <div class="form-row" *ngIf="isRecurringWeekly">
+      <div class="fg">
+        <label>Jour à bloquer *</label>
+        <select formControlName="dayOfWeek" [class.err]="invalid(unavailForm,'dayOfWeek')">
+          <option [ngValue]="null">-- Choisir un jour --</option>
+          <option *ngFor="let d of weekDays" [value]="d.value">
+            {{ d.label }}
+          </option>
+        </select>
       </div>
-      <div class="fg"><label>Raison (optionnel)</label><input formControlName="reason" placeholder="Congé, séminaire…"></div>
-      <div class="err-txt" *ngIf="unavailError"><i class="fas fa-exclamation-circle"></i> {{ unavailError }}</div>
-      <button type="submit" class="btn-submit mt12" [disabled]="unavailLoading">
-        <i class="fas fa-spinner fa-spin" *ngIf="unavailLoading"></i>
-        <i class="fas fa-save" *ngIf="!unavailLoading"></i>
-        Enregistrer
-      </button>
-    </form>
-  </div>
+    </div>
+
+    <div class="form-row" *ngIf="!isFullDay">
+      <div class="fg">
+        <label>Heure début *</label>
+        <input
+          type="time"
+          formControlName="startTime"
+          [class.err]="invalid(unavailForm,'startTime')"
+        >
+      </div>
+
+      <div class="fg">
+        <label>Heure fin *</label>
+        <input
+          type="time"
+          formControlName="endTime"
+          [class.err]="invalid(unavailForm,'endTime')"
+        >
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>Raison (optionnel)</label>
+      <input formControlName="reason" placeholder="Congé, séminaire…">
+    </div>
+
+    <div class="err-txt" *ngIf="unavailError">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ unavailError }}
+    </div>
+
+    <button type="submit" class="btn-submit mt12" [disabled]="unavailLoading">
+      <i class="fas fa-spinner fa-spin" *ngIf="unavailLoading"></i>
+      <i class="fas fa-save" *ngIf="!unavailLoading"></i>
+      Enregistrer
+    </button>
+  </form>
+</div>
 
   <div *ngIf="loadingUnavail" class="sm"><i class="fas fa-spinner fa-spin"></i></div>
   <div class="empty" *ngIf="!loadingUnavail && unavailabilities.length === 0">

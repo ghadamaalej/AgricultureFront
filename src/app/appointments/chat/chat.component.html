@@ -1,0 +1,66 @@
+<div class="chat-shell">
+  <aside class="chat-sidebar">
+    <div class="chat-sidebar-header">
+      <h2>Messagerie</h2>
+      <p>Discussion en temps réel</p>
+    </div>
+
+    <div class="new-chat" *ngIf="isFarmer">
+      <label>Nouveau message vers un vétérinaire</label>
+      <select (change)="startConversation(+$any($event.target).value)">
+        <option value="">Choisir un vétérinaire</option>
+        <option *ngFor="let vet of vets" [value]="vet.id">Dr. {{ vet.prenom }} {{ vet.nom }}</option>
+      </select>
+    </div>
+
+    <div class="side-loading" *ngIf="loadingConversations">Chargement...</div>
+
+    <button class="conversation-item"
+            *ngFor="let c of conversations; trackBy: trackByConversation"
+            [class.active]="selectedConversation?.id === c.id"
+            (click)="selectConversation(c)">
+      <div class="conversation-top">
+        <strong>{{ getConversationTitle(c) }}</strong>
+        <span>{{ c.lastMessageAt | date:'shortTime' }}</span>
+      </div>
+      <div class="conversation-bottom">
+        <span>{{ c.lastMessage || 'Aucun message' }}</span>
+      </div>
+    </button>
+  </aside>
+
+  <section class="chat-main">
+    <div class="empty-chat" *ngIf="!selectedConversation && !loadingConversations">Sélectionnez une conversation.</div>
+
+    <ng-container *ngIf="selectedConversation">
+      <header class="chat-header">
+        <div>
+          <h3>{{ getConversationTitle(selectedConversation) }}</h3>
+          <p>{{ selectedConversation.otherParticipant?.role === 'VETERINAIRE' ? 'Vétérinaire' : 'Agriculteur' }}</p>
+        </div>
+      </header>
+
+      <div class="messages" *ngIf="!loadingMessages; else loadingTpl">
+        <div class="message-row"
+             *ngFor="let m of messages; trackBy: trackByMessage"
+             [class.mine]="isMine(m)">
+          <div class="bubble">
+            <div class="content">{{ m.content }}</div>
+            <div class="time">{{ m.sentAt | date:'short' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #loadingTpl>
+        <div class="empty-chat">Chargement des messages...</div>
+      </ng-template>
+
+      <div class="composer">
+        <textarea [(ngModel)]="draft" rows="2" placeholder="Écrire un message..."></textarea>
+        <button (click)="send()" [disabled]="sending || !draft.trim()">Envoyer</button>
+      </div>
+    </ng-container>
+
+    <div class="chat-error" *ngIf="error">{{ error }}</div>
+  </section>
+</div>

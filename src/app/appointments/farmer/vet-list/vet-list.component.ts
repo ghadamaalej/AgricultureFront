@@ -10,6 +10,7 @@ import { VetUser } from '../../models/appointments.models';
 })
 export class VetListComponent implements OnInit {
   @Output() booked = new EventEmitter<void>();
+  @Output() openChatLayout = new EventEmitter<void>();
 
   vets: VetUser[] = [];
   filtered: VetUser[] = [];
@@ -40,6 +41,12 @@ export class VetListComponent implements OnInit {
   selectVet(v: VetUser) { this.selectedVet = v; }
   backToList() { this.selectedVet = null; }
   onBooked() { this.selectedVet = null; this.booked.emit(); }
+
+  onOpenChat(vetId: number) {
+    localStorage.setItem('chatVetId', String(vetId));
+    this.selectedVet = null;
+    this.openChatLayout.emit();
+  }
 
   initials(v: VetUser) {
     return `${v.prenom?.charAt(0)||''}${v.nom?.charAt(0)||''}`.toUpperCase();

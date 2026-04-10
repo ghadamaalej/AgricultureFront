@@ -21,10 +21,13 @@ import { BlogDetailComponent }   from './components/blog-detail/blog-detail.comp
 import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
+
 import { FarmerModule } from './farmer/farmer.module';
 import { AnimalsModule } from './animals/animals.module';
 
 import { LOCALE_ID } from '@angular/core';
+import { ToastComponent } from './shared/components/toast/toast.component';
+import { AppToastComponent } from './shared/components/app-toast/app-toast.component';
 
 registerLocaleData(localeFr);
 
@@ -44,7 +47,9 @@ registerLocaleData(localeFr);
     BlogDetailComponent,
     HomeComponent,
     NotFoundComponent,
-    RegisterExtraComponent
+    RegisterExtraComponent,
+    ToastComponent,
+     AppToastComponent
   ],
   imports: [
     BrowserModule,
@@ -55,6 +60,7 @@ registerLocaleData(localeFr);
     AppRoutingModule,
     FarmerModule,
     AnimalsModule,
+  
     
   ],
   providers: [{ provide: LOCALE_ID, useValue: 'fr' }],

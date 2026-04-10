@@ -11,20 +11,20 @@ export interface UserSummary {
 export interface InventoryProduct {
   id: number;
   nom: string;
-  datePeremption: string | null;
   categorie: ProductCategory;
   unit: string;
   isPerishable: boolean;
   currentQuantity: number;
   minThreshold: number;
-  price: number;
-  owner: UserSummary;
+  owner?: UserSummary;
+  ownerId?: number;
 }
 
 export interface Batch {
   id: number;
   lotNumber: string;
   quantity: number;
+  price: number;
   expiryDate: string | null;
   purchaseDate: string;
   note?: string | null;
@@ -49,19 +49,19 @@ export interface Animal {
   reference: string;
   dateNaissance: string;
 }
-
 export interface AnimalDetail extends Animal {
   owner: UserSummary;
-  healthRecords: any[];
+  healthRecords: HealthRecord[];
   vaccinations: VaccinationRecord[];
 }
 
 export interface VaccinationRecord {
   id: number;
-  vaccin: string;        // nom du vaccin (champ backend)
-  dateVaccin: string;    // date vaccination (champ backend)
+  vaccin: string;
+  plannedDate?: string | null;
+  dateVaccin?: string | null;
   dose: number;
-  status: string;        // PENDING | DONE
+  status: string;
   productId: number;
 }
 
@@ -85,13 +85,11 @@ export interface ApiResponse<T> {
 
 export interface CreateProductRequest {
   nom: string;
-  datePeremption?: string;
   categorie: ProductCategory;
   unit: string;
   isPerishable: boolean;
   currentQuantity: number;
   minThreshold: number;
-  price?: number;
 }
 
 export interface UpdateProductRequest extends CreateProductRequest {}
@@ -116,7 +114,14 @@ export interface AdjustStockRequest {
 
 export interface AddStockRequest {
   quantity: number;
+  price: number;
   purchaseDate: string;
   expiryDate?: string | null;
   note?: string | null;
+}
+export interface HealthRecord {
+  id: number;
+  maladie: string;
+  traitement: string;
+  dateH: string;
 }

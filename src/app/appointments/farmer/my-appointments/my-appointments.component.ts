@@ -1,6 +1,6 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { AppointmentsApiService } from '../../services/appointments-api.service';
-import { AppointmentResponse, AppointmentStatus } from '../../models/appointments.models';
+import { AppointmentResponse, AppointmentStatus, AppointmentStats } from '../../models/appointments.models';
 import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
@@ -16,24 +16,38 @@ export class MyAppointmentsComponent implements OnInit {
   loading = true;
   error = '';
   cancellingId: number | null = null;
+  stats: AppointmentStats | null = null;
 
   constructor(private api: AppointmentsApiService, private auth: AuthService) {}
 
   ngOnInit() { this.load(); }
 
   load() {
-    this.loading = true;
-    const id = this.auth.getCurrentUserId()!;
-    this.api.getFarmerAppointments(id).subscribe({
-      next: a => { this.appointments = a; this.loading = false; },
-      error: e => {
-        this.loading = false;
-        this.error = e.status === 0
-          ? 'Serveur inaccessible (port 8088).'
-          : e.error?.message || 'Erreur de chargement';
-      }
-    });
-  }
+  this.loading = true;
+  const id = this.auth.getCurrentUserId()!;
+
+  this.api.getFarmerAppointments(id).subscribe({
+    next: a => {
+      this.appointments = a;
+
+      this.api.getFarmerStats(id).subscribe({
+        next: s => {
+          this.stats = s;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        }
+      });
+    },
+    error: e => {
+      this.loading = false;
+      this.error = e.status === 0
+        ? 'Serveur inaccessible (port 8088).'
+        : e.error?.message || 'Erreur de chargement';
+    }
+  });
+}
 
   cancel(appt: AppointmentResponse) {
     if (!confirm('Annuler ce rendez-vous ?')) return;

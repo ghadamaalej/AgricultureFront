@@ -55,3 +55,30 @@
 .btn-refuse-confirm{background:#c0392b;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:.88rem;font-weight:600;cursor:pointer;transition:background .2s}
 .btn-refuse-confirm:hover{background:#a93226}
 .btn-refuse-confirm:disabled{opacity:.5;cursor:not-allowed}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 20px 0 24px;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  border: 1px solid #eef2f7;
+}
+
+.stat-label {
+  display: block;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}

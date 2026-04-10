@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AppointmentsApiService } from '../../services/appointments-api.service';
-import { AppointmentResponse, AppointmentStatus } from '../../models/appointments.models';
+import { AppointmentResponse, AppointmentStatus, AppointmentStats } from '../../models/appointments.models';
 import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
@@ -16,6 +16,7 @@ export class VetDashboardComponent implements OnInit {
   error = '';
   filterStatus: AppointmentStatus | 'ALL' = 'ALL';
   actionLoading: number | null = null;
+  stats: AppointmentStats | null = null;
 
   // Refuse modal
   showRefuseModal = false;
@@ -34,21 +35,33 @@ export class VetDashboardComponent implements OnInit {
 
   ngOnInit() { this.load(); }
 
-  load() {
-    this.loading = true;
-    const id = this.auth.getCurrentUserId()!;
-    this.api.getVetAppointments(id).subscribe({
-      next: a => {
-        this.all = a.sort((x, y) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime());
-        this.applyFilter();
-        this.loading = false;
-      },
-      error: e => {
-        this.loading = false;
-        this.error = e.status === 0 ? 'Serveur inaccessible.' : e.error?.message || 'Erreur';
-      }
-    });
-  }
+  
+   load() {
+  this.loading = true;
+  const id = this.auth.getCurrentUserId()!;
+
+  this.api.getVetAppointments(id).subscribe({
+    next: a => {
+      this.all = a.sort((x, y) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime());
+      this.applyFilter();
+
+      this.api.getVetStats(id).subscribe({
+        next: s => {
+          this.stats = s;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        }
+      });
+    },
+    error: e => {
+      this.loading = false;
+      this.error = e.status === 0 ? 'Serveur inaccessible.' : e.error?.message || 'Erreur';
+    }
+  });
+}
+  
 
   setFilter(f: AppointmentStatus | 'ALL') { this.filterStatus = f; this.applyFilter(); }
   applyFilter() {

@@ -1,20 +1,18 @@
-<!-- ── Movements view ──────────────────────────────────────────── -->
 <ng-container *ngIf="view === 'movements'">
   <app-movement-list (back)="backToList()"></app-movement-list>
 </ng-container>
 
-<!-- ── Batches view ────────────────────────────────────────────── -->
 <ng-container *ngIf="view === 'batches' && selectedProduct">
   <app-batch-list
     [product]="selectedProduct"
     [batches]="batches"
     (back)="backToList()"
     (consume)="openConsume(selectedProduct!)"
-    (adjust)="openAdjust(selectedProduct!)">
+    (adjust)="openAdjust(selectedProduct!)"
+    (stockAdded)="onStockAdded()">
   </app-batch-list>
 </ng-container>
 
-<!-- ── Product List view ───────────────────────────────────────── -->
 <ng-container *ngIf="view === 'list'">
 
   <div class="page-header">
@@ -33,7 +31,7 @@
   </div>
 
   <div *ngIf="loading" class="state-msg"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>
-  <div *ngIf="error"   class="state-msg error">
+  <div *ngIf="error" class="state-msg error">
     <i class="fas fa-exclamation-circle"></i> {{ error }}
   </div>
 
@@ -62,15 +60,11 @@
           <span class="stat-val">{{ p.minThreshold }}</span>
           <span class="stat-lbl">seuil min</span>
         </div>
-        <div class="stat-divider"></div>
-        <div class="stat">
-          <span class="stat-val">{{ p.price | number:'1.2-2' }}</span>
-          <span class="stat-lbl">DT/u</span>
-        </div>
       </div>
 
-      <div class="card-meta" *ngIf="p.datePeremption">
-        <i class="fas fa-calendar-times"></i> Péremption : {{ p.datePeremption | date:'dd/MM/yyyy' }}
+      <div class="card-meta">
+        <i class="fas" [ngClass]="p.isPerishable ? 'fa-clock' : 'fa-box'"></i>
+        {{ p.isPerishable ? 'Produit périssable' : 'Produit non périssable' }}
       </div>
 
       <div class="card-actions">
@@ -90,7 +84,6 @@
 
 </ng-container>
 
-<!-- ── Modals ───────────────────────────────────────────────────── -->
 <app-product-form
   *ngIf="showProductForm"
   [product]="editingProduct"
@@ -101,6 +94,7 @@
 <app-consume-modal
   *ngIf="showConsumeModal && selectedProduct"
   [product]="selectedProduct"
+  [currentStock]="currentStock"
   (consumed)="onConsumed()"
   (cancelled)="showConsumeModal = false">
 </app-consume-modal>

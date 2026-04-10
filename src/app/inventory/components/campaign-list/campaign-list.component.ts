@@ -13,21 +13,60 @@ export class CampaignListComponent implements OnInit {
 
   campaigns: VaccinationCampaign[] = [];
   loading = true;
-  error   = '';
+  error = '';
 
   constructor(private api: InventoryApiService) {}
 
   ngOnInit() {
+    this.load();
+  }
+
+  load() {
+    this.loading = true;
+    this.error = '';
+
     this.api.getAllCampaigns().subscribe({
-      next: c => { this.campaigns = c; this.loading = false; },
-      error: () => { this.error = 'Erreur de chargement'; this.loading = false; }
+      next: (c) => {
+        this.campaigns = c;
+        this.loading = false;
+      },
+      error: (e) => {
+        console.error(e);
+        this.error = e.error?.message || 'Erreur de chargement';
+        this.loading = false;
+      }
     });
   }
 
   statusLabel(s: string) {
-    return { PLANNED: 'Planifiée', IN_PROGRESS: 'En cours', COMPLETED: 'Terminée' }[s] || s;
+    return {
+      PLANNED: 'Planifiée',
+      IN_PROGRESS: 'En cours',
+      COMPLETED: 'Terminée'
+    }[s] || s;
   }
+
   statusClass(s: string) {
-    return { PLANNED: 'st-planned', IN_PROGRESS: 'st-progress', COMPLETED: 'st-done' }[s] || '';
+    return {
+      PLANNED: 'st-planned',
+      IN_PROGRESS: 'st-progress',
+      COMPLETED: 'st-done'
+    }[s] || '';
+  }
+
+  markDone(campaignId: number) {
+    if (!confirm('Confirmer la vaccination de tous les animaux de cette campagne ?')) {
+      return;
+    }
+
+    this.api.vaccinateCampaign(campaignId).subscribe({
+      next: () => {
+        this.load();
+      },
+      error: (e) => {
+        console.error(e);
+        alert(e.error?.message || 'Erreur lors de la validation de la campagne');
+      }
+    });
   }
 }

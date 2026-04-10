@@ -15,6 +15,7 @@ export class VetProfileComponent implements OnInit {
   @Input() vet!: VetUser;
   @Output() back   = new EventEmitter<void>();
   @Output() booked = new EventEmitter<void>();
+  @Output() openChat = new EventEmitter<number>();
 
   availabilities: VetAvailability[] = [];
   animals: Animal[] = [];
@@ -139,6 +140,8 @@ export class VetProfileComponent implements OnInit {
     if (!this.selectedSlot) return '';
     return `${this.selectedSlot.startTime} – ${this.selectedSlot.endTime}`;
   }
+
+  openConversation() { this.openChat.emit(this.vet.id); }
 
   get selectedDateDisplay(): string {
     if (!this.selectedDate) return '';

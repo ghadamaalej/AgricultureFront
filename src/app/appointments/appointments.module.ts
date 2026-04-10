@@ -17,6 +17,7 @@ import { VetDashboardComponent }         from './vet/dashboard/vet-dashboard.com
 import { HealthRecordsComponent }        from './vet/health-records/health-records.component';
 import { AvailabilityManagerComponent }  from './vet/availability-manager/availability-manager.component';
 import { VetProfileFormComponent }       from './vet/profile-form/vet-profile-form.component';
+import { ChatComponent }                 from './chat/chat.component';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { VetProfileFormComponent }       from './vet/profile-form/vet-profile-fo
     AvailabilityManagerComponent,
     VetProfileFormComponent,
     HealthRecordsComponent,
+    ChatComponent,
   ],
   imports: [
     CommonModule,
