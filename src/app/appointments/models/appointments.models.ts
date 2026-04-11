@@ -153,3 +153,31 @@ export interface AppointmentStats {
   upcomingAppointments: number;
   distinctAnimals: number;
 }
+
+export interface DiagnosticRequest {
+  animalId: number;
+  symptom1: string;
+  symptom2?: string;
+  symptom3?: string;
+  duration: string;
+  bodyTemperature?: string;
+  question?: string;
+}
+
+export interface DiseasePrediction {
+  rank: number;
+  disease: string;
+  probability: number;
+}
+
+export interface DiagnosticResponse {
+  animalReference: string;
+  animalEspece: string;
+  predictions: DiseasePrediction[];
+  geminiAnalysis: string;
+  disclaimer: string;
+}
+
+export interface DiagnosticChatResponse {
+  answer: string;
+}

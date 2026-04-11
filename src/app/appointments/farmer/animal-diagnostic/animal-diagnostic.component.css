@@ -1,0 +1,58 @@
+.diagnostic-shell{display:flex;flex-direction:column;gap:22px}
+.intro-card{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;padding:24px 28px;border-radius:24px;background:linear-gradient(135deg,#16351f,#2c6a3f 55%,#b8d67f);color:#fff;box-shadow:0 18px 38px rgba(14,39,22,.18)}
+.eyebrow{margin:0 0 8px;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;opacity:.8}
+.intro-card h2{margin:0 0 10px;font-size:2rem;line-height:1.1}
+.intro-copy{margin:0;max-width:680px;color:rgba(255,255,255,.9)}
+.quick-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+.quick-actions button{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.14);color:#fff;padding:12px 14px;border-radius:999px;cursor:pointer;font-weight:600}
+.diagnostic-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,.9fr);gap:22px}
+.diagnostic-form,.result-panel{background:#fff;border-radius:24px;box-shadow:0 12px 28px rgba(24,48,31,.08)}
+.diagnostic-form{padding:24px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field label{font-weight:700;color:#21412b}
+.field input,.field select,.field textarea{border:1px solid #d6e3d0;border-radius:14px;padding:12px 14px;font:inherit;background:#fbfdf9}
+.field textarea{resize:vertical;min-height:120px}
+.full{grid-column:1 / -1}
+.actions{display:flex;justify-content:flex-start}
+.actions button{border:none;background:#214f30;color:#fff;padding:14px 20px;border-radius:14px;font-weight:700;cursor:pointer}
+.actions button:disabled{opacity:.65;cursor:not-allowed}
+.error{color:#b42318}
+.result-panel{padding:24px;display:flex}
+.placeholder,.result-card{width:100%}
+.placeholder{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:10px;color:#5d7163}
+.result-card h3{margin:0 0 18px;color:#173722;font-size:1.8rem}
+.prediction-list{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
+.prediction{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:18px;background:linear-gradient(180deg,#f9fcf5,#edf6e8)}
+.prediction strong{display:block;color:#1e3e28}
+.rank{display:inline-block;margin-bottom:5px;color:#5e7465;font-size:.82rem}
+.score{font-weight:800;color:#214f30}
+.analysis{padding:18px;border-radius:18px;background:#fff7e8;color:#5d471d}
+.analysis h4{margin:0 0 10px;color:#6d4b08}
+.analysis p{margin:0;white-space:pre-wrap;line-height:1.6}
+.disclaimer{margin-top:16px;padding:14px 16px;border-left:4px solid #d97706;background:#fff4db;color:#7b4f12;border-radius:14px}
+.muted{color:#718471}
+.chat-card{background:#fff;border-radius:24px;box-shadow:0 12px 28px rgba(24,48,31,.08);padding:24px;display:flex;flex-direction:column;gap:18px}
+.chat-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.chat-header h3{margin:4px 0 0;color:#173722;font-size:1.5rem}
+.chat-tip{margin:0;color:#6a7c70;max-width:420px}
+.chat-messages{display:flex;flex-direction:column;gap:14px;max-height:420px;overflow:auto;padding:4px}
+.chat-message{display:flex}
+.chat-message.mine{justify-content:flex-end}
+.bubble{max-width:min(760px,85%);background:#f6f9f3;border-radius:20px;padding:14px 16px;border:1px solid #e2eadc}
+.chat-message.mine .bubble{background:#214f30;color:#fff;border-color:#214f30}
+.author{display:block;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;opacity:.8}
+.bubble p{margin:0;white-space:pre-wrap;line-height:1.55}
+.chat-composer{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:end}
+.chat-composer textarea{border:1px solid #d6e3d0;border-radius:16px;padding:14px 16px;font:inherit;background:#fbfdf9;resize:vertical;min-height:84px}
+.chat-composer button{border:none;background:#173722;color:#fff;padding:14px 18px;border-radius:14px;font-weight:700;cursor:pointer}
+.chat-composer button:disabled{opacity:.65;cursor:not-allowed}
+@media (max-width: 1100px){
+  .diagnostic-grid{grid-template-columns:1fr}
+}
+@media (max-width: 720px){
+  .intro-card{padding:20px;flex-direction:column}
+  .diagnostic-form{grid-template-columns:1fr}
+  .chat-header{flex-direction:column}
+  .chat-composer{grid-template-columns:1fr}
+  .bubble{max-width:100%}
+}

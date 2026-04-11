@@ -8,7 +8,8 @@ import {
   CreateAppointmentRequest, CreateAvailabilityRequest,
   CreateUnavailabilityRequest, UnavailabilityResponse,
   HealthRecord, CreateHealthRecordRequest, UpdateHealthRecordRequest,
-  ChatConversation, ChatMessage , AppointmentStats
+  ChatConversation, ChatMessage , AppointmentStats,
+  DiagnosticRequest, DiagnosticResponse, DiagnosticChatResponse
 } from '../models/appointments.models';
 
 interface ApiResp<T> { message: string; data: T; }
@@ -250,6 +251,22 @@ getVetStats(vetId: number): Observable<AppointmentStats> {
 getFarmerStats(farmerId: number): Observable<AppointmentStats> {
   return this.http.get<ApiResp<AppointmentStats>>(
     `${this.inv}/appointments/farmer/${farmerId}/stats`,
+    { headers: this.h() }
+  ).pipe(map(r => r.data));
+}
+
+diagnoseAnimal(req: DiagnosticRequest): Observable<DiagnosticResponse> {
+  return this.http.post<ApiResp<DiagnosticResponse>>(
+    `${this.inv}/diagnostic`,
+    req,
+    { headers: this.h() }
+  ).pipe(map(r => r.data));
+}
+
+chatWithDiagnosticAssistant(req: DiagnosticRequest): Observable<DiagnosticChatResponse> {
+  return this.http.post<ApiResp<DiagnosticChatResponse>>(
+    `${this.inv}/diagnostic/chat`,
+    req,
     { headers: this.h() }
   ).pipe(map(r => r.data));
 }
