@@ -20,6 +20,9 @@ import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
 import { DiseasePredictorComponent } from './components/disease-predictor/disease-predictor.component';
+import { AssistanceDetailComponent } from './components/assistance-detail/assistance-detail.component';
+import { HelpRequestComponent } from './components/help-request/help-request.component';
+import { ExpertAssistanceRequestsComponent } from './components/expert-assistance-requests/expert-assistance-requests.component';
 import { provideHttpClient } from '@angular/common/http';
 
 @NgModule({
@@ -38,7 +41,10 @@ import { provideHttpClient } from '@angular/common/http';
     HomeComponent,
     NotFoundComponent,
     RegisterExtraComponent,
-    DiseasePredictorComponent
+    DiseasePredictorComponent,
+    AssistanceDetailComponent,
+    HelpRequestComponent,
+    ExpertAssistanceRequestsComponent
   ],
   imports: [
     BrowserModule,

@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormationService, Formation } from '../../services/formation/formation.service';
 import { AuthService } from '../../services/auth/auth.service';
+import { SharedModule } from '../../shared/shared.module';
 
 @Component({
   selector: 'app-formation-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, SharedModule],
   templateUrl: './formation-form.component.html',
   styleUrl: './formation-form.component.css'
 })
@@ -101,15 +102,7 @@ export class FormationFormComponent implements OnInit {
         next: (data) => {
           this.formation = data;
           
-          // Try to load image from localStorage first
-          const imageKey = `formation_image_${data.idFormation}`;
-          const storedImage = localStorage.getItem(imageKey);
-          if (storedImage) {
-            this.imagePreview = storedImage;
-            this.formation.imageUrl = storedImage;
-            console.log('📸 Image loaded from localStorage:', imageKey);
-          } else if (this.formation.imageUrl) {
-            // Fallback to backend imageUrl if exists
+          if (this.formation.imageUrl) {
             this.imagePreview = this.formation.imageUrl;
           }
           
@@ -133,14 +126,35 @@ export class FormationFormComponent implements OnInit {
     this.error = null;
     this.success = null;
 
-    if (this.isEditMode && this.formation.idFormation) {
-      // For update, save image to localStorage if exists
-      if (this.selectedImageFile && this.imagePreview) {
-        const imageKey = `formation_image_${this.formation.idFormation}`;
-        localStorage.setItem(imageKey, this.imagePreview);
-        this.formation.imageUrl = this.imagePreview;
+    // If there's an image to upload, do it first
+    if (this.selectedImageFile) {
+      this.uploadImageAndSubmit();
+    } else {
+      this.submitFormation();
+    }
+  }
+
+  private uploadImageAndSubmit(): void {
+    if (!this.selectedImageFile) {
+      this.submitFormation();
+      return;
+    }
+
+    this.formationService.uploadImage(this.selectedImageFile).subscribe({
+      next: (response) => {
+        this.formation.imageUrl = response.imageUrl;
+        this.submitFormation();
+      },
+      error: (err) => {
+        console.error('Error uploading image:', err);
+        this.error = 'Erreur lors du téléchargement de l\'image';
+        this.isSubmitting = false;
       }
-      
+    });
+  }
+
+  private submitFormation(): void {
+    if (this.isEditMode && this.formation.idFormation) {
       this.formationService.updateFormation(this.formation.idFormation, this.formation).subscribe({
         next: () => {
           this.success = 'Formation mise à jour avec succès';
@@ -153,30 +167,16 @@ export class FormationFormComponent implements OnInit {
         }
       });
     } else {
-      // Remove userId as it's not part of Formation entity
+      // Set userId for new formations
       const formationData = { ...this.formation };
-      delete formationData.userId;
+      formationData.userId = this.currentUserId ?? undefined;
       delete formationData.idFormation; // Don't send id for new formations
-      
-      // For now, don't send imageUrl if it's a data URL (too long)
-      // This will be fixed with proper file upload later
-      if (formationData.imageUrl?.startsWith('data:')) {
-        console.log('⚠️ Removing data URL image for now (too long for backend)');
-        formationData.imageUrl = '';
-      }
       
       console.log('📤 Sending formation data:', formationData);
       
       this.formationService.createFormation(formationData).subscribe({
         next: (data) => {
           console.log('✅ Formation created successfully:', data);
-          
-          // Save image to localStorage after successful creation
-          if (this.selectedImageFile && this.imagePreview && data.idFormation) {
-            const imageKey = `formation_image_${data.idFormation}`;
-            localStorage.setItem(imageKey, this.imagePreview);
-            console.log('💾 Image saved to localStorage:', imageKey);
-          }
           
           this.success = 'Formation créée avec succès';
           setTimeout(() => this.router.navigate(['/training', data.idFormation]), 1500);

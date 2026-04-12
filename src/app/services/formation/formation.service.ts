@@ -129,4 +129,11 @@ export class FormationService {
   getUserInscriptions(userId: number): Observable<InscriptionFormation[]> {
     return this.http.get<InscriptionFormation[]>(`${this.apiUrl}/user/${userId}/inscriptions`);
   }
+
+  // Image upload endpoint
+  uploadImage(file: File): Observable<{ imageUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ imageUrl: string }>(`${this.apiUrl}/upload`, formData);
+  }
 }

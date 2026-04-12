@@ -4,11 +4,12 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FormationService, Formation } from '../../services/formation/formation.service';
 import { AuthService } from '../../services/auth/auth.service';
+import { SharedModule } from '../../shared/shared.module';
 
 @Component({
   selector: 'app-formation-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, SharedModule],
   templateUrl: './formation-list.component.html',
   styleUrl: './formation-list.component.css'
 })
@@ -60,19 +61,13 @@ export class FormationListComponent implements OnInit {
   loadFormations(): void {
     this.formationService.getAllFormations().subscribe({
       next: (data) => {
-        // Load images from localStorage for each formation
-        this.formations = data.map(formation => {
-          if (formation.idFormation) {
-            const imageKey = `formation_image_${formation.idFormation}`;
-            const storedImage = localStorage.getItem(imageKey);
-            if (storedImage) {
-              formation.imageUrl = storedImage;
-              console.log('📸 Image loaded from localStorage for formation:', formation.idFormation);
-            }
-          }
-          return formation;
-        });
-        
+        // Filter formations based on user role
+        if (this.canManageFormations()) {
+          // Experts can only see their own formations
+          data = data.filter(f => f.userId === this.currentUserId);
+        }
+
+        this.formations = data;
         this.applyFilters();
         this.isLoading = false;
       },

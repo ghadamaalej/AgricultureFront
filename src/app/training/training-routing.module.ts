@@ -1,14 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { FormationListComponent } from './formation-list/formation-list.component';
-import { FormationDetailComponent } from './formation-detail/formation-detail.component';
-import { FormationFormComponent } from './formation-form/formation-form.component';
 
 const routes: Routes = [
   { path: '', component: FormationListComponent },
-  { path: 'add', component: FormationFormComponent },
-  { path: ':id', component: FormationDetailComponent },
-  { path: ':id/edit', component: FormationFormComponent }
+  { path: 'add', loadComponent: () => import('./formation-form/formation-form.component').then(m => m.FormationFormComponent) },
+  { path: ':id', loadComponent: () => import('./formation-detail/formation-detail.component').then(m => m.FormationDetailComponent) },
+  { path: ':id/edit', loadComponent: () => import('./formation-form/formation-form.component').then(m => m.FormationFormComponent) }
 ];
 
 @NgModule({

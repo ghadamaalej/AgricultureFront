@@ -4,11 +4,12 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FormationService, Formation, Module, LeconVideo, Ressource } from '../../services/formation/formation.service';
 import { AuthService } from '../../services/auth/auth.service';
+import { SharedModule } from '../../shared/shared.module';
 
 @Component({
   selector: 'app-formation-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, SharedModule],
   templateUrl: './formation-detail.component.html',
   styleUrl: './formation-detail.component.css'
 })

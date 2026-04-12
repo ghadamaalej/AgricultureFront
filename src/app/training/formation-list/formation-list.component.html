@@ -1,3 +1,5 @@
+<app-navbar></app-navbar>
+
 <div class="formation-container">
   <!-- Header Section -->
   <div class="formation-header">
@@ -74,7 +76,7 @@
              [alt]="formation.titre"
              class="formation-image"
         />
-        <div class="formation-badge" [ngClass]="'badge-' + (formation.type?.toLowerCase() || 'theorique')">
+        <div class="formation-badge" [ngClass]="'badge-' + (formation.type.toLowerCase() || 'theorique')">
           {{ formation.type }}
         </div>
         <div *ngIf="formation.estPayante" class="price-badge">
@@ -86,7 +88,7 @@
       <div class="formation-card-content">
         <div class="formation-header-info">
           <h3 class="formation-title">{{ formation.titre }}</h3>
-          <span class="niveau-badge" [ngClass]="'niveau-' + (formation.niveau?.toLowerCase() || 'debutant')">
+          <span class="niveau-badge" [ngClass]="'niveau-' + (formation.niveau.toLowerCase() || 'debutant')">
             {{ formation.niveau }}
           </span>
         </div>

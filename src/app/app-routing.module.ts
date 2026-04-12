@@ -9,11 +9,22 @@ import { AuthGuard }           from './services/auth/auth.guard';
 import { GuestGuard }          from './services/auth/guest.guard';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
 import { DiseasePredictorComponent } from './components/disease-predictor/disease-predictor.component';
+import { AssistanceDetailComponent } from './components/assistance-detail/assistance-detail.component';
+import { HelpRequestComponent } from './components/help-request/help-request.component';
+import { ExpertAssistanceRequestsComponent } from './components/expert-assistance-requests/expert-assistance-requests.component';
 
 const routes: Routes = [
   { path: '',         component: HomeComponent,       pathMatch: 'full' },
   { path: 'auth',     component: AuthComponent, canActivate: [GuestGuard] },
   { path: 'disease-predictor', component: DiseasePredictorComponent },
+  { path: 'help-request', component: HelpRequestComponent },
+  {
+    path: 'expert/assistance-requests',
+    component: ExpertAssistanceRequestsComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['EXPERT_AGRICOLE'] }
+  },
+  { path: 'assistance/:id', component: AssistanceDetailComponent },
   {
     path: 'dashboard',
     loadChildren: () =>import('./dashboard/dashboard.module').then(m => m.DashboardModule),

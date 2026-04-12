@@ -1,0 +1,119 @@
+<app-navbar></app-navbar>
+
+<main class="expert-page">
+  <section class="expert-header">
+    <div>
+      <span class="eyebrow">Expert Agricole</span>
+      <h1>Farmer assistance requests</h1>
+      <p>Review questions sent by farmers and follow up on engineer or mixed-channel requests.</p>
+    </div>
+    <button type="button" class="refresh-button" (click)="loadRequests()" [disabled]="isLoading">
+      <i class="fas" [class.fa-sync-alt]="!isLoading" [class.fa-spinner]="isLoading" [class.fa-spin]="isLoading"></i>
+      Refresh
+    </button>
+  </section>
+
+  <section class="toolbar">
+    <label>
+      <span>Status</span>
+      <select [(ngModel)]="selectedStatus" (change)="applyFilter()">
+        <option *ngFor="let filter of statusFilters" [value]="filter.value">{{ filter.label }}</option>
+      </select>
+    </label>
+    <strong>{{ filteredDemandes.length }} request(s)</strong>
+  </section>
+
+  <div *ngIf="errorMessage" class="alert">{{ errorMessage }}</div>
+  <div *ngIf="isLoading" class="state-message">Loading assistance requests...</div>
+
+  <section *ngIf="!isLoading && filteredDemandes.length > 0" class="requests-grid">
+    <article *ngFor="let demande of filteredDemandes" class="request-card">
+      <div class="card-top">
+        <span class="type-pill">{{ demande.typeProbleme }}</span>
+        <span class="status-pill">{{ demande.statut || 'OUVERTE' }}</span>
+      </div>
+
+      <p class="question">{{ getSummary(demande.description) }}</p>
+
+      <dl class="meta-list">
+        <div>
+          <dt>Assign.</dt>
+          <dd>{{ getAssignmentLabel(demande) }}</dd>
+        </div>
+        <div>
+          <dt>Channel</dt>
+          <dd>{{ demande.canal }}</dd>
+        </div>
+        <div>
+          <dt>Location</dt>
+          <dd>{{ demande.localisation || 'Not provided' }}</dd>
+        </div>
+        <div>
+          <dt>Created</dt>
+          <dd>{{ demande.dateCreation | date:'medium' }}</dd>
+        </div>
+      </dl>
+
+      <div *ngIf="demande.reponseIA" class="ai-preview">
+        <strong>AI diagnostic</strong>
+        <p>{{ getSummary(demande.reponseIA.diagnostic) }}</p>
+      </div>
+
+      <div *ngIf="hasEngineerResponses(demande)" class="expert-response-list">
+        <strong>Sent response</strong>
+        <p *ngFor="let response of demande.affectationDemande?.reponsesIngenieur">
+          {{ getSummary(response.contenu) }}
+        </p>
+      </div>
+
+      <form *ngIf="canRespond(demande)" class="response-form" (ngSubmit)="submitResponse(demande)">
+        <label>
+          <span>Your response to the farmer</span>
+          <textarea
+            rows="4"
+            [(ngModel)]="responseTextByAffectation[demande.affectationDemande!.idAffectation!]"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="Write the diagnosis, advice, and next steps for the farmer."
+          ></textarea>
+        </label>
+        <button
+          type="submit"
+          class="send-response-button"
+          [disabled]="responseInProgressId === demande.affectationDemande?.idAffectation"
+        >
+          {{ responseInProgressId === demande.affectationDemande?.idAffectation ? 'Sending...' : 'Send response' }}
+        </button>
+      </form>
+
+      <div class="card-actions">
+        <button type="button" class="open-button" (click)="openDetails(demande)">
+          Open request
+        </button>
+        <button
+          *ngIf="canDecide(demande)"
+          type="button"
+          class="accept-button"
+          (click)="accept(demande)"
+          [disabled]="actionInProgressId === demande.affectationDemande?.idAffectation"
+        >
+          Accept
+        </button>
+        <button
+          *ngIf="canRefuse(demande)"
+          type="button"
+          class="refuse-button"
+          (click)="refuse(demande)"
+          [disabled]="actionInProgressId === demande.affectationDemande?.idAffectation"
+        >
+          Refuse
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <section *ngIf="!isLoading && filteredDemandes.length === 0 && !errorMessage" class="empty-state">
+    <i class="fas fa-inbox"></i>
+    <h2>No expert requests yet</h2>
+    <p>Farmer requests routed to an engineer will appear here.</p>
+  </section>
+</main>

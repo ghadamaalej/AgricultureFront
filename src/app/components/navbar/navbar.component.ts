@@ -1,6 +1,15 @@
 import { Component, HostListener, OnInit, Output, EventEmitter } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { AuthService } from '../../services/auth/auth.service';
+
+interface NavDropdownLink {
+  label: string;
+  icon: string;
+  route: string;
+  hasSubmenu?: boolean;
+  submenu?: Array<{ label: string; icon: string; route: string }>;
+}
 
 @Component({
   selector: 'app-navbar',
@@ -30,7 +39,7 @@ export class NavbarComponent implements OnInit {
     { label: 'Trainings',   route: '/training'    },
   ];
 
-  dropdownLinks = [
+  dropdownLinks: NavDropdownLink[] = [
     { label: 'Terrain',       icon: 'fas fa-leaf',            route: '/farm',         hasSubmenu: true, submenu: [
       { label: 'Add Terrain',  icon: 'fas fa-plus',           route: '/farm/add'      },
       { label: 'My Terrains',  icon: 'fas fa-list',           route: '/farm/list'     }
@@ -42,10 +51,14 @@ export class NavbarComponent implements OnInit {
     { label: 'Help Request', icon: 'fas fa-hands-helping',  route: '/help-request' },
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
-    this.isLoggedIn = !!localStorage.getItem('token');
+    this.isLoggedIn = this.authService.isLoggedIn();
+    this.syncExpertLink();
     this.isHomePage = this.router.url === '/';
     this.activeLink = this.router.url;
 
@@ -56,6 +69,7 @@ export class NavbarComponent implements OnInit {
         this.activeLink       = e.urlAfterRedirects;
         this.moreDropdownOpen = false;
         this.isMobileMenuOpen = false;
+        this.syncExpertLink();
       });
   }
 
@@ -96,7 +110,7 @@ export class NavbarComponent implements OnInit {
   }
 
   /** Highlights More items when on that route or (for Terrain) any /farm/* path */
-  isDropdownLinkActive(link: { route: string; hasSubmenu?: boolean }): boolean {
+  isDropdownLinkActive(link: NavDropdownLink): boolean {
     if (this.activeLink === link.route) {
       return true;
     }
@@ -111,4 +125,21 @@ export class NavbarComponent implements OnInit {
   signIn()  { localStorage.setItem('authMode', 'signin');  this.onAuthOpen.emit('signin');  }
   signUp()  { localStorage.setItem('authMode', 'signup');  this.onAuthOpen.emit('signup');  }
   logout()  { localStorage.clear(); this.isLoggedIn = false; this.router.navigate(['/']); }
+
+  private syncExpertLink(): void {
+    const isExpert = this.authService.hasRole('EXPERT_AGRICOLE');
+    const route = '/expert/assistance-requests';
+    const hasLink = this.dropdownLinks.some((link) => link.route === route);
+
+    if (isExpert && !hasLink) {
+      this.dropdownLinks = [
+        ...this.dropdownLinks,
+        { label: 'Expert Requests', icon: 'fas fa-clipboard-list', route, hasSubmenu: false }
+      ];
+    }
+
+    if (!isExpert && hasLink) {
+      this.dropdownLinks = this.dropdownLinks.filter((link) => link.route !== route);
+    }
+  }
 }
