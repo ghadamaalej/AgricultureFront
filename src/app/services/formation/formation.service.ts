@@ -26,6 +26,7 @@ export interface Module {
   titre: string;
   ordre: number;
   lecons?: LeconVideo[];
+  ressources?: Ressource[];
 }
 
 export interface LeconVideo {
@@ -108,17 +109,41 @@ export class FormationService {
     return this.http.delete<void>(`${this.apiUrl}/${formationId}/modules/${moduleId}/lecons/${leconId}`);
   }
 
+  uploadLeconVideo(formationId: number, moduleId: number, file: File): Observable<{ videoUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ videoUrl: string }>(`${this.apiUrl}/${formationId}/modules/${moduleId}/lecons/upload`, formData);
+  }
+
   // Ressource endpoints
   createRessource(formationId: number, ressource: Ressource): Observable<Ressource> {
     return this.http.post<Ressource>(`${this.apiUrl}/${formationId}/ressources`, ressource);
+  }
+
+  createModuleRessource(formationId: number, moduleId: number, ressource: Ressource): Observable<Ressource> {
+    return this.http.post<Ressource>(`${this.apiUrl}/${formationId}/modules/${moduleId}/ressources`, ressource);
+  }
+
+  uploadModuleRessource(formationId: number, moduleId: number, file: File): Observable<{ resourceUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ resourceUrl: string }>(`${this.apiUrl}/${formationId}/modules/${moduleId}/ressources/upload`, formData);
   }
 
   updateRessource(formationId: number, ressourceId: number, ressource: Ressource): Observable<Ressource> {
     return this.http.put<Ressource>(`${this.apiUrl}/${formationId}/ressources/${ressourceId}`, ressource);
   }
 
+  updateModuleRessource(formationId: number, moduleId: number, ressourceId: number, ressource: Ressource): Observable<Ressource> {
+    return this.http.put<Ressource>(`${this.apiUrl}/${formationId}/modules/${moduleId}/ressources/${ressourceId}`, ressource);
+  }
+
   deleteRessource(formationId: number, ressourceId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${formationId}/ressources/${ressourceId}`);
+  }
+
+  deleteModuleRessource(formationId: number, moduleId: number, ressourceId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${formationId}/modules/${moduleId}/ressources/${ressourceId}`);
   }
 
   // Inscription endpoints

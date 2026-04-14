@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FormationService, Formation, Module, LeconVideo, Ressource } from '../../services/formation/formation.service';
@@ -30,6 +31,10 @@ export class FormationDetailComponent implements OnInit {
   editingModuleId: number | null = null;
   editingLeconId: number | null = null;
   editingRessourceId: number | null = null;
+  activeLeconModuleId: number | null = null;
+  activeRessourceModuleId: number | null = null;
+  isUploadingVideo = false;
+  isUploadingRessource = false;
 
   // Form data
   newModule: Module = { titre: '', ordre: 0 };
@@ -42,7 +47,8 @@ export class FormationDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private formationService: FormationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -154,16 +160,27 @@ export class FormationDetailComponent implements OnInit {
   }
 
   // Lecon Management
-  toggleLeconForm(): void {
+  toggleLeconForm(moduleId?: number): void {
+    if (moduleId && this.activeLeconModuleId !== moduleId) {
+      this.activeLeconModuleId = moduleId;
+      this.showLeconForm = true;
+      this.resetLeconForm(false);
+      return;
+    }
+
     this.showLeconForm = !this.showLeconForm;
+    this.activeLeconModuleId = this.showLeconForm ? moduleId ?? this.activeLeconModuleId : null;
     if (!this.showLeconForm) {
       this.resetLeconForm();
     }
   }
 
-  resetLeconForm(): void {
+  resetLeconForm(clearModule = true): void {
     this.newLecon = { titre: '', urlVideo: '', dureeSecondes: 0, ordre: 0 };
     this.editingLeconId = null;
+    if (clearModule) {
+      this.activeLeconModuleId = null;
+    }
   }
 
   saveLecon(module: Module): void {
@@ -173,7 +190,8 @@ export class FormationDetailComponent implements OnInit {
       this.formationService.updateLeconVideo(this.formation.idFormation, module.idModule, this.editingLeconId, this.newLecon).subscribe({
         next: () => {
           this.loadFormation();
-          this.toggleLeconForm();
+          this.showLeconForm = false;
+          this.resetLeconForm();
         },
         error: (err) => console.error('Error updating lecon:', err)
       });
@@ -181,16 +199,18 @@ export class FormationDetailComponent implements OnInit {
       this.formationService.createLeconVideo(this.formation.idFormation, module.idModule, this.newLecon).subscribe({
         next: () => {
           this.loadFormation();
-          this.toggleLeconForm();
+          this.showLeconForm = false;
+          this.resetLeconForm();
         },
         error: (err) => console.error('Error creating lecon:', err)
       });
     }
   }
 
-  editLecon(lecon: LeconVideo): void {
+  editLecon(module: Module, lecon: LeconVideo): void {
     this.newLecon = { ...lecon };
     this.editingLeconId = lecon.idLecon || null;
+    this.activeLeconModuleId = module.idModule || null;
     this.showLeconForm = true;
   }
 
@@ -206,22 +226,51 @@ export class FormationDetailComponent implements OnInit {
   }
 
   // Ressource Management
-  toggleRessourceForm(): void {
+  toggleRessourceForm(moduleId?: number): void {
+    if (moduleId && this.activeRessourceModuleId !== moduleId) {
+      this.activeRessourceModuleId = moduleId;
+      this.showRessourceForm = true;
+      this.resetRessourceForm(false);
+      return;
+    }
+
     this.showRessourceForm = !this.showRessourceForm;
+    this.activeRessourceModuleId = this.showRessourceForm ? moduleId ?? this.activeRessourceModuleId : null;
     if (!this.showRessourceForm) {
       this.resetRessourceForm();
     }
   }
 
-  resetRessourceForm(): void {
+  resetRessourceForm(clearModule = true): void {
     this.newRessource = { titre: '', type: 'PDF', url: '' };
     this.editingRessourceId = null;
+    if (clearModule) {
+      this.activeRessourceModuleId = null;
+    }
   }
 
-  saveRessource(): void {
+  saveRessource(module?: Module): void {
     if (!this.formation?.idFormation || !this.newRessource.titre) return;
 
-    if (this.editingRessourceId) {
+    if (module?.idModule && this.editingRessourceId) {
+      this.formationService.updateModuleRessource(this.formation.idFormation, module.idModule, this.editingRessourceId, this.newRessource).subscribe({
+        next: () => {
+          this.loadFormation();
+          this.showRessourceForm = false;
+          this.resetRessourceForm();
+        },
+        error: (err) => console.error('Error updating module ressource:', err)
+      });
+    } else if (module?.idModule) {
+      this.formationService.createModuleRessource(this.formation.idFormation, module.idModule, this.newRessource).subscribe({
+        next: () => {
+          this.loadFormation();
+          this.showRessourceForm = false;
+          this.resetRessourceForm();
+        },
+        error: (err) => console.error('Error creating module ressource:', err)
+      });
+    } else if (this.editingRessourceId) {
       this.formationService.updateRessource(this.formation.idFormation, this.editingRessourceId, this.newRessource).subscribe({
         next: () => {
           this.loadFormation();
@@ -240,16 +289,21 @@ export class FormationDetailComponent implements OnInit {
     }
   }
 
-  editRessource(ressource: Ressource): void {
+  editRessource(ressource: Ressource, module?: Module): void {
     this.newRessource = { ...ressource };
     this.editingRessourceId = ressource.idRessource || null;
+    this.activeRessourceModuleId = module?.idModule || null;
     this.showRessourceForm = true;
   }
 
-  deleteRessource(ressourceId: number | undefined): void {
+  deleteRessource(ressourceId: number | undefined, module?: Module): void {
     if (!this.formation?.idFormation || !ressourceId || !confirm('Supprimer cette ressource ?')) return;
 
-    this.formationService.deleteRessource(this.formation.idFormation, ressourceId).subscribe({
+    const request = module?.idModule
+      ? this.formationService.deleteModuleRessource(this.formation.idFormation, module.idModule, ressourceId)
+      : this.formationService.deleteRessource(this.formation.idFormation, ressourceId);
+
+    request.subscribe({
       next: () => {
         this.loadFormation();
       },
@@ -285,5 +339,105 @@ export class FormationDetailComponent implements OnInit {
     const minutes = Math.floor((seconds || 0) / 60);
     const secs = (seconds || 0) % 60;
     return `${minutes}m ${secs}s`;
+  }
+
+  getTotalLecons(): number {
+    return this.formation?.modules?.reduce((total, module) => total + (module.lecons?.length || 0), 0) || 0;
+  }
+
+  getTotalModuleRessources(): number {
+    return this.formation?.modules?.reduce((total, module) => total + (module.ressources?.length || 0), 0) || 0;
+  }
+
+  getModulesSorted(): Module[] {
+    return [...(this.formation?.modules || [])].sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+  }
+
+  getLeconsSorted(module: Module): LeconVideo[] {
+    return [...(module.lecons || [])].sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+  }
+
+  getModuleRessourcesSorted(module: Module): Ressource[] {
+    return [...(module.ressources || [])].sort((a, b) => (a.titre || '').localeCompare(b.titre || ''));
+  }
+
+  onVideoSelected(event: Event, module: Module): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.formation?.idFormation || !module.idModule) return;
+
+    this.isUploadingVideo = true;
+    this.formationService.uploadLeconVideo(this.formation.idFormation, module.idModule, file).subscribe({
+      next: ({ videoUrl }) => {
+        this.newLecon.urlVideo = videoUrl;
+        this.isUploadingVideo = false;
+        input.value = '';
+      },
+      error: (err) => {
+        console.error('Error uploading video:', err);
+        this.isUploadingVideo = false;
+        alert('Erreur lors de l upload vidéo');
+      }
+    });
+  }
+
+  onRessourceSelected(event: Event, module: Module): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.formation?.idFormation || !module.idModule) return;
+
+    this.isUploadingRessource = true;
+    this.newRessource.type = 'PDF';
+    this.formationService.uploadModuleRessource(this.formation.idFormation, module.idModule, file).subscribe({
+      next: ({ resourceUrl }) => {
+        this.newRessource.url = resourceUrl;
+        if (!this.newRessource.titre) {
+          this.newRessource.titre = file.name.replace(/\.[^/.]+$/, '');
+        }
+        this.isUploadingRessource = false;
+        input.value = '';
+      },
+      error: (err) => {
+        console.error('Error uploading resource:', err);
+        this.isUploadingRessource = false;
+        alert('Erreur lors de l upload PDF');
+      }
+    });
+  }
+
+  isYoutubeUrl(url: string | undefined): boolean {
+    if (!url) return false;
+    return /(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/)/i.test(url);
+  }
+
+  isDirectVideoUrl(url: string | undefined): boolean {
+    if (!url) return false;
+    return !this.isYoutubeUrl(url);
+  }
+
+  getYoutubeEmbedUrl(url: string | undefined): SafeResourceUrl | null {
+    if (!url) return null;
+
+    const videoId = this.extractYoutubeVideoId(url);
+    if (!videoId) return null;
+
+    return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${videoId}`);
+  }
+
+  private extractYoutubeVideoId(url: string): string | null {
+    const patterns = [
+      /youtube\.com\/watch\?v=([^&]+)/i,
+      /youtube\.com\/embed\/([^?&]+)/i,
+      /youtu\.be\/([^?&]+)/i
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match?.[1]) {
+        return match[1];
+      }
+    }
+
+    return null;
   }
 }
