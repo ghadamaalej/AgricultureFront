@@ -197,6 +197,10 @@
   background: #7c570f;
 }
 
+.btn-small.btn-live {
+  background: #c63d32;
+}
+
 .inscribed-label {
   display: inline-flex;
   align-items: center;
@@ -411,6 +415,35 @@
   background: #f4f7f2;
 }
 
+.lesson-mode-selector {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lesson-mode-selector button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 46px;
+  border: 1px solid #dbe7dc;
+  border-radius: 8px;
+  background: #fff;
+  color: #59645d;
+  font-family: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.lesson-mode-selector button.active {
+  border-color: #2f8f46;
+  background: #edf7ee;
+  color: #256f38;
+  box-shadow: 0 0 0 3px rgba(47, 143, 70, 0.12);
+}
+
 .edit-form h3,
 .edit-form h4 {
   margin: 0;
@@ -434,7 +467,8 @@
 }
 
 .form-grid input,
-.form-grid select {
+.form-grid select,
+.comment-form textarea {
   width: 100%;
   min-height: 48px;
   padding: 0 14px;
@@ -449,9 +483,17 @@
 }
 
 .form-grid input:focus,
-.form-grid select:focus {
+.form-grid select:focus,
+.comment-form textarea:focus {
   border-color: #2f8f46;
   box-shadow: 0 0 0 3px rgba(47, 143, 70, 0.12);
+}
+
+.comment-form textarea {
+  min-height: 86px;
+  padding: 12px 14px;
+  resize: vertical;
+  line-height: 1.5;
 }
 
 .upload-group {
@@ -660,12 +702,104 @@
 }
 
 .lecon-player video,
-.lecon-player iframe {
+.lecon-player iframe,
+.live-player iframe {
   width: 100%;
   aspect-ratio: 16 / 9;
   display: block;
   border: 0;
   background: #101712;
+}
+
+.live-details,
+.live-player,
+.comments-panel {
+  grid-column: 1 / -1;
+}
+
+.live-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.live-details span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: #fff2c9;
+  color: #7c570f;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.live-player {
+  overflow: hidden;
+  margin-top: 14px;
+  border: 1px solid #dbe7dc;
+  border-radius: 8px;
+  background: #101712;
+}
+
+.comments-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #e6eee6;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.comments-panel h5 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #1f2b24;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.comment-item {
+  padding: 12px;
+  border: 1px solid #e6eee6;
+  border-radius: 8px;
+  background: #fbfdfb;
+}
+
+.comment-item div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.comment-item strong {
+  color: #1f2b24;
+}
+
+.comment-item span {
+  color: #69756c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.comment-item p {
+  margin: 8px 0 0;
+  color: #2b3730;
+  line-height: 1.55;
+}
+
+.comment-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
 }
 
 .btn-icon {
@@ -840,7 +974,8 @@
   }
 
   .summary-grid,
-  .tabs {
+  .tabs,
+  .lesson-mode-selector {
     grid-template-columns: 1fr;
   }
 
@@ -890,5 +1025,9 @@
   .lecon-info {
     width: 100%;
     align-items: flex-start;
+  }
+
+  .comment-form {
+    grid-template-columns: 1fr;
   }
 }

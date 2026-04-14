@@ -35,13 +35,16 @@ export class FormationDetailComponent implements OnInit {
   activeRessourceModuleId: number | null = null;
   isUploadingVideo = false;
   isUploadingRessource = false;
+  activeLiveLeconId: number | null = null;
+  leconMode: 'recorded' | 'stream' = 'recorded';
+  commentDrafts: Record<number, string> = {};
 
   // Form data
   newModule: Module = { titre: '', ordre: 0 };
-  newLecon: LeconVideo = { titre: '', urlVideo: '', dureeSecondes: 0, ordre: 0 };
+  newLecon: LeconVideo = { titre: '', urlVideo: '', dureeSecondes: 0, ordre: 0, liveAt: '', streamingRoom: '' };
   newRessource: Ressource = { titre: '', type: 'PDF', url: '' };
 
-  resourceTypes = ['PDF', 'VIDEO', 'LIEN', 'DOCUMENT', 'IMAGE'];
+  resourceTypes = ['PDF', 'DOC', 'LIEN', 'IMAGE'];
 
   constructor(
     private route: ActivatedRoute,
@@ -176,8 +179,9 @@ export class FormationDetailComponent implements OnInit {
   }
 
   resetLeconForm(clearModule = true): void {
-    this.newLecon = { titre: '', urlVideo: '', dureeSecondes: 0, ordre: 0 };
+    this.newLecon = { titre: '', urlVideo: '', dureeSecondes: 0, ordre: 0, liveAt: '', streamingRoom: '' };
     this.editingLeconId = null;
+    this.leconMode = 'recorded';
     if (clearModule) {
       this.activeLeconModuleId = null;
     }
@@ -185,6 +189,8 @@ export class FormationDetailComponent implements OnInit {
 
   saveLecon(module: Module): void {
     if (!this.formation?.idFormation || !module.idModule || !this.newLecon.titre) return;
+    this.normalizeLeconByMode();
+    this.ensureStreamingRoom();
 
     if (this.editingLeconId) {
       this.formationService.updateLeconVideo(this.formation.idFormation, module.idModule, this.editingLeconId, this.newLecon).subscribe({
@@ -211,6 +217,7 @@ export class FormationDetailComponent implements OnInit {
     this.newLecon = { ...lecon };
     this.editingLeconId = lecon.idLecon || null;
     this.activeLeconModuleId = module.idModule || null;
+    this.leconMode = lecon.liveAt || lecon.streamingRoom ? 'stream' : 'recorded';
     this.showLeconForm = true;
   }
 
@@ -403,6 +410,72 @@ export class FormationDetailComponent implements OnInit {
         alert('Erreur lors de l upload PDF');
       }
     });
+  }
+
+  toggleLive(lecon: LeconVideo): void {
+    if (!lecon.idLecon) return;
+    this.activeLiveLeconId = this.activeLiveLeconId === lecon.idLecon ? null : lecon.idLecon;
+  }
+
+  canJoinLive(lecon: LeconVideo): boolean {
+    return !!lecon.streamingRoom;
+  }
+
+  getJitsiUrl(lecon: LeconVideo): SafeResourceUrl | null {
+    if (!lecon.streamingRoom) return null;
+
+    const user = this.authService.getCurrentUser();
+    const room = encodeURIComponent(lecon.streamingRoom);
+    const displayName = encodeURIComponent(user?.username || 'Participant');
+    return this.sanitizer.bypassSecurityTrustResourceUrl(`https://meet.jit.si/${room}#userInfo.displayName="${displayName}"`);
+  }
+
+  addComment(module: Module, lecon: LeconVideo): void {
+    if (!this.formation?.idFormation || !module.idModule || !lecon.idLecon) return;
+
+    const contenu = (this.commentDrafts[lecon.idLecon] || '').trim();
+    if (!contenu) return;
+
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.router.navigate(['/auth']);
+      return;
+    }
+
+    this.formationService.createLeconCommentaire(this.formation.idFormation, module.idModule, lecon.idLecon, {
+      contenu,
+      auteurId: user.userId,
+      auteurNom: user.username
+    }).subscribe({
+      next: () => {
+        this.commentDrafts[lecon.idLecon!] = '';
+        this.loadFormation();
+      },
+      error: (err) => console.error('Error creating comment:', err)
+    });
+  }
+
+  private ensureStreamingRoom(): void {
+    if (!this.formation?.idFormation || !this.newLecon.liveAt || this.newLecon.streamingRoom) return;
+
+    const title = this.newLecon.titre || 'lecon';
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    this.newLecon.streamingRoom = `agrezen-formation-${this.formation.idFormation}-${slug || Date.now()}`;
+  }
+
+  private normalizeLeconByMode(): void {
+    if (this.leconMode === 'recorded') {
+      this.newLecon.liveAt = '';
+      this.newLecon.streamingRoom = '';
+      return;
+    }
+
+    this.newLecon.urlVideo = '';
+    this.newLecon.dureeSecondes = 0;
   }
 
   isYoutubeUrl(url: string | undefined): boolean {

@@ -36,6 +36,9 @@ export interface LeconVideo {
   dureeSecondes: number;
   ordre: number;
   estGratuitePreview?: boolean;
+  liveAt?: string;
+  streamingRoom?: string;
+  commentaires?: LeconCommentaire[];
 }
 
 export interface Ressource {
@@ -43,6 +46,14 @@ export interface Ressource {
   titre: string;
   type: string;
   url: string;
+}
+
+export interface LeconCommentaire {
+  idCommentaire?: number;
+  contenu: string;
+  auteurId?: number;
+  auteurNom?: string;
+  dateCreation?: string;
 }
 
 export interface InscriptionFormation {
@@ -58,7 +69,7 @@ export interface InscriptionFormation {
   providedIn: 'root'
 })
 export class FormationService {
-  private apiUrl = 'http://localhost:8089/formation/api/formations';
+  private apiUrl = 'http://192.168.1.14:8089/formation/api/formations';
 
   constructor(private http: HttpClient) {}
 
@@ -113,6 +124,10 @@ export class FormationService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<{ videoUrl: string }>(`${this.apiUrl}/${formationId}/modules/${moduleId}/lecons/upload`, formData);
+  }
+
+  createLeconCommentaire(formationId: number, moduleId: number, leconId: number, commentaire: LeconCommentaire): Observable<LeconCommentaire> {
+    return this.http.post<LeconCommentaire>(`${this.apiUrl}/${formationId}/modules/${moduleId}/lecons/${leconId}/commentaires`, commentaire);
   }
 
   // Ressource endpoints

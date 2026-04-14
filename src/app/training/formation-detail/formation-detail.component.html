@@ -206,16 +206,26 @@
 
             <form *ngIf="showLeconForm && activeLeconModuleId === module.idModule && canManage()" class="edit-form nested-form" (ngSubmit)="saveLecon(module)">
               <h4>{{ editingLeconId ? 'Modifier la leçon' : 'Nouvelle leçon vidéo' }}</h4>
+              <div class="lesson-mode-selector">
+                <button type="button" [class.active]="leconMode === 'recorded'" (click)="leconMode = 'recorded'">
+                  <i class="fas fa-play-circle"></i>
+                  Vidéo enregistrée
+                </button>
+                <button type="button" [class.active]="leconMode === 'stream'" (click)="leconMode = 'stream'">
+                  <i class="fas fa-broadcast-tower"></i>
+                  Live streaming
+                </button>
+              </div>
               <div class="form-grid">
                 <label>
                   Titre
                   <input [(ngModel)]="newLecon.titre" name="leconTitre{{ module.idModule }}" type="text" placeholder="Titre de la leçon" required />
                 </label>
-                <label>
+                <label *ngIf="leconMode === 'recorded'">
                   URL vidéo
                   <input [(ngModel)]="newLecon.urlVideo" name="leconUrl{{ module.idModule }}" type="url" placeholder="https://..." />
                 </label>
-                <div class="upload-group">
+                <div *ngIf="leconMode === 'recorded'" class="upload-group">
                   <span class="upload-title">Upload vidéo</span>
                   <label class="upload-field">
                     <input class="upload-input" (change)="onVideoSelected($event, module)" name="leconFile{{ module.idModule }}" type="file" accept="video/*" />
@@ -234,13 +244,21 @@
                     Vidéo prête
                   </span>
                 </div>
-                <label>
+                <label *ngIf="leconMode === 'recorded'">
                   Durée en secondes
                   <input [(ngModel)]="newLecon.dureeSecondes" name="leconDuree{{ module.idModule }}" type="number" placeholder="600" />
                 </label>
                 <label>
                   Ordre
                   <input [(ngModel)]="newLecon.ordre" name="leconOrdre{{ module.idModule }}" type="number" placeholder="1" />
+                </label>
+                <label *ngIf="leconMode === 'stream'">
+                  Date du live
+                  <input [(ngModel)]="newLecon.liveAt" name="leconLiveAt{{ module.idModule }}" type="datetime-local" />
+                </label>
+                <label *ngIf="leconMode === 'stream'">
+                  Room streaming
+                  <input [(ngModel)]="newLecon.streamingRoom" name="leconStreamingRoom{{ module.idModule }}" type="text" placeholder="Généré automatiquement" />
                 </label>
               </div>
               <div class="form-actions">
@@ -319,6 +337,10 @@
                   </div>
                 </div>
                 <div class="inline-actions">
+                  <button *ngIf="canJoinLive(lecon)" type="button" (click)="toggleLive(lecon)" class="btn-small btn-live">
+                    <i class="fas fa-video"></i>
+                    {{ activeLiveLeconId === lecon.idLecon ? 'Fermer le live' : 'Rejoindre le live' }}
+                  </button>
                   <a *ngIf="lecon.urlVideo" [href]="lecon.urlVideo" target="_blank" rel="noopener" class="btn-icon btn-view" aria-label="Ouvrir la vidéo">
                     <i class="fas fa-play"></i>
                   </a>
@@ -329,6 +351,24 @@
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
+                <div *ngIf="lecon.liveAt || lecon.streamingRoom" class="live-details">
+                  <span *ngIf="lecon.liveAt">
+                    <i class="fas fa-calendar"></i>
+                    {{ lecon.liveAt | date:'short' }}
+                  </span>
+                  <span *ngIf="lecon.streamingRoom">
+                    <i class="fas fa-signal"></i>
+                    Live room prête
+                  </span>
+                </div>
+                <div *ngIf="activeLiveLeconId === lecon.idLecon && getJitsiUrl(lecon)" class="live-player">
+                  <iframe
+                    [src]="getJitsiUrl(lecon)"
+                    title="Live streaming de la leçon"
+                    allow="camera; microphone; fullscreen; display-capture; autoplay"
+                    allowfullscreen>
+                  </iframe>
+                </div>
                 <div *ngIf="lecon.urlVideo" class="lecon-player">
                   <video *ngIf="isDirectVideoUrl(lecon.urlVideo)" [src]="lecon.urlVideo" controls preload="metadata"></video>
                   <iframe
@@ -338,6 +378,26 @@
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen>
                   </iframe>
+                </div>
+                <div class="comments-panel">
+                  <h5><i class="fas fa-comments"></i> Commentaires</h5>
+                  <div *ngIf="!lecon.commentaires || lecon.commentaires.length === 0" class="empty-inline">
+                    Aucun commentaire pour cette leçon.
+                  </div>
+                  <div *ngFor="let commentaire of lecon.commentaires" class="comment-item">
+                    <div>
+                      <strong>{{ commentaire.auteurNom || 'Participant' }}</strong>
+                      <span>{{ commentaire.dateCreation | date:'short' }}</span>
+                    </div>
+                    <p>{{ commentaire.contenu }}</p>
+                  </div>
+                  <div class="comment-form">
+                    <textarea [(ngModel)]="commentDrafts[lecon.idLecon!]" name="comment{{ lecon.idLecon }}" placeholder="Ajouter un commentaire"></textarea>
+                    <button type="button" (click)="addComment(module, lecon)" class="btn-save">
+                      <i class="fas fa-paper-plane"></i>
+                      Commenter
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -352,9 +412,8 @@
                 <article *ngFor="let ressource of getModuleRessourcesSorted(module)" class="resource-card">
                   <div class="resource-icon">
                     <i *ngIf="ressource.type === 'PDF'" class="fas fa-file-pdf"></i>
-                    <i *ngIf="ressource.type === 'VIDEO'" class="fas fa-video"></i>
                     <i *ngIf="ressource.type === 'LIEN'" class="fas fa-link"></i>
-                    <i *ngIf="ressource.type === 'DOCUMENT'" class="fas fa-file-word"></i>
+                    <i *ngIf="ressource.type === 'DOC'" class="fas fa-file-word"></i>
                     <i *ngIf="ressource.type === 'IMAGE'" class="fas fa-image"></i>
                   </div>
                   <div class="resource-info">
@@ -429,9 +488,8 @@
           <article *ngFor="let ressource of formation.ressources" class="resource-card">
             <div class="resource-icon">
               <i *ngIf="ressource.type === 'PDF'" class="fas fa-file-pdf"></i>
-              <i *ngIf="ressource.type === 'VIDEO'" class="fas fa-video"></i>
               <i *ngIf="ressource.type === 'LIEN'" class="fas fa-link"></i>
-              <i *ngIf="ressource.type === 'DOCUMENT'" class="fas fa-file-word"></i>
+              <i *ngIf="ressource.type === 'DOC'" class="fas fa-file-word"></i>
               <i *ngIf="ressource.type === 'IMAGE'" class="fas fa-image"></i>
             </div>
             <div class="resource-info">
