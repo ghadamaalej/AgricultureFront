@@ -14,6 +14,10 @@ import { SharedModule } from '../../shared/shared.module';
   styleUrl: './formation-form.component.css'
 })
 export class FormationFormComponent implements OnInit {
+  private readonly maxOriginalImageBytes = 8 * 1024 * 1024;
+  private readonly maxUploadImageBytes = 1200 * 1024;
+  private readonly maxImageDimension = 1400;
+
   formation: Formation = {
     titre: '',
     description: '',
@@ -211,22 +215,38 @@ export class FormationFormComponent implements OnInit {
     return true;
   }
 
-  onFileSelected(event: any): void {
+  async onFileSelected(event: any): Promise<void> {
     const file = event.target.files[0];
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
         this.error = 'Veuillez sélectionner un fichier image valide';
+        event.target.value = '';
         return;
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
+      // Validate file size before compression.
+      if (file.size > this.maxOriginalImageBytes) {
         this.error = 'La taille de l\'image ne doit pas dépasser 5MB';
         return;
       }
 
-      this.selectedImageFile = file;
+      const optimizedFile = await this.optimizeImageForUpload(file).catch((err) => {
+        console.error('Error optimizing image:', err);
+        this.error = 'Impossible de preparer cette image';
+        event.target.value = '';
+        return null;
+      });
+      if (!optimizedFile) {
+        return;
+      }
+      if (optimizedFile.size > this.maxUploadImageBytes) {
+        this.error = 'Image trop lourde apres optimisation. Choisissez une image plus petite.';
+        event.target.value = '';
+        return;
+      }
+
+      this.selectedImageFile = optimizedFile;
       this.error = null;
 
       // Create preview
@@ -237,10 +257,66 @@ export class FormationFormComponent implements OnInit {
         // In production, this would be uploaded to server and get a proper URL
         this.formation.imageUrl = this.imagePreview;
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(optimizedFile);
 
       console.log('📸 Image selected:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
     }
+  }
+
+  private optimizeImageForUpload(file: File): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+
+        const scale = Math.min(1, this.maxImageDimension / Math.max(img.width, img.height));
+        const width = Math.max(1, Math.round(img.width * scale));
+        const height = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Canvas not available'));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const createBlob = (quality: number) => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Image compression failed'));
+                return;
+              }
+
+              if (blob.size > this.maxUploadImageBytes && quality > 0.52) {
+                createBlob(quality - 0.12);
+                return;
+              }
+
+              const optimizedName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+              resolve(new File([blob], optimizedName, { type: 'image/jpeg' }));
+            },
+            'image/jpeg',
+            quality
+          );
+        };
+
+        createBlob(0.82);
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('Invalid image'));
+      };
+
+      img.src = objectUrl;
+    });
   }
 
   removeImage(): void {

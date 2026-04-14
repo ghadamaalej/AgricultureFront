@@ -242,6 +242,52 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
     return v;
   }
 
+  private clamp01(value: number): number {
+    return Math.max(0, Math.min(1, value));
+  }
+
+  private createSoilTexture(base: [number, number, number]): THREE.CanvasTexture {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d')!;
+    const image = ctx.createImageData(canvas.width, canvas.height);
+
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const n1 = this.fbm(x * 0.032, y * 0.032, 5);
+        const n2 = this.fbm(x * 0.115 + 9.2, y * 0.115 + 3.7, 3);
+        const grain = (n1 - 0.48) * 0.34 + (n2 - 0.5) * 0.16;
+        const idx = (y * canvas.width + x) * 4;
+        image.data[idx] = Math.round(this.clamp01(base[0] + grain) * 255);
+        image.data[idx + 1] = Math.round(this.clamp01(base[1] + grain * 0.82) * 255);
+        image.data[idx + 2] = Math.round(this.clamp01(base[2] + grain * 0.55) * 255);
+        image.data[idx + 3] = 255;
+      }
+    }
+
+    ctx.putImageData(image, 0, 0);
+    ctx.strokeStyle = 'rgba(52, 37, 22, 0.18)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 34; i++) {
+      const y = (i / 34) * canvas.height + Math.sin(i * 1.7) * 3;
+      ctx.beginPath();
+      for (let x = 0; x <= canvas.width; x += 8) {
+        const yy = y + Math.sin(x * 0.07 + i) * 2.5;
+        if (x === 0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+      }
+      ctx.stroke();
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(6, 6);
+    texture.anisotropy = this.renderer?.capabilities.getMaxAnisotropy?.() ?? 1;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
+  }
+
   // ═══════════════════════════════════════════
   // TERRAIN BUILDER
   // ═══════════════════════════════════════════
@@ -258,7 +304,7 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
 
     const t   = this.selectedTerrain;
     const sz  = Math.sqrt(t.superficieHa) * 2.9;
-    const RES = 96;
+    const RES = 128;
     const hs  = this.heightScale / 10;
     const N   = (RES + 1) * (RES + 1);
 
@@ -295,11 +341,12 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
         const nz  = iz / RES * 4.2;
 
         /* Multi-octave terrain */
-        const macro = this.fbm(nx, nz, 6)                * hs * 1.3;
+        const macro = this.fbm(nx, nz, 7)                * hs * 1.35;
         const meso  = this.fbm(nx * 2.8 + 3, nz * 2.8 + 7, 4) * hs * 0.28;
-        const micro = this.fbm(nx * 8  + 11, nz * 8  + 5, 2) * hs * 0.05;
+        const micro = this.fbm(nx * 9.5 + 11, nz * 9.5 + 5, 3) * hs * 0.07;
+        const ridge = Math.sin((nx * 9.0 + this.fbm(nx, nz + 12, 2) * 1.8)) * 0.018 * hs;
         const edge  = Math.pow(Math.min(ix, RES-ix, iz, RES-iz) / 14, 1.2);
-        const y     = (macro + meso + micro) * Math.min(1, edge);
+        const y     = (macro + meso + micro + ridge) * Math.min(1, edge);
         hts[i] = y;
 
         pos[i*3]   = (ix / RES - 0.5) * sz;
@@ -314,9 +361,10 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
         const wet   = this.fbm(nx * 1.8 + 1.3, nz * 1.8 + 4.7, 2) * 0.35;
         const rock  = this.fbm(nx * 3.5 + 6,   nz * 3.5 + 2,   3) * 0.2;
 
-        col[i*3]   = Math.max(0, Math.min(1, sr[0] + slp*0.18 - wet*0.06 + rock*0.10 + this.fbm(nx+12, nz+7, 2)*0.06));
-        col[i*3+1] = Math.max(0, Math.min(1, sr[1] + slp*0.08 + wet*0.05 - rock*0.04 + this.fbm(nx+3,  nz+10,2)*0.06));
-        col[i*3+2] = Math.max(0, Math.min(1, sr[2] - slp*0.04 + wet*0.07 - rock*0.02 + this.fbm(nx+17, nz+1, 2)*0.04));
+        const grass = this.fbm(nx * 1.35 + 15, nz * 1.35 + 4, 3);
+        col[i*3]   = this.clamp01(sr[0] + slp*0.16 - wet*0.07 + rock*0.10 - grass*0.05 + this.fbm(nx+12, nz+7, 2)*0.06);
+        col[i*3+1] = this.clamp01(sr[1] + slp*0.07 + wet*0.05 - rock*0.04 + grass*0.12 + this.fbm(nx+3,  nz+10,2)*0.06);
+        col[i*3+2] = this.clamp01(sr[2] - slp*0.04 + wet*0.07 - rock*0.02 - grass*0.02 + this.fbm(nx+17, nz+1, 2)*0.04);
       }
     }
 
@@ -335,27 +383,53 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
     geo.setIndex(idx);
     geo.computeVertexNormals();
 
-    const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, wireframe: this.wireframe }));
+    const heightAt = (x: number, z: number): number => {
+      const cx = Math.max(0, Math.min(RES, Math.round((x / sz + 0.5) * RES)));
+      const cz = Math.max(0, Math.min(RES, Math.round((z / sz + 0.5) * RES)));
+      return hts[cz * (RES + 1) + cx] ?? 0;
+    };
+
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+      map: this.createSoilTexture(sr),
+      vertexColors: true,
+      roughness: 0.94,
+      metalness: 0,
+      wireframe: this.wireframe
+    }));
     mesh.receiveShadow = true;
     this.terrainGroup.add(mesh);
 
+    if (!this.wireframe && (this.activeView === 'terrain' || this.activeView === 'cultures')) {
+      const furrowMat = new THREE.LineBasicMaterial({ color: 0x2b1d10, transparent: true, opacity: 0.28 });
+      const furrowCount = Math.max(10, Math.min(28, Math.floor(sz * 1.9)));
+      for (let r = 0; r < furrowCount; r++) {
+        const z = ((r + 0.5) / furrowCount - 0.5) * sz * 0.86;
+        const points: THREE.Vector3[] = [];
+        for (let xStep = 0; xStep <= 52; xStep++) {
+          const x = (xStep / 52 - 0.5) * sz * 0.88;
+          points.push(new THREE.Vector3(x, heightAt(x, z) + 0.022, z + Math.sin(x * 0.55 + r) * 0.018));
+        }
+        const furrow = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), furrowMat.clone());
+        this.terrainGroup.add(furrow);
+      }
+    }
+
     /* ── Grass instances ── */
     if (this.activeView === 'terrain') {
-      const GN     = 1600;
+      const GN     = 2600;
       const dummy  = new THREE.Object3D();
       const gInst  = new THREE.InstancedMesh(
-        new THREE.PlaneGeometry(0.12, 0.22),
-        new THREE.MeshLambertMaterial({ color: 0x3a6b1a, side: THREE.DoubleSide, transparent: true, opacity: 0.85 }),
+        new THREE.PlaneGeometry(0.10, 0.26),
+        new THREE.MeshStandardMaterial({ color: 0x3a6b1a, roughness: 1, side: THREE.DoubleSide, transparent: true, opacity: 0.82 }),
         GN
       );
       for (let i = 0; i < GN; i++) {
         const gx = (Math.random() - 0.5) * sz * 0.95;
         const gz = (Math.random() - 0.5) * sz * 0.95;
-        const ni = Math.floor((gz / sz + 0.5) * RES) * (RES + 1) + Math.floor((gx / sz + 0.5) * RES);
-        const gy = (hts[Math.max(0, Math.min(N-1, ni))] ?? 0) + 0.11;
+        const gy = heightAt(gx, gz) + 0.13;
         dummy.position.set(gx, gy, gz);
-        dummy.rotation.set(0, Math.random() * Math.PI, 0);
-        dummy.scale.set(0.7 + Math.random() * 0.6, 0.7 + Math.random() * 0.8, 1);
+        dummy.rotation.set((Math.random() - 0.5) * 0.28, Math.random() * Math.PI, (Math.random() - 0.5) * 0.2);
+        dummy.scale.set(0.55 + Math.random() * 0.7, 0.55 + Math.random() * 1.0, 1);
         dummy.updateMatrix();
         gInst.setMatrixAt(i, dummy.matrix);
         gInst.setColorAt!(i, new THREE.Color().setHSL(0.25 + Math.random() * 0.08, 0.65 + Math.random() * 0.2, 0.22 + Math.random() * 0.1));
@@ -402,6 +476,22 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
           el.rotation.x = -Math.PI / 2;
           el.position.set(cx, bY + 0.01, cz);
           this.terrainGroup!.add(el);
+
+          const rowMat = new THREE.LineBasicMaterial({
+            color: new THREE.Color(rgb[0] * 0.65, Math.min(1, rgb[1] + 0.18), rgb[2] * 0.65),
+            transparent: true,
+            opacity: this.activeView === 'cultures' ? 0.58 : 0.32
+          });
+          const cropRows = Math.max(3, Math.floor(ph / 0.35));
+          for (let row = 0; row < cropRows; row++) {
+            const z = cz - ph * 0.38 + (row / Math.max(1, cropRows - 1)) * ph * 0.76;
+            const pts: THREE.Vector3[] = [];
+            for (let step = 0; step <= 16; step++) {
+              const x = cx - pw * 0.38 + (step / 16) * pw * 0.76;
+              pts.push(new THREE.Vector3(x, heightAt(x, z) + 0.09, z));
+            }
+            this.terrainGroup!.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), rowMat.clone()));
+          }
         });
       }
     }
@@ -422,8 +512,7 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
         const pts: THREE.Vector3[] = [];
         for (let xi = 0; xi <= 36; xi++) {
           const lx = (xi / 36 - 0.5) * sz * 0.88;
-          const ni = Math.floor((lz/sz + 0.5)*RES) * (RES+1) + Math.floor((lx/sz + 0.5)*RES);
-          const lh = (hts[Math.max(0, Math.min(N-1, ni))] ?? 0) + 0.08;
+          const lh = heightAt(lx, lz) + 0.08;
           pts.push(new THREE.Vector3(lx, lh, lz));
         }
         const tube = new THREE.Mesh(
@@ -471,8 +560,7 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
       const ang  = Math.random() * Math.PI * 2;
       const dist = sz * (0.5 + Math.random() * 0.28);
       const ttx  = Math.cos(ang) * dist, ttz = Math.sin(ang) * dist;
-      const ni   = Math.floor((ttz/sz + 0.5)*RES) * (RES+1) + Math.floor((ttx/sz + 0.5)*RES);
-      const tty  = hts[Math.max(0, Math.min(N-1, ni))] ?? 0;
+      const tty  = heightAt(ttx, ttz);
       const th   = 0.7 + Math.random() * 1.5;
       const tr   = 0.07 + Math.random() * 0.05;
 
@@ -502,11 +590,10 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
 
     /* ── Rocks ── */
     if (this.activeView === 'terrain' || this.activeView === 'topo') {
-      for (let i = 0; i < 16; i++) {
+      for (let i = 0; i < 28; i++) {
         const rx = (Math.random() - 0.5) * sz * 1.15;
         const rz = (Math.random() - 0.5) * sz * 1.15;
-        const ni = Math.floor((rz/sz + 0.5)*RES) * (RES+1) + Math.floor((rx/sz + 0.5)*RES);
-        const ry = hts[Math.max(0, Math.min(N-1, ni))] ?? 0;
+        const ry = heightAt(rx, rz);
         const rs = 0.05 + Math.random() * 0.22;
         const rg = new THREE.DodecahedronGeometry(rs, 0);
         rg.rotateX(Math.random() * Math.PI);
@@ -524,7 +611,14 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
     if (this.activeView === 'irrigation' && (t.irrigation === 'INONDATION' || t.irrigation === 'Inondation')) {
       const wm = new THREE.Mesh(
         new THREE.PlaneGeometry(sz * 0.88, sz * 0.88),
-        new THREE.MeshLambertMaterial({ color: 0x1a55a0, transparent: true, opacity: 0.35 })
+        new THREE.MeshPhysicalMaterial({
+          color: 0x2f7fc1,
+          transparent: true,
+          opacity: 0.42,
+          roughness: 0.12,
+          metalness: 0,
+          transmission: 0.08
+        })
       );
       wm.rotation.x = -Math.PI / 2;
       wm.position.y = 0.14;
@@ -533,8 +627,8 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
 
     /* ── Infinite ground plane ── */
     const gnd = new THREE.Mesh(
-      new THREE.PlaneGeometry(600, 600),
-      new THREE.MeshLambertMaterial({ color: new THREE.Color(0.12, 0.18, 0.08) })
+      new THREE.PlaneGeometry(600, 600, 16, 16),
+      new THREE.MeshStandardMaterial({ color: new THREE.Color(0.10, 0.17, 0.08), roughness: 1, metalness: 0 })
     );
     gnd.rotation.x = -Math.PI / 2;
     gnd.position.y = -0.55;
@@ -706,7 +800,21 @@ export class TerrainViewer3dComponent implements OnInit, OnDestroy, OnChanges {
     group.traverse((obj: any) => {
       obj.geometry?.dispose();
       (Array.isArray(obj.material) ? obj.material : [obj.material])
-        .forEach((m: THREE.Material) => m?.dispose());
+        .forEach((m: THREE.Material) => {
+          const material = m as THREE.Material & {
+            map?: THREE.Texture;
+            normalMap?: THREE.Texture;
+            roughnessMap?: THREE.Texture;
+            metalnessMap?: THREE.Texture;
+            alphaMap?: THREE.Texture;
+          };
+          material?.map?.dispose();
+          material?.normalMap?.dispose();
+          material?.roughnessMap?.dispose();
+          material?.metalnessMap?.dispose();
+          material?.alphaMap?.dispose();
+          material?.dispose();
+        });
     });
   }
 }
