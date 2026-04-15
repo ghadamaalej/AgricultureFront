@@ -20,6 +20,9 @@
         <button class="ni" [class.active]="view==='diagnostic'" (click)="setView('diagnostic')">
           <i class="fas fa-stethoscope"></i><span>Diagnostic IA</span>
         </button>
+        <button class="ni" [class.active]="view==='ai-chatbot'" (click)="setView('ai-chatbot')">
+          <i class="fas fa-robot"></i><span>Chatbot veterinaire</span>
+        </button>
       </ng-container>
 
       <!-- VÉTÉRINAIRE -->
@@ -65,6 +68,7 @@
       <app-vet-list        *ngIf="view==='book'"  (booked)="setView('list')" (openChatLayout)="setView('messages')"></app-vet-list>
       <app-chat            *ngIf="view==='messages'"></app-chat>
       <app-animal-diagnostic *ngIf="view==='diagnostic'"></app-animal-diagnostic>
+      <app-vet-ai-chatbot  *ngIf="view==='ai-chatbot'"></app-vet-ai-chatbot>
     </ng-container>
 
     <!-- VET views -->

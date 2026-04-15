@@ -4,7 +4,7 @@
       <p class="eyebrow">Assistant veterinaire</p>
       <h2>Diagnostic IA pour vos animaux</h2>
       <p class="intro-copy">
-        Le formulaire sert au diagnostic structure. La discussion libre avec l IA se fait maintenant dans un chatbot separe.
+        Cette interface contient uniquement le modele ML classique de prediction. Elle envoie la requete vers l endpoint local `/predict`.
       </p>
     </div>
 
@@ -90,8 +90,8 @@
         </ng-template>
 
         <div class="analysis">
-          <h4>Analyse conversationnelle</h4>
-          <p>{{ result.geminiAnalysis }}</p>
+          <h4>Analyse du resultat ML</h4>
+          <p>{{ result.assistantAnalysis || result.geminiAnalysis }}</p>
         </div>
 
         <div class="disclaimer">
@@ -100,35 +100,4 @@
       </div>
     </section>
   </div>
-
-  <section class="chat-card">
-    <div class="chat-header">
-      <div>
-        <p class="eyebrow">Chatbot IA</p>
-        <h3>Conversation Agriculteur / IA</h3>
-      </div>
-      <p class="chat-tip">Le chatbot utilise l animal et les symptomes renseignes dans le formulaire.</p>
-    </div>
-
-    <div class="chat-messages">
-      <article class="chat-message" *ngFor="let message of chatMessages" [class.mine]="message.role === 'farmer'">
-        <div class="bubble">
-          <span class="author">{{ message.role === 'farmer' ? 'Agriculteur' : 'IA' }}</span>
-          <p>{{ message.content }}</p>
-        </div>
-      </article>
-    </div>
-
-    <div class="chat-composer">
-      <textarea
-        [(ngModel)]="chatDraft"
-        rows="3"
-        placeholder="Posez votre question ici, par exemple : est ce urgent ? que puis je faire avant le veterinaire ?"></textarea>
-      <button type="button" (click)="sendChat()" [disabled]="chatting || !chatDraft.trim()">
-        {{ chatting ? 'Envoi...' : 'Envoyer au chatbot' }}
-      </button>
-    </div>
-
-    <p class="error" *ngIf="chatError">{{ chatError }}</p>
-  </section>
 </section>

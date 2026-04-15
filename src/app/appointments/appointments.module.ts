@@ -19,6 +19,7 @@ import { AvailabilityManagerComponent }  from './vet/availability-manager/availa
 import { VetProfileFormComponent }       from './vet/profile-form/vet-profile-form.component';
 import { ChatComponent }                 from './chat/chat.component';
 import { AnimalDiagnosticComponent }     from './farmer/animal-diagnostic/animal-diagnostic.component';
+import { VetAiChatbotComponent }         from './farmer/vet-ai-chatbot/vet-ai-chatbot.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { AnimalDiagnosticComponent }     from './farmer/animal-diagnostic/animal
     HealthRecordsComponent,
     ChatComponent,
     AnimalDiagnosticComponent,
+    VetAiChatbotComponent,
   ],
   imports: [
     CommonModule,

@@ -154,16 +154,17 @@ export interface AppointmentStats {
   distinctAnimals: number;
 }
 
-export interface DiagnosticRequest {
-  animalId: number;
-  symptom1: string;
+
+
+export interface DiagnosticAssistantChatRequest {
+  animalType?: string;
+  symptom1?: string;
   symptom2?: string;
   symptom3?: string;
-  duration: string;
+  duration?: string;
   bodyTemperature?: string;
-  question?: string;
+  question: string;
 }
-
 export interface DiseasePrediction {
   rank: number;
   disease: string;
@@ -175,9 +176,35 @@ export interface DiagnosticResponse {
   animalEspece: string;
   predictions: DiseasePrediction[];
   geminiAnalysis: string;
+  assistantAnalysis?: string;
   disclaimer: string;
 }
 
 export interface DiagnosticChatResponse {
   answer: string;
 }
+export interface DiagnosticRequest {
+  animalId: number;
+  symptom1: string;
+  symptom2?: string;
+  symptom3?: string;
+  duration: string;
+  bodyTemperature?: string;
+  question?: string;
+}
+
+export interface MedicalAssistantRequest {
+  question: string;
+}
+
+export interface MedicalAssistantResponse {
+  answer: string;
+  aiProvider: string;
+  aiModel: string;
+  medicalSummary: string;
+  lastDisease: string;
+  recordCount: number;
+  usedContext: string[];
+}
+
+

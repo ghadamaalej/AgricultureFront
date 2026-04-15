@@ -6,11 +6,6 @@ import { Animal } from '../../../inventory/models/inventory.models';
 import { DiagnosticRequest, DiagnosticResponse } from '../../models/appointments.models';
 import { AppointmentsApiService } from '../../services/appointments-api.service';
 
-interface AiChatMessage {
-  role: 'farmer' | 'ai';
-  content: string;
-}
-
 @Component({
   selector: 'app-animal-diagnostic',
   templateUrl: './animal-diagnostic.component.html',
@@ -20,17 +15,8 @@ export class AnimalDiagnosticComponent implements OnInit {
   animals: Animal[] = [];
   loadingAnimals = true;
   diagnosing = false;
-  chatting = false;
   error = '';
-  chatError = '';
   result: DiagnosticResponse | null = null;
-  chatDraft = '';
-  chatMessages: AiChatMessage[] = [
-    {
-      role: 'ai',
-      content: 'Bonjour. Je peux discuter avec vous de l etat de votre animal. Remplissez d abord les symptomes, puis posez votre question ici.'
-    }
-  ];
 
   readonly form = this.fb.group({
     animalId: [null as number | null, Validators.required],
@@ -78,49 +64,6 @@ export class AnimalDiagnosticComponent implements OnInit {
         next: response => this.result = response,
         error: err => {
           this.error = err?.error?.message || 'Le diagnostic a echoue.';
-        }
-      });
-  }
-
-  sendChat(): void {
-    const question = this.chatDraft.trim();
-    this.chatError = '';
-
-    if (!question || this.chatting) {
-      return;
-    }
-
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.chatError = 'Renseignez d abord l animal et les symptomes avant de discuter avec l IA.';
-      return;
-    }
-
-    this.chatMessages = [...this.chatMessages, { role: 'farmer', content: question }];
-    this.chatDraft = '';
-    this.chatting = true;
-
-    this.appointmentsApi.chatWithDiagnosticAssistant(this.buildPayload(question))
-      .pipe(finalize(() => this.chatting = false))
-      .subscribe({
-        next: response => {
-          this.chatMessages = [
-            ...this.chatMessages,
-            {
-              role: 'ai',
-              content: response.answer || 'Je n ai pas pu generer de reponse pour le moment.'
-            }
-          ];
-        },
-        error: err => {
-          this.chatError = err?.error?.message || 'La conversation IA a echoue.';
-          this.chatMessages = [
-            ...this.chatMessages,
-            {
-              role: 'ai',
-              content: 'Je n ai pas pu repondre pour le moment. Verifiez le service IA puis reessayez.'
-            }
-          ];
         }
       });
   }

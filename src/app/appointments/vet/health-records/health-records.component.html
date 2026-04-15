@@ -135,6 +135,65 @@
   <!-- ── Records list ── -->
   <div class="records-section">
 
+    <div class="assistant-card">
+      <div class="assistant-head">
+        <div>
+          <h3><i class="fas fa-robot"></i> Assistant medical RAG</h3>
+          <p>Posez une question sur le dossier de cet animal: resume, derniere maladie, traitements, antecedents.</p>
+        </div>
+        <span class="assistant-badge" *ngIf="assistantResponse">
+          {{ assistantResponse.aiProvider | uppercase }}
+        </span>
+      </div>
+
+      <div class="assistant-quick-actions">
+        <button type="button" class="quick-btn" *ngFor="let q of suggestedQuestions" (click)="askAssistant(q)">
+          {{ q }}
+        </button>
+      </div>
+
+      <div class="assistant-ask">
+        <textarea
+          [(ngModel)]="assistantQuestion"
+          rows="3"
+          placeholder="Ex: Fais un resume du dossier medical. Quelle est la derniere maladie ? Quels traitements ont ete prescrits ?"></textarea>
+        <button type="button" class="assistant-send" (click)="askAssistant()" [disabled]="assistantLoading">
+          <i class="fas fa-spinner fa-spin" *ngIf="assistantLoading"></i>
+          <i class="fas fa-paper-plane" *ngIf="!assistantLoading"></i>
+          Poser la question
+        </button>
+      </div>
+
+      <div class="assistant-error" *ngIf="assistantError">
+        <i class="fas fa-exclamation-circle"></i> {{ assistantError }}
+      </div>
+
+      <div class="assistant-answer" *ngIf="assistantResponse">
+        <div class="assistant-summary">
+          <span><strong>Dossiers:</strong> {{ assistantResponse.recordCount }}</span>
+          <span><strong>Derniere maladie:</strong> {{ assistantResponse.lastDisease }}</span>
+          <span><strong>Modele:</strong> {{ assistantResponse.aiModel }}</span>
+        </div>
+
+        <div class="assistant-block">
+          <h4>Reponse</h4>
+          <p>{{ assistantResponse.answer }}</p>
+        </div>
+
+        <div class="assistant-block">
+          <h4>Resume du dossier</h4>
+          <p>{{ assistantResponse.medicalSummary }}</p>
+        </div>
+
+        <div class="assistant-block" *ngIf="assistantResponse.usedContext?.length">
+          <h4>Contexte utilise</h4>
+          <ul>
+            <li *ngFor="let ctx of assistantResponse.usedContext">{{ ctx }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
     <div class="records-header">
       <span class="records-count">
         {{ selectedAnimal.records.length }} dossier{{ selectedAnimal.records.length !== 1 ? 's' : '' }} médical{{ selectedAnimal.records.length !== 1 ? 'aux' : '' }}

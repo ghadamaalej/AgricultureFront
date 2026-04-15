@@ -76,6 +76,26 @@
 
 /* ── Records section ── */
 .records-section{background:#fff;border-radius:14px;padding:20px;border:1.5px solid #e8f0e8;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.assistant-card{margin-bottom:22px;padding:18px;border-radius:14px;background:linear-gradient(135deg,#f6fbf6,#eef8f0);border:1px solid #dceedd}
+.assistant-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+.assistant-head h3{margin:0 0 6px;color:#173617;font-size:1rem;display:flex;align-items:center;gap:8px}
+.assistant-head p{margin:0;color:#5d7a5d;font-size:.86rem;line-height:1.5}
+.assistant-badge{padding:6px 10px;border-radius:999px;background:#e4f7e7;color:#1f6a2a;font-size:.74rem;font-weight:800;letter-spacing:.4px}
+.assistant-quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.quick-btn{border:none;border-radius:999px;padding:8px 12px;background:#fff;color:#245524;font-size:.79rem;font-weight:600;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.quick-btn:hover{background:#e8f7e8}
+.assistant-ask{display:flex;gap:12px;align-items:stretch}
+.assistant-ask textarea{flex:1;padding:12px 14px;border-radius:12px;border:1.5px solid #cfe4d0;resize:vertical;min-height:90px;font-family:inherit;font-size:.9rem;background:#fff}
+.assistant-ask textarea:focus{outline:none;border-color:#2d6a2d;box-shadow:0 0 0 3px rgba(45,106,45,.08)}
+.assistant-send{min-width:170px;border:none;border-radius:12px;background:linear-gradient(135deg,#245524,#3d8a3d);color:#fff;font-weight:700;padding:14px 18px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.assistant-send:disabled{opacity:.65;cursor:not-allowed}
+.assistant-error{margin-top:12px;padding:10px 12px;border-radius:10px;background:#fff0f0;border:1px solid #f2c7c7;color:#b03232;font-size:.85rem}
+.assistant-answer{margin-top:16px;display:flex;flex-direction:column;gap:14px}
+.assistant-summary{display:flex;flex-wrap:wrap;gap:14px;font-size:.82rem;color:#476247}
+.assistant-block{background:#fff;border-radius:12px;padding:14px;border:1px solid #e1eee1}
+.assistant-block h4{margin:0 0 8px;color:#204020;font-size:.88rem}
+.assistant-block p{margin:0;color:#274127;line-height:1.65;white-space:pre-line}
+.assistant-block ul{margin:0;padding-left:18px;color:#355135}
 .records-header{margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #eef4ee}
 .records-count{font-size:.85rem;color:#7a9a7a;font-weight:500}
 .empty-records{text-align:center;padding:40px 20px;color:#9aaa9a}
@@ -110,3 +130,8 @@
 .field-label{display:block;font-size:.7rem;text-transform:uppercase;font-weight:700;color:#9aaa9a;letter-spacing:.5px;margin-bottom:2px}
 .field-value{display:block;font-size:.9rem;color:#1a2e1a;line-height:1.5}
 .diagnosis{font-weight:700;color:#c0392b}
+
+@media (max-width: 900px){
+  .assistant-ask{flex-direction:column}
+  .assistant-send{min-width:unset}
+}

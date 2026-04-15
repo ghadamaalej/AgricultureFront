@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { AppointmentsApiService } from '../../services/appointments-api.service';
-import { AppointmentResponse, HealthRecord, AnimalSummary } from '../../models/appointments.models';
+import { AppointmentResponse, HealthRecord, AnimalSummary, MedicalAssistantResponse } from '../../models/appointments.models';
 import { AuthService } from '../../../services/auth/auth.service';
 
 interface AnimalWithRecords {
@@ -32,6 +32,16 @@ export class HealthRecordsComponent implements OnInit {
   editRecord: HealthRecord | null = null;
   formLoading = false;
   formError   = '';
+  assistantQuestion = '';
+  assistantLoading = false;
+  assistantError = '';
+  assistantResponse: MedicalAssistantResponse | null = null;
+  suggestedQuestions = [
+    'Fais un resume du dossier medical de cet animal.',
+    'Quelle est la derniere maladie enregistree ?',
+    'Quels traitements ont deja ete prescrits ?',
+    'Y a-t-il des antecedents medicaux importants ?'
+  ];
 
   form = new FormGroup({
     maladie:    new FormControl('', Validators.required),
@@ -118,12 +128,18 @@ export class HealthRecordsComponent implements OnInit {
     this.showForm = false;
     this.editRecord = null;
     this.form.reset();
+    this.assistantQuestion = '';
+    this.assistantError = '';
+    this.assistantResponse = null;
   }
 
   backToList() {
     this.selectedAnimal = null;
     this.showForm = false;
     this.editRecord = null;
+    this.assistantQuestion = '';
+    this.assistantError = '';
+    this.assistantResponse = null;
   }
 
   openCreate() {
@@ -185,6 +201,31 @@ export class HealthRecordsComponent implements OnInit {
     if (!this.selectedAnimal) return;
     this.api.getHealthRecordsByAnimal(this.selectedAnimal.animal.id).subscribe({
       next: records => { this.selectedAnimal!.records = records; }
+    });
+  }
+
+  askAssistant(question?: string) {
+    if (!this.selectedAnimal) return;
+
+    const q = (question ?? this.assistantQuestion).trim();
+    if (!q) {
+      this.assistantError = 'Veuillez saisir une question.';
+      return;
+    }
+
+    this.assistantQuestion = q;
+    this.assistantLoading = true;
+    this.assistantError = '';
+
+    this.api.askMedicalAssistant(this.selectedAnimal.animal.id, { question: q }).subscribe({
+      next: response => {
+        this.assistantResponse = response;
+        this.assistantLoading = false;
+      },
+      error: e => {
+        this.assistantLoading = false;
+        this.assistantError = e.error?.message || 'Le chatbot medical est indisponible.';
+      }
     });
   }
 

@@ -9,7 +9,8 @@ import {
   CreateUnavailabilityRequest, UnavailabilityResponse,
   HealthRecord, CreateHealthRecordRequest, UpdateHealthRecordRequest,
   ChatConversation, ChatMessage , AppointmentStats,
-  DiagnosticRequest, DiagnosticResponse, DiagnosticChatResponse
+  DiagnosticRequest, DiagnosticResponse, DiagnosticChatResponse,
+  MedicalAssistantRequest, MedicalAssistantResponse,DiagnosticAssistantChatRequest
 } from '../models/appointments.models';
 
 interface ApiResp<T> { message: string; data: T; }
@@ -208,6 +209,14 @@ export class AppointmentsApiService {
   }
 
   // ── CHAT ───────────────────────────────────────────────────
+  askMedicalAssistant(animalId: number, req: MedicalAssistantRequest): Observable<MedicalAssistantResponse> {
+    return this.http.post<ApiResp<MedicalAssistantResponse>>(
+      `${this.inv}/health-records/animal/${animalId}/assistant`,
+      req,
+      { headers: this.h() }
+    ).pipe(map(r => r.data));
+  }
+
   getMyConversations(): Observable<ChatConversation[]> {
     return this.http.get<ApiResp<ChatConversation[]>>(
       `${this.inv}/messages/conversations`, { headers: this.h() }
@@ -266,6 +275,14 @@ diagnoseAnimal(req: DiagnosticRequest): Observable<DiagnosticResponse> {
 chatWithDiagnosticAssistant(req: DiagnosticRequest): Observable<DiagnosticChatResponse> {
   return this.http.post<ApiResp<DiagnosticChatResponse>>(
     `${this.inv}/diagnostic/chat`,
+    req,
+    { headers: this.h() }
+  ).pipe(map(r => r.data));
+}
+
+chatWithIndependentAssistant(req: DiagnosticAssistantChatRequest): Observable<DiagnosticChatResponse> {
+  return this.http.post<ApiResp<DiagnosticChatResponse>>(
+    `${this.inv}/diagnostic/assistant/chat`,
     req,
     { headers: this.h() }
   ).pipe(map(r => r.data));
