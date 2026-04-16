@@ -1,4 +1,5 @@
 import { Component, OnInit, HostListener } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -15,9 +16,21 @@ import { Component, OnInit, HostListener } from '@angular/core';
       </div>
     </div>
 
-    <!-- Back to Top -->
-    <button class="back-to-top" [class.visible]="showBackTop" (click)="scrollTop()">
-      <i class="fas fa-arrow-up"></i>
+    <!-- Floating Action -->
+    <button
+      class="back-to-top"
+      [class.visible]="showBackTop"
+      [class.jump-mode]="fabMode === 'jump-reply'"
+      [attr.aria-label]="fabMode === 'jump-reply' ? 'Jump to reply' : 'Scroll to top'"
+      (click)="onFabClick()"
+    >
+      <span class="fab-icon" [class.active]="fabMode === 'jump-reply'">
+        <i class="fas fa-arrow-down"></i>
+      </span>
+      <span class="fab-label" [class.active]="fabMode === 'jump-reply'">Reply</span>
+      <span class="fab-icon top-icon" [class.active]="fabMode === 'scroll-top'">
+        <i class="fas fa-arrow-up"></i>
+      </span>
     </button>
 
     <!-- Router outlet — gère tout -->
@@ -49,33 +62,134 @@ import { Component, OnInit, HostListener } from '@angular/core';
       background: var(--primary); color: white; border: none;
       border-radius: 50%; cursor: pointer; font-size: 18px;
       display: flex; align-items: center; justify-content: center;
+      gap: 8px;
       z-index: 1000; opacity: 0; transform: translateY(20px);
       transition: all 0.3s ease;
       box-shadow: 0 5px 20px rgba(76,175,80,0.4);
+      overflow: hidden;
+    }
+    .back-to-top.jump-mode {
+      width: 116px;
+      border-radius: 999px;
+      font-size: 14px;
     }
     .back-to-top.visible { opacity: 1; transform: translateY(0); }
     .back-to-top:hover   { background: var(--primary-dark); transform: translateY(-3px); }
+
+    .fab-icon,
+    .fab-label {
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      position: absolute;
+    }
+
+    .fab-icon.active,
+    .fab-label.active {
+      opacity: 1;
+      transform: translateY(0);
+      position: static;
+    }
+
+    .fab-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .top-icon i,
+    .fab-icon i {
+      font-size: 16px;
+    }
   `]
 })
 export class AppComponent implements OnInit {
   preloaderHidden = false;
   showBackTop     = false;
+  fabMode: 'jump-reply' | 'scroll-top' = 'scroll-top';
+  isForumsPostPage = false;
+
+  constructor(private router: Router) {}
 
   ngOnInit() {
     setTimeout(() => {
       this.preloaderHidden = true;
       this.initScrollAnimations();
     }, 3000);
+
+    this.isForumsPostPage = this.router.url.startsWith('/forums/post/');
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.isForumsPostPage = event.urlAfterRedirects.startsWith('/forums/post/');
+        this.updateFabState();
+        window.setTimeout(() => this.updateFabState(), 120);
+      }
+    });
+
+    this.updateFabState();
   }
 
   @HostListener('window:scroll', [])
   onScroll() {
-    this.showBackTop = window.scrollY > 400;
+    this.updateFabState();
     this.checkReveal();
+  }
+
+  onFabClick() {
+    if (this.fabMode === 'jump-reply') {
+      this.scrollToReplyComposer();
+      return;
+    }
+
+    this.scrollTop();
   }
 
   scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
   initScrollAnimations() { setTimeout(() => this.checkReveal(), 100); }
+
+  updateFabState() {
+    const hasReplies = this.hasVisibleReplies();
+
+    if (this.isForumsPostPage && hasReplies) {
+      this.showBackTop = true;
+    } else {
+      this.showBackTop = window.scrollY > 400;
+    }
+
+    if (!this.isForumsPostPage) {
+      this.fabMode = 'scroll-top';
+      return;
+    }
+
+    const composer = document.getElementById('reply-composer');
+    if (!composer) {
+      this.fabMode = 'scroll-top';
+      return;
+    }
+
+    const composerTop = window.scrollY + composer.getBoundingClientRect().top;
+    const viewportBottom = window.scrollY + window.innerHeight;
+    this.fabMode = viewportBottom < composerTop ? 'jump-reply' : 'scroll-top';
+  }
+
+  hasVisibleReplies(): boolean {
+    return document.querySelectorAll('.replies-tree .reply-branch').length > 0;
+  }
+
+  scrollToReplyComposer() {
+    const composer = document.getElementById('reply-composer');
+    if (!composer) {
+      this.scrollTop();
+      return;
+    }
+
+    composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const textarea = composer.querySelector('textarea');
+    if (textarea instanceof HTMLTextAreaElement) {
+      window.setTimeout(() => textarea.focus(), 280);
+    }
+  }
 
   checkReveal() {
     document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => {

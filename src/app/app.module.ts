@@ -2,10 +2,9 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AppComponent }          from './app.component';
 import { AppRoutingModule }      from './app-routing.module';
-import { NavbarComponent }       from './components/navbar/navbar.component';
 import { HeroComponent }         from './components/hero/hero.component';
 import { AboutComponent }        from './components/about/about.component';
 import { ServicesComponent }     from './components/services/services.component';
@@ -19,12 +18,14 @@ import { BlogDetailComponent }   from './components/blog-detail/blog-detail.comp
 import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
+import { RoleHomePlaceholderComponent } from './components/role-home-placeholder/role-home-placeholder.component';
+import { AuthTokenInterceptor } from './services/auth/auth-token.interceptor';
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   declarations: [
     AppComponent,
     AuthComponent,
-    NavbarComponent,
     HeroComponent,
     AboutComponent,
     ServicesComponent,
@@ -36,7 +37,8 @@ import { RegisterExtraComponent } from './components/register-extra/register-ext
     BlogDetailComponent,
     HomeComponent,
     NotFoundComponent,
-    RegisterExtraComponent
+    RegisterExtraComponent,
+    RoleHomePlaceholderComponent
   ],
   imports: [
     BrowserModule,
@@ -44,9 +46,16 @@ import { RegisterExtraComponent } from './components/register-extra/register-ext
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
+    SharedModule,
     AppRoutingModule  
   ],
-  providers: [],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthTokenInterceptor,
+      multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

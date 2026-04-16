@@ -1,0 +1,89 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.badge-emoji {
+  font-size: 14px;
+}
+
+.badge-label {
+  font-weight: 600;
+}
+
+.badge-rep {
+  font-size: 10px;
+  opacity: 0.85;
+  margin-left: 4px;
+  font-weight: 500;
+}
+
+/* Bronze - New Member */
+.badge-bronze {
+  background: linear-gradient(135deg, #d4a574 0%, #c9935f 100%);
+  color: #ffffff;
+  border: 1px solid #b8815a;
+  box-shadow: 0 2px 4px rgba(180, 100, 50, 0.2);
+}
+
+.badge-bronze:hover {
+  box-shadow: 0 2px 8px rgba(180, 100, 50, 0.35);
+}
+
+/* Silver - Rising Member */
+.badge-silver {
+  background: linear-gradient(135deg, #a8d5ff 0%, #7ec5ff 100%);
+  color: #0d47a1;
+  border: 1px solid #5ab8ff;
+  box-shadow: 0 2px 4px rgba(122, 145, 255, 0.2);
+}
+
+.badge-silver:hover {
+  box-shadow: 0 2px 8px rgba(122, 145, 255, 0.35);
+}
+
+/* Gold - Trusted Contributor */
+.badge-gold {
+  background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
+  color: #664d00;
+  border: 1px solid #f0a000;
+  box-shadow: 0 2px 4px rgba(255, 183, 0, 0.3);
+}
+
+.badge-gold:hover {
+  box-shadow: 0 2px 8px rgba(255, 183, 0, 0.45);
+}
+
+/* Platinum - Elite Grower */
+.badge-platinum {
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+  color: #ffffff;
+  border: 1px solid #6c3483;
+  box-shadow: 0 2px 4px rgba(155, 89, 182, 0.3);
+  animation: glow 2s ease-in-out infinite;
+}
+
+.badge-platinum:hover {
+  box-shadow: 0 2px 8px rgba(155, 89, 182, 0.45);
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 2px 4px rgba(155, 89, 182, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 12px rgba(155, 89, 182, 0.5);
+  }
+}

@@ -19,7 +19,52 @@ export interface LoginResponse {
   username: string | null;
   email: string;
   role: string | null;
+  statutCompte?: string | null;
+  emailVerificationStatus?: string | null;
+  profileValidationStatus?: string | null;
+  nextStep?: 'LOGIN' | 'VERIFY_EMAIL' | 'SIGNUP_STEP2' | 'ACCESS_GRANTED' | string | null;
+  verificationRequired?: boolean;
   message: string;
+}
+
+export interface SignupResponse {
+  userId: number | null;
+  email: string | null;
+  role: string | null;
+  statutCompte: string | null;
+  emailVerificationStatus?: string | null;
+  profileValidationStatus?: string | null;
+  nextStep?: 'VERIFY_EMAIL' | 'SIGNUP_STEP2' | 'LOGIN' | string | null;
+  message: string;
+}
+
+export interface SignupStep1Request {
+  nom: string;
+  prenom: string;
+  email: string;
+  motDePasse: string;
+  role: string;
+  photo?: string | null;
+  telephone?: string | null;
+}
+
+export interface SignupStep2Request {
+  photo?: string | null;
+  telephone?: string | null;
+  region?: string | null;
+  diplomeExpert?: string | null;
+  documentUrl?: string | null;
+  vehicule?: string | null;
+  capacite?: number | null;
+  agence?: string | null;
+  certificatTravail?: string | null;
+  organizationLogo?: string | null;
+  cin?: string | null;
+  adresseCabinet?: string | null;
+  presentationCarriere?: string | null;
+  telephoneCabinet?: string | null;
+  nomOrganisation?: string | null;
+  description?: string | null;
 }
 
 export interface AuthUser {
@@ -33,7 +78,8 @@ export interface AuthUser {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8081/api/auth';
+  //private apiUrl = 'http://localhost:8081/api/auth';
+  private apiUrl = 'http://localhost:8089/user/api/auth';
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(this.getUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -59,6 +105,18 @@ export class AuthService {
         return response;
       })
     );
+  }
+
+  signupStep1(payload: SignupStep1Request): Observable<SignupResponse> {
+    return this.http.post<SignupResponse>(`${this.apiUrl}/signup/step1`, payload);
+  }
+
+  signupStep2(userId: number, payload: SignupStep2Request): Observable<SignupResponse> {
+    return this.http.put<SignupResponse>(`${this.apiUrl}/signup/step2/${userId}`, payload);
+  }
+
+  verifyEmail(userId: number): Observable<SignupResponse> {
+    return this.http.post<SignupResponse>(`${this.apiUrl}/verify-email/${userId}`, {});
   }
 
   logout(): void {
@@ -108,6 +166,20 @@ export class AuthService {
     switch (role) {
       case 'ADMIN':
         return '/dashboard';
+      case 'ACHETEUR':
+        return '/buyer/home';
+      case 'AGRICULTEUR':
+        return '/farmer/home';
+      case 'EXPERT_AGRICOLE':
+        return '/expert/home';
+      case 'TRANSPORTEUR':
+        return '/transporter/home';
+      case 'VETERINAIRE':
+        return '/veterinarian/home';
+      case 'AGENT':
+        return '/agent/home';
+      case 'ORGANISATEUR_EVENEMENT':
+        return '/organizer/home';
       default:
         return '/';
     }

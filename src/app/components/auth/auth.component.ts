@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators ,AbstractControl, ValidationErrors} from '@angular/forms';
-import { AuthService, BackendRole } from '../../services/auth/auth.service';
+import { AuthService, BackendRole, SignupStep1Request, SignupResponse } from '../../services/auth/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -11,12 +11,18 @@ import { Router } from '@angular/router';
 })
 export class AuthComponent implements OnInit {
 
-  mode: 'signin' | 'signup' = 'signin';
+  mode: 'signin' | 'signup' | 'verify' = 'signin';
   showSignInPass = false;
   showSignUpPass = false;
   previewUrl: string | null = null;
+  photoUploadUrl: string | null = null;
   loginError: string | null = null;
   isLoading = false;
+  verificationUserId: number | null = null;
+  verificationEmail: string | null = null;
+  verificationMessage: string | null = null;
+  verificationLoading = false;
+  verificationError: string | null = null;
 
   signInForm!:  FormGroup;
   signUpForm!:  FormGroup;
@@ -39,6 +45,10 @@ export class AuthComponent implements OnInit {
     return this.needsExtraStep ? 'Next' : 'Create Account';
   }
 
+  get isVerificationMode(): boolean {
+    return this.mode === 'verify';
+  }
+
   constructor(
     private authService: AuthService,
     private router: Router
@@ -46,8 +56,17 @@ export class AuthComponent implements OnInit {
 
   ngOnInit(): void {
     const savedMode = localStorage.getItem('authMode');
-    if (savedMode === 'signin' || savedMode === 'signup') {
+    if (savedMode === 'signin' || savedMode === 'signup' || savedMode === 'verify') {
       this.mode = savedMode;
+    }
+
+    const pendingVerificationId = localStorage.getItem('pendingVerificationUserId');
+    const pendingVerificationEmail = localStorage.getItem('pendingVerificationEmail');
+    const pendingVerificationMessage = localStorage.getItem('pendingVerificationMessage');
+    if (this.mode === 'verify') {
+      this.verificationUserId = pendingVerificationId ? Number(pendingVerificationId) : null;
+      this.verificationEmail = pendingVerificationEmail;
+      this.verificationMessage = pendingVerificationMessage || 'Please verify your email to continue.';
     }
 
     const rememberedEmail = localStorage.getItem('rememberedEmail');
@@ -120,6 +139,8 @@ export class AuthComponent implements OnInit {
             response.role ? response.role as BackendRole : null
           );
           this.router.navigate([redirectRoute]);
+        } else if (response.verificationRequired || response.nextStep === 'VERIFY_EMAIL') {
+          this.enterVerificationMode(response.userId, response.email, response.message || 'Please verify your email.');
         } else {
           this.loginError = response.message || 'Login failed';
         }
@@ -135,18 +156,77 @@ export class AuthComponent implements OnInit {
   submitSignUp(): void {
     if (this.signUpForm.invalid) { this.signUpForm.markAllAsTouched(); return; }
 
-    if (this.needsExtraStep) {
-      // Save base form data and navigate to extra info page
-      localStorage.setItem('signupBase', JSON.stringify({
-        ...this.signUpForm.value,
-        photo: null // don't serialize File object
-      }));
-      localStorage.setItem('signupRole', this.selectedRole);
-      this.router.navigate(['/register-extra']);
-    } else {
-      // Admin or Buyer — submit directly
-      console.log('Sign Up (no extra):', this.signUpForm.value);
+    this.isLoading = true;
+    this.loginError = null;
+
+    const payload: SignupStep1Request = {
+      nom: this.signUpForm.value.firstName ?? '',
+      prenom: this.signUpForm.value.lastName ?? '',
+      email: this.signUpForm.value.email ?? '',
+      motDePasse: this.signUpForm.value.password ?? '',
+      role: this.selectedRole,
+      photo: this.photoUploadUrl,
+      telephone: this.signUpForm.value.phone ?? ''
+    };
+
+    this.authService.signupStep1(payload).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.nextStep === 'SIGNUP_STEP2' && response.userId != null) {
+          localStorage.setItem('signupBase', JSON.stringify({
+            ...this.signUpForm.value,
+            photo: this.photoUploadUrl
+          }));
+          localStorage.setItem('signupRole', this.selectedRole);
+          localStorage.setItem('signupUserId', String(response.userId));
+          localStorage.setItem('signupEmail', response.email || payload.email);
+          localStorage.setItem('signupMessage', response.message || 'Complete your profile.');
+          this.router.navigate(['/register-extra']);
+          return;
+        }
+
+        if (response.nextStep === 'VERIFY_EMAIL') {
+          this.enterVerificationMode(response.userId, response.email, response.message || 'Please verify your email to continue.');
+          return;
+        }
+
+        this.mode = 'verify';
+        this.enterVerificationMode(response.userId, response.email, response.message || 'Please verify your email to continue.');
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.loginError = err.error?.message || 'Could not create your account';
+      }
+    });
+  }
+
+  resendVerification(): void {
+    if (this.verificationUserId == null) {
+      this.verificationError = 'Missing verification context.';
+      return;
     }
+
+    this.verificationLoading = true;
+    this.verificationError = null;
+    this.authService.verifyEmail(this.verificationUserId).subscribe({
+      next: (response) => {
+        this.verificationLoading = false;
+        this.verificationMessage = response.message || 'Email verified successfully.';
+        localStorage.removeItem('pendingVerificationUserId');
+        localStorage.removeItem('pendingVerificationEmail');
+        localStorage.removeItem('pendingVerificationMessage');
+        this.mode = 'signin';
+        if (this.verificationEmail) {
+          this.signInForm.get('email')?.setValue(this.verificationEmail);
+          this.signInForm.get('remember')?.setValue(true);
+        }
+        this.loginError = null;
+      },
+      error: (err) => {
+        this.verificationLoading = false;
+        this.verificationError = err.error?.message || 'Verification failed';
+      }
+    });
   }
 
   imageValidator = (control: AbstractControl): ValidationErrors | null => {
@@ -163,8 +243,29 @@ export class AuthComponent implements OnInit {
     if (!file) return;
     this.signUpForm.get('photo')?.setValue(file);
     this.signUpForm.get('photo')?.markAsTouched();
+    this.photoUploadUrl = this.buildMockFileUrl(file);
     const reader = new FileReader();
     reader.onload = () => this.previewUrl = reader.result as string;
     reader.readAsDataURL(file);
+  }
+
+  private buildMockFileUrl(file: File): string {
+    const safeName = encodeURIComponent(file.name.replace(/\s+/g, '-'));
+    return `https://files.greenroots.local/uploads/${Date.now()}-${safeName}`;
+  }
+
+  private enterVerificationMode(userId: number | null, email: string | null, message: string): void {
+    this.verificationUserId = userId;
+    this.verificationEmail = email;
+    this.verificationMessage = message;
+    this.mode = 'verify';
+    localStorage.setItem('authMode', 'verify');
+    if (userId != null) {
+      localStorage.setItem('pendingVerificationUserId', String(userId));
+    }
+    if (email) {
+      localStorage.setItem('pendingVerificationEmail', email);
+    }
+    localStorage.setItem('pendingVerificationMessage', message);
   }
 }

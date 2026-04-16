@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart, registerables } from 'chart.js';
 
@@ -10,12 +10,17 @@ Chart.register(...registerables);
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements AfterViewInit {
+export class DashboardComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('revenueChart')  revenueChartRef!:  ElementRef;
   @ViewChild('usersChart')    usersChartRef!:    ElementRef;
   @ViewChild('deliveryChart') deliveryChartRef!: ElementRef;
   @ViewChild('categoryChart') categoryChartRef!: ElementRef;
+
+  private revenueChart?: Chart;
+  private usersChart?: Chart;
+  private deliveryChart?: Chart;
+  private categoryChart?: Chart;
 
   stats = [
     { icon: 'fas fa-seedling',       value: '12,540', label: 'Active Farmers',    color: '#4caf50', bg: '#eaf5ea' },
@@ -50,8 +55,15 @@ export class DashboardComponent implements AfterViewInit {
     this.initCategoryChart();
   }
 
+  ngOnDestroy(): void {
+    this.revenueChart?.destroy();
+    this.usersChart?.destroy();
+    this.deliveryChart?.destroy();
+    this.categoryChart?.destroy();
+  }
+
   initRevenueChart(): void {
-    new Chart(this.revenueChartRef.nativeElement, {
+    this.revenueChart = new Chart(this.revenueChartRef.nativeElement, {
       type: 'line',
       data: {
         labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
@@ -101,7 +113,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   initUsersChart(): void {
-    new Chart(this.usersChartRef.nativeElement, {
+    this.usersChart = new Chart(this.usersChartRef.nativeElement, {
       type: 'bar',
       data: {
         labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
@@ -124,7 +136,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   initDeliveryChart(): void {
-    new Chart(this.deliveryChartRef.nativeElement, {
+    this.deliveryChart = new Chart(this.deliveryChartRef.nativeElement, {
       type: 'doughnut',
       data: {
         labels: ['Completed', 'In Transit', 'Pending', 'Cancelled'],
@@ -147,7 +159,7 @@ export class DashboardComponent implements AfterViewInit {
   }
 
   initCategoryChart(): void {
-    new Chart(this.categoryChartRef.nativeElement, {
+    this.categoryChart = new Chart(this.categoryChartRef.nativeElement, {
       type: 'radar',
       data: {
         labels: ['Vegetables', 'Fruits', 'Grains', 'Livestock', 'Dairy', 'Herbs'],

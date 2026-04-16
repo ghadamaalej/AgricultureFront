@@ -1,0 +1,70 @@
+<div class="profile-container" *ngIf="!isLoading; else loadingTemplate">
+  <button class="back-button" (click)="goBack()">← Back to Forums</button>
+
+  <div class="profile-header">
+    <div class="profile-avatar">
+      {{ userDetails?.name?.charAt(0)?.toUpperCase() || 'U' }}
+    </div>
+    <div class="profile-info">
+      <h1>{{ userDetails?.name }}</h1>
+      <p class="profile-role" *ngIf="userDetails?.isExpert">
+        <span class="expert-badge">⭐ Expert</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="profile-stats grid-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ userProfile?.reputation || 0 }}</div>
+      <div class="stat-label">Reputation</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ userProfile?.postCount || 0 }}</div>
+      <div class="stat-label">Posts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ userProfile?.replyCount || 0 }}</div>
+      <div class="stat-label">Replies</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ userProfile?.acceptedReplyCount || 0 }}</div>
+      <div class="stat-label">Accepted</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" [ngClass]="'badge-' + getBadgeColor()">{{ userProfile?.badgeTier }}</div>
+      <div class="stat-label">Badge</div>
+    </div>
+    <div class="stat-card" *ngIf="userProfile?.role">
+      <div class="stat-value">{{ userProfile?.role }}</div>
+      <div class="stat-label">Role</div>
+    </div>
+  </div>
+
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <div class="posts-section" *ngIf="userPosts.length > 0">
+    <h2>Recent Posts</h2>
+    <div class="posts-list">
+      <div class="post-item" *ngFor="let post of userPosts.slice(0, 5)">
+        <h3 (click)="viewPost(post.id)" class="post-title">{{ post.title }}</h3>
+        <p class="post-content">{{ truncateContent(post.content) }}</p>
+        <div class="post-meta">
+          <span>{{ post.replies.length || 0 }} replies</span>
+          <span>{{ formatDate(post.createdAt) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="userPosts.length === 0">
+    <p>No posts from this user yet.</p>
+  </div>
+</div>
+
+<ng-template #loadingTemplate>
+  <div class="profile-container">
+    <div class="loading">Loading profile...</div>
+  </div>
+</ng-template>

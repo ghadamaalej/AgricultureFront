@@ -165,6 +165,7 @@
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 16px;
   padding: 20px;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 .brand-quote img {
@@ -299,6 +300,10 @@
   color: var(--sc, #333);
   transition: transform 0.3s;
 }
+
+.social-btn .google-icon { color: #ea4335 !important; }
+.social-btn .facebook-icon { color: #1877f2 !important; }
+.apple-icon { color: #000; }
 
 .social-btn:hover {
   border-color: var(--sc, #333);
@@ -608,6 +613,47 @@
   transition: color 0.3s;
 }
 .switch-link a:hover { color: var(--primary-dark); text-decoration: underline; }
+
+.verification-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.verification-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.verification-note {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.7;
+}
+
+.verification-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.auth-btn-secondary {
+  background: #f5f5f5;
+  color: #333;
+  box-shadow: none;
+  flex: 1;
+  min-width: 160px;
+}
+
+.auth-btn-primary {
+  flex: 1;
+  min-width: 160px;
+}
 
 /* ================================================
    SUCCESS SCREEN

@@ -44,6 +44,7 @@ const routes: Routes = [
       //   loadChildren: () =>
       //     import('./training-admin/training-admin.module').then(m => m.TrainingAdminModule)
       // },
+      { path: '**', redirectTo: '' }
     ]
   }
 ];

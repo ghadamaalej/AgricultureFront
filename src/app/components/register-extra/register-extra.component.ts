@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService, SignupStep2Request } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-register-extra',
@@ -12,11 +13,19 @@ import { Router } from '@angular/router';
 export class RegisterExtraComponent implements OnInit {
 
   role = '';
+  userId: number | null = null;
+  baseSignup: Record<string, any> = {};
   extraForm!: FormGroup;
   previewCin:   string | null = null;
   previewCert:  string | null = null;
   previewDoc:   string | null = null;
   previewComm:  string | null = null;
+  cinUploadUrl: string | null = null;
+  certUploadUrl: string | null = null;
+  docUploadUrl: string | null = null;
+  commUploadUrl: string | null = null;
+  isLoading = false;
+  submitError = '';
 
   // Role config
   roleConfig: Record<string, { label: string; fields: string[] }> = {
@@ -55,12 +64,14 @@ export class RegisterExtraComponent implements OnInit {
     return this.config.fields.includes(field);
   }
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   ngOnInit(): void {
     this.role = localStorage.getItem('signupRole') || '';
+    this.userId = Number(localStorage.getItem('signupUserId') || '0') || null;
+    this.baseSignup = JSON.parse(localStorage.getItem('signupBase') || '{}');
 
-    if (!this.role) {
+    if (!this.role || this.userId == null) {
       this.router.navigate(['/']);
       return;
     }
@@ -96,6 +107,13 @@ export class RegisterExtraComponent implements OnInit {
     if (!file) return;
     this.extraForm.get(field)?.setValue(file);
     this.extraForm.get(field)?.markAsTouched();
+
+    const uploadUrl = this.buildMockFileUrl(file);
+    if (field === 'cin') this.cinUploadUrl = uploadUrl;
+    if (field === 'workCertificate') this.certUploadUrl = uploadUrl;
+    if (field === 'documentUrl') this.docUploadUrl = uploadUrl;
+    if (field === 'organizationLogo') this.commUploadUrl = uploadUrl;
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
@@ -112,13 +130,66 @@ export class RegisterExtraComponent implements OnInit {
   }
 
   submit(): void {
-    if (this.extraForm.invalid) { this.extraForm.markAllAsTouched(); return; }
-    const base  = JSON.parse(localStorage.getItem('signupBase') || '{}');
-    const extra = this.extraForm.value;
-    const full  = { ...base, ...extra, role: this.role };
-    console.log('Full registration:', full);
-    localStorage.removeItem('signupBase');
-    localStorage.removeItem('signupRole');
-    // → send to API here
+    if (this.extraForm.invalid || this.userId == null) {
+      this.extraForm.markAllAsTouched();
+      return;
+    }
+
+    this.isLoading = true;
+    this.submitError = '';
+
+    const payload = this.buildPayload();
+
+    this.authService.signupStep2(this.userId, payload).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        localStorage.setItem('authMode', 'verify');
+        if (response.userId != null) {
+          localStorage.setItem('pendingVerificationUserId', String(response.userId));
+        }
+        if (response.email) {
+          localStorage.setItem('pendingVerificationEmail', response.email);
+        }
+        localStorage.setItem('pendingVerificationMessage', response.message || 'Please verify your email to continue.');
+        localStorage.removeItem('signupBase');
+        localStorage.removeItem('signupRole');
+        localStorage.removeItem('signupUserId');
+        localStorage.removeItem('signupEmail');
+        localStorage.removeItem('signupMessage');
+        this.router.navigate(['/auth']);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.submitError = err.error?.message || 'Could not complete profile setup.';
+      }
+    });
+  }
+
+  private buildPayload(): SignupStep2Request {
+    const value = this.extraForm.value;
+
+    return {
+      photo: this.baseSignup['photo'] ?? null,
+      telephone: this.baseSignup['phone'] ?? null,
+      region: value['region'] ?? null,
+      diplomeExpert: this.docUploadUrl,
+      documentUrl: this.docUploadUrl,
+      vehicule: value['vehicleType'] ?? null,
+      capacite: value['capacityKg'] != null ? Number(value['capacityKg']) : null,
+      agence: value['agency'] ?? null,
+      certificatTravail: this.certUploadUrl,
+      organizationLogo: this.commUploadUrl,
+      cin: this.cinUploadUrl,
+      adresseCabinet: value['clinicAddress'] ?? null,
+      presentationCarriere: value['careerPresentation'] ?? null,
+      telephoneCabinet: value['clinicPhone'] ?? null,
+      nomOrganisation: value['organizationName'] ?? null,
+      description: value['description'] ?? null
+    };
+  }
+
+  private buildMockFileUrl(file: File): string {
+    const safeName = encodeURIComponent(file.name.replace(/\s+/g, '-'));
+    return `https://files.greenroots.local/uploads/${Date.now()}-${safeName}`;
   }
 }

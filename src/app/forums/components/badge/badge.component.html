@@ -1,0 +1,5 @@
+<div [ngClass]="'badge ' + getBadgeInfo().colorClass" [title]="getBadgeInfo().label">
+  <span class="badge-emoji">{{ getBadgeInfo().emoji }}</span>
+  <span class="badge-label">{{ getBadgeInfo().label }}</span>
+  <span class="badge-rep">{{ reputation }}</span>
+</div>

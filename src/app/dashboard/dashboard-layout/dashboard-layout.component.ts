@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
@@ -9,8 +10,9 @@ import { AuthService } from '../../services/auth/auth.service';
   templateUrl: './dashboard-layout.component.html',
   styleUrls: ['./dashboard-layout.component.css']
 })
-export class DashboardLayoutComponent implements OnInit {
+export class DashboardLayoutComponent implements OnInit, OnDestroy {
 
+  private destroy$ = new Subject<void>();
   sidebarOpen = true;
   activeMenu  = 'dashboard';
 
@@ -21,7 +23,7 @@ export class DashboardLayoutComponent implements OnInit {
     { icon: 'fas fa-calendar-alt',       label: 'Events',       key: 'events',       route: '/dashboard/events'       },
     { icon: 'fas fa-hand-holding-usd',   label: 'Loans',        key: 'loans',        route: '/dashboard/loans'        },
     { icon: 'fas fa-store',              label: 'Marketplace',  key: 'marketplace',  route: '/dashboard/marketplace'  },
-    { icon: 'fas fa-comments',           label: 'Community',    key: 'community',    route: '/dashboard/forums'       },
+    { icon: 'fas fa-comments',           label: 'Community',    key: 'community',    route: '/forums'                 },
     { icon: 'fas fa-graduation-cap',     label: 'Training',     key: 'training',     route: '/dashboard/training'     },
     { icon: 'fas fa-exclamation-circle', label: 'Claims',       key: 'claims',       route: '/dashboard/claims'       },
     { icon: 'fas fa-stethoscope',        label: 'Appointments', key: 'appointments', route: '/dashboard/appointments' },
@@ -37,7 +39,10 @@ export class DashboardLayoutComponent implements OnInit {
   ngOnInit(): void {
     // Sync activeMenu with current URL on load and navigation
     this.router.events
-      .pipe(filter(e => e instanceof NavigationEnd))
+      .pipe(
+        filter(e => e instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
       .subscribe((e: any) => {
         const url = e.urlAfterRedirects;
         const matched = this.menuItems.find(item => url === item.route || url.startsWith(item.route + '/'));
@@ -51,8 +56,12 @@ export class DashboardLayoutComponent implements OnInit {
   }
 
   setActive(key: string, route: string): void {
+    console.log('[Dashboard] Navigating to:', route);
     this.activeMenu = key;
-    this.router.navigate([route]);
+    this.router.navigate([route]).then(
+      (success) => console.log('[Dashboard] Navigation success:', success),
+      (error) => console.error('[Dashboard] Navigation error:', error)
+    );
   }
 
   logout(): void {
@@ -62,4 +71,9 @@ export class DashboardLayoutComponent implements OnInit {
 
   toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
   goHome(): void        { this.router.navigate(['/']); }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

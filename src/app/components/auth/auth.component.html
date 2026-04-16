@@ -101,7 +101,7 @@
     <!-- ===== RIGHT — Form ===== -->
     <div class="auth-form-panel">
       <div class="auth-form-wrap">
-        <div class="auth-tabs">
+        <div class="auth-tabs" *ngIf="!isVerificationMode">
           <button class="auth-tab" [class.active]="mode === 'signin'" (click)="switchTo('signin')">
             <i class="fas fa-sign-in-alt"></i> Sign In
           </button>
@@ -122,13 +122,13 @@
           <!-- Socials -->
           <div class="social-auth">
             <button type="button" class="social-btn">
-              <i class="fab fa-google" style="color:#ea4335"></i><span>Google</span>
+              <i class="fab fa-google google-icon"></i><span>Google</span>
             </button>
             <button type="button" class="social-btn">
-              <i class="fab fa-facebook" style="color:#1877f2"></i><span>Facebook</span>
+              <i class="fab fa-facebook facebook-icon"></i><span>Facebook</span>
             </button>
             <button type="button" class="social-btn">
-              <i class="fab fa-apple" style="color:#000"></i><span>Apple</span>
+              <i class="fab fa-apple apple-icon"></i><span>Apple</span>
             </button>
           </div>
 
@@ -169,7 +169,7 @@
                 formControlName="password"
                 placeholder="••••••••"
                 autocomplete="current-password">
-              <button type="button" class="eye-btn" (click)="togglePass('signin')">
+              <button type="button" class="eye-btn" (click)="togglePass('signin')" aria-label="Toggle password visibility">
                 <i [class]="showSignInPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
               </button>
             </div>
@@ -221,13 +221,13 @@
 
           <div class="social-auth">
             <button type="button" class="social-btn">
-              <i class="fab fa-google" style="color:#ea4335"></i><span>Google</span>
+              <i class="fab fa-google google-icon"></i><span>Google</span>
             </button>
             <button type="button" class="social-btn">
-              <i class="fab fa-facebook" style="color:#1877f2"></i><span>Facebook</span>
+              <i class="fab fa-facebook facebook-icon"></i><span>Facebook</span>
             </button>
             <button type="button" class="social-btn">
-              <i class="fab fa-apple" style="color:#000"></i><span>Apple</span>
+              <i class="fab fa-apple apple-icon"></i><span>Apple</span>
             </button>
           </div>
 
@@ -303,7 +303,7 @@
                 [type]="showSignUpPass ? 'text' : 'password'"
                 formControlName="password"
                 placeholder="Min. 8 characters">
-              <button type="button" class="eye-btn" (click)="togglePass('signup')">
+              <button type="button" class="eye-btn" (click)="togglePass('signup')" aria-label="Toggle password visibility">
                 <i [class]="showSignUpPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
               </button>
             </div>
@@ -375,7 +375,7 @@
   <label>Role</label>
   <div class="input-box input-select">
     <i class="fas fa-user-tag"></i>
-    <select formControlName="role">
+    <select formControlName="role" aria-label="Select your role">
        <option value="" disabled selected>Select your role</option>
        <option value="Farmer">Farmer</option>
        <option value="AgriculturalExpert">Agricultural Expert</option>
@@ -408,6 +408,36 @@
             <a (click)="switchTo('signin')">Sign in here</a>
           </p>
         </form>
+
+        <!-- ===== VERIFY EMAIL ===== -->
+        <section class="auth-form verification-form" *ngIf="isVerificationMode">
+          <div class="form-head">
+            <h2 class="auth-title gradient">
+              <i class="fas fa-envelope-open-text"></i> Verify Your Email
+            </h2>
+            <p>
+              {{ verificationMessage || 'Please verify your email before you can access your account.' }}
+            </p>
+          </div>
+
+          <div class="verification-card">
+            <p *ngIf="verificationEmail"><strong>Account:</strong> {{ verificationEmail }}</p>
+            <p *ngIf="!verificationEmail">Your account is waiting for email verification.</p>
+            <p class="verification-note">
+              This is a temporary step screen. Your teammate can replace the dummy verification action with the real email link workflow.
+            </p>
+            <p class="field-error" *ngIf="verificationError">{{ verificationError }}</p>
+          </div>
+
+          <div class="verification-actions">
+            <button type="button" class="auth-btn auth-btn-secondary" (click)="switchTo('signin')">
+              Back to Sign In
+            </button>
+            <button type="button" class="auth-btn auth-btn-primary" (click)="resendVerification()" [disabled]="verificationLoading">
+              {{ verificationLoading ? 'Verifying...' : 'I Verified My Email' }}
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   </div>
