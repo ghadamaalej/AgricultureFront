@@ -20,6 +20,39 @@ It only injects the token for requests whose URL matches one of these patterns:
 Important rule:
 - If your service uses a different URL base that does not match those patterns, no JWT header will be sent.
 
+Use the following placeholder snippet to know exactly where to update prefixes when your team adds a new service:
+
+```ts
+const isApiRequest = req.url.startsWith('http://localhost:8089/')
+  || req.url.startsWith('/forums/')
+  || req.url.startsWith('/user/')
+  // TEAM PLACEHOLDER: add your service prefix below.
+  // Replace <your-service-prefix> with the gateway route prefix used by your backend route.
+  // Example: /inventory/, /events/, /marketplace/
+  || req.url.startsWith('/<your-service-prefix>/');
+```
+
+Example for a team owning inventory endpoints:
+
+```ts
+const isApiRequest = req.url.startsWith('http://localhost:8089/')
+  || req.url.startsWith('/forums/')
+  || req.url.startsWith('/user/')
+  || req.url.startsWith('/inventory/');
+```
+
+Keep this part unchanged unless your auth storage changes:
+
+```ts
+const token = localStorage.getItem('authToken');
+
+const authReq = req.clone({
+  setHeaders: {
+    Authorization: `Bearer ${token}`
+  }
+});
+```
+
 ## 2) API URL convention to follow (same as forums)
 
 Use gateway URLs so auth is centralized and interception works.
