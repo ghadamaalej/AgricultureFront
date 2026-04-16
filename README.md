@@ -160,6 +160,61 @@ If you get 404 from gateway:
 - verify gateway route prefix + StripPrefix settings
 - restart gateway + target service to avoid stale instance registration
 
----
+## 9) How user data is extracted currently (use this pattern)
 
-If needed, we can later split this into per-team pages (Buyer/Farmer/Expert/etc.) with exact route and service stubs for each role.
+The frontend currently extracts authenticated user data through `AuthService`:
+- token source: localStorage key `authToken`
+- user source: localStorage key `authUser`
+- in-memory reactive source: `currentUser$` (BehaviorSubject)
+
+Current user shape:
+
+```ts
+interface AuthUser {
+  userId: number;
+  username: string;
+  email: string;
+  role: BackendRole;
+}
+```
+
+Helper methods already available in `AuthService`:
+- `getCurrentUser()`
+- `getCurrentUserId()`
+- `getCurrentRole()`
+- `hasRole(...)`
+- `hasAnyRole(...)`
+- `currentUser$` for reactive subscriptions
+
+Use this placeholder in your component/service when you need the logged-in user id:
+
+```ts
+// TEAM PLACEHOLDER: replace <feature> with your domain service
+constructor(
+  private authService: AuthService,
+  private <feature>Service: <Feature>Service
+) {}
+
+ngOnInit(): void {
+  const currentUserId = this.authService.getCurrentUserId();
+  if (currentUserId == null) {
+    return;
+  }
+
+  this.<feature>Service.loadForUser(currentUserId).subscribe();
+}
+```
+
+Reactive example (recommended when navbar/profile data must update live):
+
+```ts
+this.authService.currentUser$.subscribe((user) => {
+  this.currentUser = user;
+  this.currentUserRole = user?.role ?? null;
+  this.currentUserId = user?.userId ?? null;
+});
+```
+
+Important rule:
+- Do not read role/userId from random localStorage keys in feature code.
+- Always use `AuthService` helpers so all teams stay consistent.
