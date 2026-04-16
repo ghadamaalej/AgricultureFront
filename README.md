@@ -1,6 +1,5 @@
-# AgricultureFront Team Integration Guide
+# Integration Guide
 
-This README explains how each team should plug their Angular feature into this frontend while keeping JWT-authenticated API calls working.
 
 Reference implementation: the existing forums feature (already working with gateway + JWT interceptor).
 
