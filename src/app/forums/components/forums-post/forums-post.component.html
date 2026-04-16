@@ -1,0 +1,448 @@
+<app-navbar></app-navbar>
+
+<section class="forums-post-page" *ngIf="post as currentPost">
+  <div class="container">
+    <header class="thread-hero glass-card">
+      <button class="back-link" (click)="goBack()">← Back to Questions</button>
+      <div class="hero-main">
+        <h1>{{ displayPostTitle(currentPost) }}</h1>
+        <div class="hero-meta">
+          <span>{{ currentPost.views }} views</span>
+          <span>{{ visibleReplyCount }} replies</span>
+          <span>{{ bestAnswerCount }} best answers</span>
+          <span class="hidden-pill" *ngIf="isThreadReported(currentPost)" [attr.title]="getThreadReportTooltip(currentPost)">{{ getThreadReportLabel(currentPost) }}</span>
+        </div>
+      </div>
+      <span class="thread-chip">Active Thread</span>
+    </header>
+
+    <div class="thread-canvas">
+      <main class="discussion-column">
+        <article class="question-story glass-card" [class.breathing-highlight]="isCurrentUserAdmin() && isThreadReported(currentPost)">
+          <p
+            [class.state-box]="isPostDeletedNotice(currentPost) || isPostHiddenNotice(currentPost)"
+            [class.state-box--deleted]="isPostDeletedNotice(currentPost)"
+            [class.state-box--hidden]="isPostHiddenNotice(currentPost)"
+          >
+            {{ displayPostContent(currentPost) }}
+          </p>
+          <div class="story-tags">
+            <span *ngFor="let tag of currentPost.tags">{{ tag }}</span>
+          </div>
+          <div class="story-author" *ngIf="getUser(currentPost.authorId) as author">
+            <img class="user-avatar user-avatar--md" [src]="getAvatarUrl(author)" [alt]="author.name + ' profile image'" title="{{ getAvatarTitle(author) }}" />
+            <div class="story-author-copy">
+              <button type="button" class="story-author-link" (click)="openUserProfile(author.id)">{{ author.name }}</button>
+              <span>{{ author.reputation }} rep</span>
+              <app-badge [reputation]="author.reputation"></app-badge>
+            </div>
+          </div>
+          <div class="story-actions" *ngIf="canDeletePost(currentPost)">
+            <button type="button" class="delete-btn" (click)="deletePost()">Delete post</button>
+          </div>
+          <div class="story-actions" *ngIf="isCurrentUserAdmin() && isThreadReported(currentPost)">
+            <button type="button" class="moderation-btn moderation-btn--review" *ngIf="canReviewPost(currentPost)" (click)="reviewReportedPost()">
+              Review report
+            </button>
+          </div>
+          <div class="story-actions" *ngIf="!canDeletePost(currentPost)">
+            <button type="button" class="report-btn" (click)="reportPost()" [disabled]="!canReportPost(currentPost)">
+              {{ reportPostButtonLabel(currentPost) }}
+            </button>
+          </div>
+          <small class="form-error" *ngIf="reportFeedback">{{ reportFeedback }}</small>
+        </article>
+
+        <section class="ai-insight-card glass-card" *ngIf="aiReply as insight">
+          <header class="ai-head">
+            <div class="ai-title-wrap">
+              <img class="ai-gemini-mark" src="/assets/images/Google_Gemini_icon_2025.svg.png" alt="Gemini" />
+              <div class="ai-title-copy">
+                <span class="ai-kicker ai-kicker--animated">Gemini Insight</span>
+                <small>Generated for this question</small>
+              </div>
+            </div>
+            <span class="ai-pill">Assistant</span>
+          </header>
+          <div class="ai-body">
+            <p>{{ insight.content }}</p>
+          </div>
+        </section>
+
+        <section class="ai-insight-card ai-insight-card--loading glass-card" *ngIf="isAwaitingAiReply">
+          <header class="ai-head">
+            <div class="ai-title-wrap">
+              <img class="ai-gemini-mark ai-gemini-mark--loading" src="/assets/images/Google_Gemini_icon_2025.svg.png" alt="Gemini" />
+              <div class="ai-title-copy">
+                <span class="ai-kicker ai-kicker--animated">Generating Gemini Insight</span>
+                <small>Analyzing context and drafting guidance</small>
+              </div>
+            </div>
+            <span class="ai-pill ai-pill--pulse">In progress</span>
+          </header>
+          <div class="ai-body">
+            <p>We are preparing a focused assistant suggestion for this question. This can take a few seconds.</p>
+          </div>
+        </section>
+
+        <section class="replies-panel">
+          <div class="replies-panel-head">
+            <h2>Reply Stream</h2>
+          </div>
+
+          <div class="reply-stream-card glass-card">
+            <ng-container *ngIf="humanReplies.length > 0; else noRepliesYet">
+              <button
+                class="line-toggle-all"
+                type="button"
+                (click)="toggleAllRepliesCollapse()"
+                [attr.aria-expanded]="!areAllRepliesCollapsed()"
+                [attr.aria-label]="areAllRepliesCollapsed() ? 'Expand all replies' : 'Collapse all replies'"
+                title="Toggle replies"
+              ></button>
+
+              <ul class="replies-tree">
+                <li class="reply-branch" *ngFor="let reply of humanReplies; let lastReply = last" [class.last-branch]="lastReply" [class.collapsed]="isReplyCollapsed(reply.id)">
+                <button
+                  class="branch-toggle"
+                  type="button"
+                  (click)="toggleReplyCollapse(reply.id)"
+                  [attr.aria-expanded]="!isReplyCollapsed(reply.id)"
+                  [attr.aria-label]="isReplyCollapsed(reply.id) ? 'Expand reply' : 'Collapse reply'"
+                >
+                  {{ isReplyCollapsed(reply.id) ? '+' : '−' }}
+                </button>
+
+                <article class="reply-node" [class.expert-reply]="getUser(reply.authorId)?.isExpert" [class.best-answer]="reply.isAccepted" [class.breathing-highlight]="isCurrentUserAdmin() && reply.isHiddenByReports" [class.hidden-by-reports]="reply.isHiddenByReports">
+                  <ng-container *ngIf="!isReplyCollapsed(reply.id); else collapsedReply">
+                    <div class="vote-rail">
+                      <img
+                        class="user-avatar user-avatar--sm reply-avatar"
+                        *ngIf="getUser(reply.authorId) as replyAuthor"
+                        [src]="getAvatarUrl(replyAuthor)"
+                        [alt]="replyAuthor.name + ' profile image'"
+                        title="{{ getAvatarTitle(replyAuthor) }}"
+                      />
+                      <button
+                        type="button"
+                        (click)="vote(reply.id, 'up')"
+                        [class.vote-active-up]="hasUpvoted(reply)"
+                        [attr.aria-pressed]="hasUpvoted(reply)"
+                        aria-label="Upvote reply"
+                      >▲</button>
+                      <strong [class.vote-score-active]="reply.currentUserVote === 'UP' || reply.currentUserVote === 'DOWN'">{{ replyScore(reply) }}</strong>
+                      <button
+                        type="button"
+                        (click)="vote(reply.id, 'down')"
+                        [class.vote-active-down]="hasDownvoted(reply)"
+                        [attr.aria-pressed]="hasDownvoted(reply)"
+                        aria-label="Downvote reply"
+                      >▼</button>
+                    </div>
+
+                    <div class="reply-body">
+                      <div class="reply-head" *ngIf="getUser(reply.authorId) as author">
+                        <button type="button" class="author author-link" (click)="openUserProfile(author.id)">{{ author.name }}</button>
+                        <span>{{ author.reputation }} rep</span>
+                        <app-badge [reputation]="author.reputation"></app-badge>
+                        <span class="expert" *ngIf="author.isExpert">Expert</span>
+                        <span class="accepted-label" *ngIf="reply.isAccepted">✓ Best answer</span>
+                        <button type="button" class="moderation-btn moderation-btn--review" *ngIf="canReviewReply(reply)" (click)="reviewReportedReply(reply.id)">
+                          Review report
+                        </button>
+                        <button *ngIf="canDeleteReply(reply)" type="button" class="delete-btn delete-btn--inline" (click)="deleteReply(reply.id)">Delete reply</button>
+                        <button *ngIf="!canDeleteReply(reply)" type="button" class="report-btn report-btn--inline" (click)="reportReply(reply.id)" [disabled]="!canReportReply(reply)">
+                          {{ reportReplyButtonLabel(reply) }}
+                        </button>
+                      </div>
+
+                      <p
+                        [class.state-box]="isReplyDeletedNotice(reply) || isReplyHiddenNotice(reply)"
+                        [class.state-box--deleted]="isReplyDeletedNotice(reply)"
+                        [class.state-box--hidden]="isReplyHiddenNotice(reply)"
+                      >
+                        {{ displayReplyContent(reply) }}
+                      </p>
+
+                      <div class="comment-thread-wrap" *ngIf="reply.comments.length > 0">
+                        <button
+                          class="comment-line-toggle"
+                          type="button"
+                          (click)="toggleAllCommentsCollapse(reply)"
+                          [attr.aria-expanded]="!areAllCommentsCollapsed(reply)"
+                          [attr.aria-label]="areAllCommentsCollapsed(reply) ? 'Expand all comments' : 'Collapse all comments'"
+                          title="Toggle comments"
+                        ></button>
+
+                        <ul class="comment-stack">
+                          <li class="comment-branch" *ngFor="let comment of reply.comments; let lastComment = last" [class.last-comment-branch]="lastComment">
+                            <button
+                              class="comment-branch-toggle"
+                              type="button"
+                              (click)="toggleCommentCollapse(reply.id, comment.id)"
+                              [attr.aria-expanded]="!isCommentCollapsed(reply.id, comment.id)"
+                              [attr.aria-label]="isCommentCollapsed(reply.id, comment.id) ? 'Expand comment' : 'Collapse comment'"
+                            >
+                              {{ isCommentCollapsed(reply.id, comment.id) ? '+' : '−' }}
+                            </button>
+
+                            <ng-container *ngIf="!isCommentCollapsed(reply.id, comment.id); else collapsedComment">
+                              <div class="comment">
+                                <button type="button" class="comment-author-link" (click)="openUserProfile(comment.authorId)">{{ getUser(comment.authorId)?.name }}:</button>
+                                <span
+                                  [class.state-box]="isCommentDeletedNotice(comment) || isCommentHiddenNotice(comment)"
+                                  [class.state-box--deleted]="isCommentDeletedNotice(comment)"
+                                  [class.state-box--hidden]="isCommentHiddenNotice(comment)"
+                                >
+                                  {{ displayCommentContent(comment) }}
+                                </span>
+                                <button *ngIf="canDeleteComment(comment)" type="button" class="delete-btn delete-btn--tiny" (click)="deleteComment(reply.id, comment.id)">Delete</button>
+                                <button *ngIf="!canDeleteComment(comment)" type="button" class="report-btn report-btn--tiny" (click)="reportComment(reply.id, comment.id)" [disabled]="!canReportComment(comment)">
+                                  {{ reportCommentButtonLabel(comment) }}
+                                </button>
+                                <button type="button" class="moderation-btn moderation-btn--review moderation-btn--tiny" *ngIf="canReviewComment(comment)" (click)="reviewReportedComment(reply.id, comment.id)">
+                                  Review
+                                </button>
+                              </div>
+                            </ng-container>
+
+                            <ng-template #collapsedComment>
+                              <div class="comment comment-collapsed" *ngIf="getUser(comment.authorId) as commentAuthor" [class.hidden-by-reports]="comment.isHiddenByReports">
+                                <button type="button" class="comment-author-link" (click)="openUserProfile(commentAuthor.id)">{{ commentAuthor.name }}:</button>
+                                <span
+                                  [class.state-box]="isCommentDeletedNotice(comment) || isCommentHiddenNotice(comment)"
+                                  [class.state-box--deleted]="isCommentDeletedNotice(comment)"
+                                  [class.state-box--hidden]="isCommentHiddenNotice(comment)"
+                                >
+                                  {{ displayCommentContent(comment) }}
+                                </span>
+                                <button *ngIf="canDeleteComment(comment)" type="button" class="delete-btn delete-btn--tiny" (click)="deleteComment(reply.id, comment.id)">Delete</button>
+                                <button *ngIf="!canDeleteComment(comment)" type="button" class="report-btn report-btn--tiny" (click)="reportComment(reply.id, comment.id)" [disabled]="!canReportComment(comment)">
+                                  {{ reportCommentButtonLabel(comment) }}
+                                </button>
+                                <button type="button" class="moderation-btn moderation-btn--review moderation-btn--tiny" *ngIf="canReviewComment(comment)" (click)="reviewReportedComment(reply.id, comment.id)">
+                                  Review
+                                </button>
+                              </div>
+                            </ng-template>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div class="comment-composer" *ngIf="!reply.isDeleted">
+                        <textarea [(ngModel)]="commentDraftByReply[reply.id]" placeholder="Add a comment" (input)="autoResizeCommentInput($event)"></textarea>
+                        <button (click)="addComment(reply.id)">Send</button>
+                      </div>
+                    </div>
+                  </ng-container>
+
+                  <ng-template #collapsedReply>
+                    <div class="collapsed-preview" *ngIf="getUser(reply.authorId) as author">
+                      <button type="button" class="collapsed-author-link" (click)="openUserProfile(author.id)">{{ author.name }}</button>
+                      <span>
+                        Reply hidden · {{ reply.comments.length }} comments · {{ replyScore(reply) }} score
+                      </span>
+                    </div>
+                  </ng-template>
+                </article>
+                </li>
+              </ul>
+            </ng-container>
+
+            <ng-template #noRepliesYet>
+              <div class="reply-empty-state">
+                <strong>No replies yet</strong>
+                <span>Be the first to share a practical solution for this thread.</span>
+                <button type="button" class="reply-empty-action" (click)="scrollToReplyComposer()">Write the first reply</button>
+              </div>
+            </ng-template>
+          </div>
+        </section>
+
+        <section id="reply-composer" class="reply-studio glass-card">
+          <h3>Write a reply</h3>
+          <form [formGroup]="replyForm" (ngSubmit)="submitReply()">
+            <textarea rows="4" formControlName="content" placeholder="Share a clear and practical response..."></textarea>
+            <small class="form-error" *ngIf="replyForm.controls.content.touched && replyForm.controls.content.invalid">
+              Reply must be at least 12 characters.
+            </small>
+            <small class="form-error" *ngIf="replySubmitError">{{ replySubmitError }}</small>
+            <button class="btn btn-primary" type="submit" [disabled]="submittingReply">
+              {{ submittingReply ? 'Posting...' : 'Post Reply' }}
+            </button>
+          </form>
+        </section>
+      </main>
+
+      <aside class="insight-column">
+        <section class="insight-card glass-card">
+          <h4>Thread Snapshot</h4>
+          <div class="snapshot-grid">
+            <article>
+              <strong>{{ visibleReplyCount }}</strong>
+              <span>Replies</span>
+            </article>
+            <article>
+              <strong>{{ totalThreadVotes }}</strong>
+              <span>Net Votes</span>
+            </article>
+            <article>
+              <strong>{{ bestAnswerCount }}</strong>
+              <span>Best Answers</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="insight-card glass-card">
+          <h4>Similar Questions</h4>
+          <div *ngIf="similarQuestions.length > 0; else noSimilarQuestions">
+            <button *ngFor="let item of similarQuestions" (click)="openSimilar(item.id)">
+              <span>{{ item.title }}</span>
+              <small>{{ item.replies.length }} replies • {{ item.views }} views</small>
+            </button>
+          </div>
+          <ng-template #noSimilarQuestions>
+            <p class="note">No similar threads yet. This topic is currently unique.</p>
+          </ng-template>
+        </section>
+
+        <section class="insight-card glass-card">
+          <h4>Quick Guidance</h4>
+          <p class="note">Keep replies concise and field-tested.</p>
+          <p class="note">Upvote clear and verified solutions.</p>
+        </section>
+
+        <section class="insight-card glass-card" *ngIf="recentDiscussions.length > 0">
+          <h4>Recent Discussions</h4>
+          <button *ngFor="let item of recentDiscussions" (click)="openSimilar(item.id)">
+            <span>{{ item.title }}</span>
+            <small>{{ item.replies.length }} replies • {{ item.views }} views</small>
+          </button>
+        </section>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<div class="report-modal-backdrop" *ngIf="showReportDialog" (click)="closeReportDialog()">
+  <div class="report-modal glass-card" (click)="$event.stopPropagation()">
+    <header class="report-modal__header">
+      <div>
+        <p class="report-modal__kicker">{{ reportDialogMode === 'review' ? 'Admin review' : 'Report content' }}</p>
+        <h3>{{ reportDialogMode === 'review' ? 'Review submitted reports' : 'Submit a detailed report' }}</h3>
+      </div>
+      <button type="button" class="report-modal__close" (click)="closeReportDialog()">Close</button>
+    </header>
+
+    <ng-container *ngIf="activeReportTarget as reportTarget">
+      <section class="report-modal__summary">
+        <span>Target: {{ reportTarget.label }}</span>
+        <span *ngIf="reportDialogMode === 'review'">Item #{{ reportTarget.targetId }}</span>
+      </section>
+
+      <section *ngIf="reportDialogMode === 'review'" class="report-case-summary">
+        <article>
+          <strong>{{ reportCaseSummary.totalReports }}</strong>
+          <span>Total reports</span>
+        </article>
+        <article>
+          <strong>{{ reportCaseSummary.uniqueReporters }}</strong>
+          <span>Unique reporters</span>
+        </article>
+        <article>
+          <strong>{{ reportCaseSummary.latestReason || 'No reason' }}</strong>
+          <span>Latest reason</span>
+        </article>
+        <article>
+          <strong>{{ reportCaseSummary.previousReasons.length }}</strong>
+          <span>Previous reasons</span>
+        </article>
+      </section>
+
+      <small class="form-error" *ngIf="reportDialogMode === 'review' && reportDialogError">{{ reportDialogError }}</small>
+
+      <section *ngIf="reportDialogMode === 'review' && reportCaseSummary.previousReasons.length > 0" class="report-case-history">
+        <h4>Previous reasons</h4>
+        <ul>
+          <li *ngFor="let reason of reportCaseSummary.previousReasons">{{ reason }}</li>
+        </ul>
+      </section>
+
+      <section *ngIf="reportDialogMode === 'submit'" class="report-modal__form">
+        <label for="report-reason">Reason</label>
+        <textarea id="report-reason" rows="4" [formControl]="reportForm.controls.reason" placeholder="Explain what is wrong and why the content should be reviewed."></textarea>
+        <small class="form-error" *ngIf="reportForm.controls.reason.touched && reportForm.controls.reason.invalid">
+          Report reason must be at least 12 characters.
+        </small>
+
+        <label for="report-screenshot">Screenshot attachment</label>
+        <input id="report-screenshot" type="file" accept="image/*" (change)="onReportScreenshotSelected($event)" />
+        <small class="report-hint">Optional. Attach a screenshot if it helps explain the issue.</small>
+
+        <div class="report-preview" *ngIf="reportScreenshotDataUrl">
+          <img [src]="reportScreenshotDataUrl" alt="Report screenshot preview" />
+          <span>{{ reportScreenshotName }}</span>
+        </div>
+
+        <small class="form-error" *ngIf="reportDialogError">{{ reportDialogError }}</small>
+
+        <div class="report-modal__actions">
+          <button type="button" class="report-modal__secondary" (click)="closeReportDialog()">Cancel</button>
+          <button type="button" class="report-modal__primary" (click)="submitReport()" [disabled]="reportDialogSubmitting">
+            {{ reportDialogSubmitting ? 'Submitting...' : 'Submit report' }}
+          </button>
+        </div>
+      </section>
+
+      <section *ngIf="reportDialogMode === 'review'" class="report-modal__review">
+        <div *ngIf="reportDialogLoading" class="report-modal__loading">Loading report details...</div>
+
+        <ng-container *ngIf="!reportDialogLoading">
+          <div class="report-detail-card" *ngFor="let report of reportDetails">
+            <div class="report-detail-card__head">
+              <strong>{{ report.reason }}</strong>
+              <span>{{ report.status }}</span>
+            </div>
+            <small>Reporter #{{ report.reporterId }} · {{ report.createdAt }}</small>
+            <img *ngIf="report.screenshotDataUrl" [src]="report.screenshotDataUrl" alt="Reported screenshot" />
+          </div>
+
+          <p *ngIf="reportDetails.length === 0" class="report-hint">No saved reports were found for this item.</p>
+
+          <div class="report-modal__actions">
+            <button *ngIf="reportTarget.targetType === 'POST'" type="button" class="moderation-btn moderation-btn--approve" (click)="approveReportedPost()">
+              Approve and restore
+            </button>
+            <button *ngIf="reportTarget.targetType === 'REPLY'" type="button" class="moderation-btn moderation-btn--approve" (click)="approveReportedReply(reportTarget.replyId ?? reportTarget.targetId)">
+              Approve and restore
+            </button>
+            <button *ngIf="reportTarget.targetType === 'COMMENT'" type="button" class="moderation-btn moderation-btn--approve" (click)="approveReportedComment(reportTarget.replyId ?? 0, reportTarget.commentId ?? reportTarget.targetId)">
+              Approve and restore
+            </button>
+            <button *ngIf="reportTarget.targetType === 'POST'" type="button" class="moderation-btn moderation-btn--reject" (click)="rejectReportedPost()">
+              Reject and delete
+            </button>
+            <button *ngIf="reportTarget.targetType === 'REPLY'" type="button" class="moderation-btn moderation-btn--reject" (click)="rejectReportedReply(reportTarget.replyId ?? reportTarget.targetId)">
+              Reject and delete
+            </button>
+            <button *ngIf="reportTarget.targetType === 'COMMENT'" type="button" class="moderation-btn moderation-btn--reject" (click)="rejectReportedComment(reportTarget.replyId ?? 0, reportTarget.commentId ?? reportTarget.targetId)">
+              Reject and delete
+            </button>
+          </div>
+        </ng-container>
+      </section>
+    </ng-container>
+  </div>
+</div>
+
+<div class="auth-prompt-backdrop" *ngIf="showAuthPrompt" (click)="closeAuthPrompt()">
+  <div class="auth-prompt-card" (click)="$event.stopPropagation()">
+    <h3>Sign in required</h3>
+    <p>You need to sign in to {{ authPromptAction }}.</p>
+    <div class="auth-prompt-actions">
+      <button type="button" class="auth-prompt-secondary" (click)="closeAuthPrompt()">Not now</button>
+      <button type="button" class="auth-prompt-primary" (click)="openAuth('signin')">Sign In</button>
+      <button type="button" class="auth-prompt-primary auth-prompt-signup" (click)="openAuth('signup')">Sign Up</button>
+    </div>
+  </div>
+</div>

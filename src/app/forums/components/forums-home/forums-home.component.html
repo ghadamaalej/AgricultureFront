@@ -1,0 +1,189 @@
+<app-navbar></app-navbar>
+
+<section class="forums-page">
+  <div class="container">
+    <header class="home-hero glass-card">
+      <div class="hero-copy">
+        <p class="hero-kicker">Community Exchange</p>
+        <h1>Ask once, grow smarter together.</h1>
+        <p>Practical field knowledge, documented solutions, and peer-reviewed replies in one place.</p>
+      </div>
+      <div class="hero-metrics">
+        <article>
+          <strong>{{ posts.length }}</strong>
+          <span>Open Threads</span>
+        </article>
+        <article>
+          <strong>{{ totalAnswers }}</strong>
+          <span>Total Replies</span>
+        </article>
+        <article>
+          <strong>{{ unansweredCount }}</strong>
+          <span>Need Answers</span>
+        </article>
+      </div>
+    </header>
+
+    <section class="moderation-notice" *ngIf="moderationNotice">
+      {{ moderationNotice }}
+    </section>
+
+    <div class="home-canvas">
+      <main class="river-column">
+        <section class="composer-trigger glass-card">
+          <div>
+            <h2>Question River</h2>
+            <p>Follow active questions and jump into discussions that match your expertise.</p>
+          </div>
+          <button class="ask-btn" (click)="toggleComposer()">
+            {{ showComposer ? 'Close Composer' : 'Ask a New Question' }}
+          </button>
+        </section>
+
+        <section class="composer-box glass-card" *ngIf="showComposer">
+          <h3>Create a New Thread</h3>
+          <form [formGroup]="postForm" (ngSubmit)="createPost()">
+            <label>Question title</label>
+            <input type="text" formControlName="title" placeholder="What challenge are you trying to solve?" />
+            <small class="form-error" *ngIf="postForm.controls.title.touched && postForm.controls.title.invalid">
+              Title must be at least 12 characters.
+            </small>
+
+            <label>Details</label>
+            <textarea rows="4" formControlName="content" placeholder="Include context, what you already tried, and expected result"></textarea>
+            <small class="form-error" *ngIf="postForm.controls.content.touched && postForm.controls.content.invalid">
+              Details must be at least 30 characters.
+            </small>
+
+            <label>Tags</label>
+            <input type="text" formControlName="tags" placeholder="Example: irrigation, hydroponic, disease" />
+            <small class="form-error" *ngIf="postForm.controls.tags.touched && postForm.controls.tags.invalid">
+              Add at least one tag.
+            </small>
+
+            <label class="ai-toggle" for="generateAiReply">
+              <input id="generateAiReply" type="checkbox" formControlName="generateAiReply" />
+              <span>
+                <strong>Generate AI Insight</strong>
+                <small>Adds a separate assistant insight card to this question. It will not appear as a normal reply.</small>
+              </span>
+            </label>
+
+            <small class="form-error" *ngIf="postSubmitError">{{ postSubmitError }}</small>
+            <button class="submit-btn" type="submit" [disabled]="creatingPost">
+              {{ creatingPost ? (postForm.value.generateAiReply !== false ? 'Publishing + generating AI...' : 'Publishing...') : 'Publish Question' }}
+            </button>
+          </form>
+        </section>
+
+        <section class="sort-controls">
+          <label for="sort-select">Sort by:</label>
+          <select id="sort-select" [(ngModel)]="sortBy" (change)="changeSortBy(sortBy)">
+            <option value="newest">Newest</option>
+            <option value="votes">Most Voted</option>
+            <option value="commented">Most Discussed</option>
+            <option *ngIf="isCurrentUserAdmin()" value="reported">Reported Posts</option>
+          </select>
+        </section>
+
+        <section class="river-list" *ngIf="posts.length > 0; else emptyState">
+          <article class="river-item glass-card" *ngFor="let post of posts" (click)="openPost(post.id)" [class.solved-thread]="isSolved(post)" [class.breathing-highlight]="isCurrentUserAdmin() && isThreadReported(post)">
+            <div class="item-signal">
+              <div>
+                <strong>{{ score(post) }}</strong>
+                <span>Votes</span>
+              </div>
+              <div>
+                <strong>{{ answerCount(post) }}</strong>
+                <span>Replies</span>
+              </div>
+            </div>
+
+            <div class="item-body">
+              <h3>{{ displayPostTitle(post) }}</h3>
+              <p
+                [class.state-box]="isPostDeletedNotice(post) || isPostHiddenNotice(post)"
+                [class.state-box--deleted]="isPostDeletedNotice(post)"
+                [class.state-box--hidden]="isPostHiddenNotice(post)"
+              >
+                {{ displayPostContent(post) }}
+              </p>
+              <div class="chip-row">
+                <span *ngFor="let tag of post.tags">{{ tag }}</span>
+              </div>
+            </div>
+
+            <div class="item-meta" *ngIf="getUser(post.authorId) as user">
+              <span class="solved-badge" *ngIf="isSolved(post)">Solved</span>
+              <span class="admin-hidden-badge" *ngIf="isCurrentUserAdmin() && isThreadReported(post)" [attr.title]="getThreadReportTooltip(post)">{{ getThreadReportLabel(post) }}</span>
+              <small>{{ post.views }} views</small>
+              <div class="user-line">
+                <img class="user-avatar user-avatar--sm" [src]="getAvatarUrl(user)" [alt]="user.name + ' profile image'" title="{{ getAvatarTitle(user) }}" />
+                <div>
+                  <button type="button" class="user-name-link" (click)="openUserProfile(user.id, $event)">{{ user.name }}</button>
+                  <span>{{ user.reputation }} rep</span>
+                </div>
+              </div>
+              <app-badge [reputation]="user.reputation"></app-badge>
+            </div>
+          </article>
+        </section>
+
+        <ng-template #emptyState>
+          <div class="empty-state glass-card">
+            <h3>No threads yet</h3>
+            <p>Start the first discussion and invite contributors to share practical solutions.</p>
+          </div>
+        </ng-template>
+      </main>
+
+      <aside class="context-column">
+        <section class="insight-card glass-card">
+          <h4><span class="section-icon" aria-hidden="true">❓</span>Top Questions</h4>
+          <button *ngFor="let post of topQuestions" (click)="openPost(post.id)">
+            <span>{{ post.title }}</span>
+            <small>{{ answerCount(post) }} replies • {{ post.views }} views</small>
+          </button>
+        </section>
+
+        <section class="insight-card glass-card">
+          <h4><span class="section-icon" aria-hidden="true">🕒</span>Recent Questions</h4>
+          <button *ngFor="let post of recentQuestions" (click)="openPost(post.id)">
+            <span>{{ post.title }}</span>
+            <small>{{ post.tags[0] || 'General' }}</small>
+          </button>
+        </section>
+
+        <section class="insight-card glass-card" *ngIf="hotTags.length > 0">
+          <h4><span class="section-icon" aria-hidden="true">🏷️</span>Hot Tags</h4>
+          <div class="tag-cloud">
+            <span *ngFor="let tag of hotTags">{{ tag }}</span>
+          </div>
+        </section>
+
+        <section class="insight-card glass-card" *ngIf="topContributors.length > 0">
+          <h4><span class="section-icon" aria-hidden="true">👥</span>Top Contributors</h4>
+          <article class="contributor" *ngFor="let member of topContributors">
+            <div>
+              <button type="button" class="contributor-name-link" (click)="openUserProfile(member.userId)">{{ member.name }}</button>
+              <small>{{ member.reputation }} rep</small>
+            </div>
+            <span>{{ member.contributions }}</span>
+          </article>
+        </section>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<div class="auth-prompt-backdrop" *ngIf="showAuthPrompt" (click)="closeAuthPrompt()">
+  <div class="auth-prompt-card" (click)="$event.stopPropagation()">
+    <h3>Sign in required</h3>
+    <p>You need to sign in to {{ authPromptAction }}.</p>
+    <div class="auth-prompt-actions">
+      <button type="button" class="auth-prompt-secondary" (click)="closeAuthPrompt()">Not now</button>
+      <button type="button" class="auth-prompt-primary" (click)="openAuth('signin')">Sign In</button>
+      <button type="button" class="auth-prompt-primary auth-prompt-signup" (click)="openAuth('signup')">Sign Up</button>
+    </div>
+  </div>
+</div>

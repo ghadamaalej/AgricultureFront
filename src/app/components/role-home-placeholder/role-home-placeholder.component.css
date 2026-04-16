@@ -1,0 +1,23 @@
+.role-home-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  background: #f7faf7;
+  color: #1f2d1f;
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+}
+
+.role-home-wrap h1 {
+  margin: 0;
+  font-size: 2rem;
+  text-transform: lowercase;
+}
+
+.todo-note {
+  margin-top: 14px;
+  color: #4f6b4f;
+}
