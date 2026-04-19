@@ -22,12 +22,14 @@ import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
 
+
 import { FarmerModule } from './farmer/farmer.module';
 import { AnimalsModule } from './animals/animals.module';
 
 import { LOCALE_ID } from '@angular/core';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { AppToastComponent } from './shared/components/app-toast/app-toast.component';
+import { ClaimsModule } from './claims/claims.module';
 
 registerLocaleData(localeFr);
 
@@ -60,6 +62,8 @@ registerLocaleData(localeFr);
     AppRoutingModule,
     FarmerModule,
     AnimalsModule,
+  
+  
   
     
   ],

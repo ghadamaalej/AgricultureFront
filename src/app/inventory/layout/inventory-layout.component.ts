@@ -9,7 +9,7 @@ import { AuthService } from '../../services/auth/auth.service';
   styleUrls: ['./inventory-layout.component.css']
 })
 export class InventoryLayoutComponent {
-  activeTab: 'inventory' | 'animals' = 'inventory';
+  activeTab: 'inventory' | 'animals' | 'statistics' = 'inventory';
 
   constructor(private auth: AuthService, private router: Router) {}
 
@@ -20,7 +20,7 @@ export class InventoryLayoutComponent {
     this.router.navigate(['/']);
   }
 
-  setTab(tab: 'inventory' | 'animals') {
+ setTab(tab: 'inventory' | 'animals' | 'statistics') {
     this.activeTab = tab;
   }
 }

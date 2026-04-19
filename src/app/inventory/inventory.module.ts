@@ -23,6 +23,7 @@ import { AnimalDetailComponent }     from './components/animal-detail/animal-det
 import { CampaignListComponent }     from './components/campaign-list/campaign-list.component';
 import { CampaignFormComponent }     from './components/campaign-form/campaign-form.component';
 import { VaccinationModalComponent } from './components/vaccination-modal/vaccination-modal.component';
+import { StatisticsDashboardComponent } from './components/statistics-dashboard/statistics-dashboard.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { VaccinationModalComponent } from './components/vaccination-modal/vaccin
     CampaignListComponent,
     CampaignFormComponent,
     VaccinationModalComponent,
+     StatisticsDashboardComponent,
   ],
   imports: [
     CommonModule,

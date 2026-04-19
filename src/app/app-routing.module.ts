@@ -9,6 +9,7 @@ import { AuthGuard }           from './services/auth/auth.guard';
 import { GuestGuard }          from './services/auth/guest.guard';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
 
+
 const routes: Routes = [
   { path: '',         component: HomeComponent,       pathMatch: 'full' },
   { path: 'auth',     component: AuthComponent, canActivate: [GuestGuard] },
@@ -24,6 +25,11 @@ const routes: Routes = [
     path: 'inventory',
     loadChildren: () => import('./inventory/inventory.module').then(m => m.InventoryModule)
   },
+ 
+{
+  path: 'claims',
+  loadChildren: () => import('./claims/claims.module').then(m => m.ClaimsModule)
+},
 
    
   {

@@ -5,7 +5,7 @@ import { ToastMessage, ToastService } from 'src/app/core/services/toast.service'
 @Component({
   selector: 'app-toast',
   templateUrl: './app-toast.component.html',
-  styleUrls: ['./-toast.componenappt.css']
+  styleUrls: ['./app-toast.component.css']
 })
 export class AppToastComponent {
   toasts$: Observable<ToastMessage[]>;

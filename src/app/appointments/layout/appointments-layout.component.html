@@ -23,6 +23,9 @@
         <button class="ni" [class.active]="view==='ai-chatbot'" (click)="setView('ai-chatbot')">
           <i class="fas fa-robot"></i><span>Chatbot veterinaire</span>
         </button>
+          <button class="ni" [class.active]="view==='ai-farmer'" (click)="setView('ai-farmer')">
+          <i class="fas fa-camera"></i><span>Chatbot Image IA</span>
+        </button>
       </ng-container>
 
       <!-- VÉTÉRINAIRE -->
@@ -41,6 +44,9 @@
         </button>
         <button class="ni" [class.active]="view==='messages'" (click)="setView('messages')">
           <i class="fas fa-comments"></i><span>Messagerie</span>
+        </button>
+           <button class="ni" [class.active]="view==='ai-vet'" (click)="setView('ai-vet')">
+          <i class="fas fa-microscope"></i><span>IA Clinique Image</span>
         </button>
       </ng-container>
 
@@ -69,6 +75,7 @@
       <app-chat            *ngIf="view==='messages'"></app-chat>
       <app-animal-diagnostic *ngIf="view==='diagnostic'"></app-animal-diagnostic>
       <app-vet-ai-chatbot  *ngIf="view==='ai-chatbot'"></app-vet-ai-chatbot>
+      <app-farmer-image-chatbot *ngIf="view==='ai-farmer'"></app-farmer-image-chatbot>
     </ng-container>
 
     <!-- VET views -->
@@ -78,6 +85,7 @@
       <app-health-records       *ngIf="view==='records'"></app-health-records>
       <app-vet-profile-form     *ngIf="view==='profile'"></app-vet-profile-form>
       <app-chat                 *ngIf="view==='messages'"></app-chat>
+        <app-vet-image-chatbot    *ngIf="view==='ai-vet'"></app-vet-image-chatbot>
     </ng-container>
   </main>
 </div>

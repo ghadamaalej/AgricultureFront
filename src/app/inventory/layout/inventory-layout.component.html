@@ -16,6 +16,10 @@
         <i class="fas fa-paw"></i>
         <span>Animals</span>
       </button>
+        <button class="nav-item" [class.active]="activeTab === 'statistics'" (click)="setTab('statistics')">
+        <i class="fas fa-chart-line"></i>
+        <span>Statistiques</span>
+      </button>
     </nav>
 
     <div class="sidebar-footer">

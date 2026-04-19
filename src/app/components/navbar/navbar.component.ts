@@ -25,6 +25,7 @@ export class NavbarComponent implements OnInit {
     { label: 'Marketplace', route: '/marketplace' },
     { label: 'Forum',       route: '/forum'       },
     { label: 'Loans',       route: '/loans'       },
+     { label: 'Reclamations', route: '/claims' },
     { label: 'Delivery',    route: '/delivery'    },
     { label: 'Events',      route: '/events'      },
     { label: 'Trainings',   route: '/formations'  },
@@ -66,7 +67,7 @@ export class NavbarComponent implements OnInit {
   }
 
   navigate(route: string) {
-   const protectedRoutes = ['/inventory', '/animals', '/appointments', '/help-request'];
+    const protectedRoutes = ['/inventory', '/animals', '/appointments', '/claims', '/help-request'];
     const needsAuth = protectedRoutes.includes(route);
 
     if (needsAuth && !this.authService.hasActiveSession()) {

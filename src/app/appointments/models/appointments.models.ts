@@ -207,4 +207,49 @@ export interface MedicalAssistantResponse {
   usedContext: string[];
 }
 
+export interface ImageDiseasePrediction {
+  rank: number;
+  disease: string;
+  probability: number;
+}
+
+export interface ImageChatbotResponse {
+  predictedLabel: string;
+  confidence: number;
+  predictions: ImageDiseasePrediction[];
+  analysis: string;
+  disclaimer: string;
+  trainingSummary: {
+    val_accuracy?: number;
+    class_names?: string[];
+    class_counts?: Record<string, number>;
+  }
+  
+  
+  ;
+
+  
+}
+
+
+export interface AvisResponse {
+  id: number;
+  note: number;
+  commentaire: string;
+  agriculteurId: number;
+  agriculteurNom: string;
+  agriculteurPrenom: string;
+  agriculteurPhoto: string | null;
+  veterinarianId: number;
+  createdAt: string;
+  reponseVet: ReponseAvisResponse | null;
+  commentaires: CommentaireAvisResponse[];
+  nbLikes: number;
+  likedByMe: boolean;
+}
+export interface ReponseAvisResponse { id: number; contenu: string; veterinarianId: number; vetNom: string; vetPrenom: string; vetPhoto: string | null; createdAt: string; }
+export interface CommentaireAvisResponse { id: number; contenu: string; agriculteurId: number; agriculteurNom: string; agriculteurPrenom: string; agriculteurPhoto: string | null; createdAt: string; }
+export interface VetRatingSummary { veterinarianId: number; moyenneNote: number; totalAvis: number; distribution: { [key: number]: number }; }
+export interface CreateAvisRequest { note: number; commentaire: string; veterinarianId: number; }
+
 

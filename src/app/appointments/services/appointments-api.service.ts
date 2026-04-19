@@ -10,7 +10,12 @@ import {
   HealthRecord, CreateHealthRecordRequest, UpdateHealthRecordRequest,
   ChatConversation, ChatMessage , AppointmentStats,
   DiagnosticRequest, DiagnosticResponse, DiagnosticChatResponse,
-  MedicalAssistantRequest, MedicalAssistantResponse,DiagnosticAssistantChatRequest
+  MedicalAssistantRequest, MedicalAssistantResponse,DiagnosticAssistantChatRequest, ImageChatbotResponse,
+  CreateAvisRequest,
+  AvisResponse,
+  VetRatingSummary,
+  CommentaireAvisResponse,
+  ReponseAvisResponse
 } from '../models/appointments.models';
 
 interface ApiResp<T> { message: string; data: T; }
@@ -286,5 +291,41 @@ chatWithIndependentAssistant(req: DiagnosticAssistantChatRequest): Observable<Di
     req,
     { headers: this.h() }
   ).pipe(map(r => r.data));
+}
+analyzeChatbotImage(file: File, question = '', audience = 'farmer'): Observable<ImageChatbotResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('question', question);
+  formData.append('audience', audience);
+
+  return this.http.post<ApiResp<ImageChatbotResponse>>(
+    `${this.inv}/diagnostic/image-chatbot`,
+    formData,
+    { headers: this.h() }
+  ).pipe(map(r => r.data));
+}
+// Avis
+getAvisByVet(vetId: number): Observable<AvisResponse[]> {
+  return this.http.get<ApiResp<AvisResponse[]>>(`${this.inv}/avis/vet/${vetId}`, { headers: this.h() })
+    .pipe(map(r => r.data || []));
+}
+getVetRatingSummary(vetId: number): Observable<VetRatingSummary> {
+  return this.http.get<ApiResp<VetRatingSummary>>(`${this.inv}/avis/vet/${vetId}/summary`, { headers: this.h() })
+    .pipe(map(r => r.data));
+}
+createAvis(req: CreateAvisRequest): Observable<AvisResponse> {
+  return this.http.post<ApiResp<AvisResponse>>(`${this.inv}/avis`, req, { headers: this.h() })
+    .pipe(map(r => r.data));
+}
+toggleLike(avisId: number): Observable<void> {
+  return this.http.post<void>(`${this.inv}/avis/${avisId}/like`, {}, { headers: this.h() });
+}
+addCommentaire(avisId: number, contenu: string): Observable<CommentaireAvisResponse> {
+  return this.http.post<ApiResp<CommentaireAvisResponse>>(`${this.inv}/avis/${avisId}/commentaires`,
+    { contenu }, { headers: this.h() }).pipe(map(r => r.data));
+}
+addReponseVet(avisId: number, contenu: string): Observable<ReponseAvisResponse> {
+  return this.http.post<ApiResp<ReponseAvisResponse>>(`${this.inv}/avis/${avisId}/reponse`,
+    { contenu }, { headers: this.h() }).pipe(map(r => r.data));
 }
 }
