@@ -73,48 +73,48 @@
   </div>
 
   <!-- ── STEP: Calendar ── -->
-<div class="cal-section" *ngIf="!loading && step==='calendar' && availabilities.length > 0">
-  <div class="cal-nav">
-    <button class="cal-btn" (click)="prevMonth()">
-      <i class="fas fa-chevron-left"></i>
-    </button>
-    <span class="cal-month-title">{{ monthLabel }}</span>
-    <button class="cal-btn" (click)="nextMonth()">
-      <i class="fas fa-chevron-right"></i>
-    </button>
-  </div>
+  <div class="cal-section" *ngIf="!loading && step==='calendar' && availabilities.length > 0">
+    <div class="cal-nav">
+      <button class="cal-btn" (click)="prevMonth()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <span class="cal-month-title">{{ monthLabel }}</span>
+      <button class="cal-btn" (click)="nextMonth()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
 
-  <div class="cal-wd-row">
-    <div class="cal-wd" *ngFor="let d of weekDays">{{ d }}</div>
-  </div>
+    <div class="cal-wd-row">
+      <div class="cal-wd" *ngFor="let d of weekDays">{{ d }}</div>
+    </div>
 
-  <div class="cal-days-grid">
-    <div *ngFor="let day of calDays"
-      class="cal-day-cell"
-      [class.cal-empty]="!day.date.getTime()"
-      [class.cal-avail]="day.valid && day.date.getTime()"
-      [class.cal-today]="day.date.getTime() && isToday(day.date)"
-      (click)="selectDay(day)">
-      <span class="cal-day-num" *ngIf="day.date.getTime()">{{ day.date.getDate() }}</span>
-      <span class="cal-dot" *ngIf="day.valid"></span>
+    <div class="cal-days-grid">
+      <div *ngFor="let day of calDays"
+        class="cal-day-cell"
+        [class.cal-empty]="!day.date.getTime()"
+        [class.cal-avail]="day.valid && day.date.getTime()"
+        [class.cal-today]="day.date.getTime() && isToday(day.date)"
+        (click)="selectDay(day)">
+        <span class="cal-day-num" *ngIf="day.date.getTime()">{{ day.date.getDate() }}</span>
+        <span class="cal-dot" *ngIf="day.valid"></span>
+      </div>
     </div>
-  </div>
 
-  <div class="cal-legend">
-    <div class="leg-item">
-      <span class="leg-swatch avail-sw"></span>
-      <span>Disponible</span>
-    </div>
-    <div class="leg-item">
-      <span class="leg-swatch none-sw"></span>
-      <span>Indisponible</span>
-    </div>
-    <div class="leg-item">
-      <span class="leg-swatch today-sw"></span>
-      <span>Aujourd'hui</span>
+    <div class="cal-legend">
+      <div class="leg-item">
+        <span class="leg-swatch avail-sw"></span>
+        <span>Disponible</span>
+      </div>
+      <div class="leg-item">
+        <span class="leg-swatch none-sw"></span>
+        <span>Indisponible</span>
+      </div>
+      <div class="leg-item">
+        <span class="leg-swatch today-sw"></span>
+        <span>Aujourd'hui</span>
+      </div>
     </div>
   </div>
-</div>
 
   <!-- ══════════════════════════════════════════════ -->
   <!-- STEP: Slots                                     -->
@@ -237,5 +237,11 @@
       <i class="fas fa-list-alt"></i> Voir mes rendez-vous
     </button>
   </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- AVIS & ÉVALUATIONS                             -->
+  <!-- Affiché sur la page profil pour l'agriculteur  -->
+  <!-- ══════════════════════════════════════════════ -->
+  <app-farmer-avis [vetId]="vet.id"></app-farmer-avis>
 
 </div>

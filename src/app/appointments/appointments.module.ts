@@ -22,6 +22,9 @@ import { AnimalDiagnosticComponent }     from './farmer/animal-diagnostic/animal
 import { VetAiChatbotComponent }         from './farmer/vet-ai-chatbot/vet-ai-chatbot.component';
 import { FarmerImageChatbotComponent }   from './farmer/farmer-image-chatbot/farmer-image-chatbot.component';
 import { VetImageChatbotComponent }      from './vet/vet-image-chatbot/vet-image-chatbot.component';
+import { FarmerAvisComponent }           from './farmer/farmer-avis/farmer-avis.component';
+import { VetAvisComponent }              from './vet/vet-avis/vet-avis.component';
+
 @NgModule({
   declarations: [
     AppointmentsLayoutComponent,
@@ -37,6 +40,9 @@ import { VetImageChatbotComponent }      from './vet/vet-image-chatbot/vet-image
     VetAiChatbotComponent,
     FarmerImageChatbotComponent,
     VetImageChatbotComponent,
+     FarmerAvisComponent,
+    VetAvisComponent,
+
   ],
   imports: [
     CommonModule,

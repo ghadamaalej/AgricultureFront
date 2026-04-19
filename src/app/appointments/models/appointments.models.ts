@@ -252,4 +252,59 @@ export interface CommentaireAvisResponse { id: number; contenu: string; agricult
 export interface VetRatingSummary { veterinarianId: number; moyenneNote: number; totalAvis: number; distribution: { [key: number]: number }; }
 export interface CreateAvisRequest { note: number; commentaire: string; veterinarianId: number; }
 
+/** Réponse officielle du vétérinaire à un avis */
+export interface ReponseAvisResponse {
+  id: number;
+  contenu: string;
+  veterinarianId: number;
+  vetNom: string;
+  vetPrenom: string;
+  vetPhoto: string | null;
+  createdAt: string;
+}
+
+/** Commentaire d'un agriculteur sur un avis */
+export interface CommentaireAvisResponse {
+  id: number;
+  contenu: string;
+  agriculteurId: number;
+  agriculteurNom: string;
+  agriculteurPrenom: string;
+  agriculteurPhoto: string | null;
+  createdAt: string;
+}
+
+/** Avis complet d'un agriculteur sur un vétérinaire */
+export interface AvisResponse {
+  id: number;
+  note: number;              // 1 à 5 étoiles
+  commentaire: string;
+  agriculteurId: number;
+  agriculteurNom: string;
+  agriculteurPrenom: string;
+  agriculteurPhoto: string | null;
+  veterinarianId: number;
+  createdAt: string;
+  reponseVet: ReponseAvisResponse | null;   // réponse du vétérinaire
+  commentaires: CommentaireAvisResponse[];  // réponses des autres agriculteurs
+  nbLikes: number;
+  likedByMe: boolean;   // true si l'utilisateur courant a liké cet avis
+}
+
+/** Résumé des évaluations d'un vétérinaire */
+export interface VetRatingSummary {
+  veterinarianId: number;
+  moyenneNote: number;      // ex: 4.3
+  totalAvis: number;
+  distribution: { [key: number]: number };  // { 1: 2, 2: 1, 3: 4, 4: 8, 5: 12 }
+}
+
+/** Requête de création d'un avis */
+export interface CreateAvisRequest {
+  note: number;         // 1-5
+  commentaire: string;
+  veterinarianId: number;
+}
+
+
 

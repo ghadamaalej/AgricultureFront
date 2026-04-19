@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { catchError, forkJoin, of, switchMap } from 'rxjs';
 import { Chart, ChartConfiguration } from 'chart.js';
 import 'chart.js/auto';
@@ -52,7 +52,10 @@ export class StatisticsDashboardComponent implements OnInit, AfterViewInit, OnDe
   private lineChart?: Chart;
   private viewReady = false;
 
-  constructor(private api: InventoryApiService) {}
+  constructor(
+    private api: InventoryApiService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadStats();
@@ -109,7 +112,10 @@ export class StatisticsDashboardComponent implements OnInit, AfterViewInit, OnDe
 
         this.computeStats();
         this.loading = false;
+        // Ensure canvases behind *ngIf are present before creating Chart.js instances.
+        this.cdr.detectChanges();
         this.tryRenderCharts();
+        setTimeout(() => this.tryRenderCharts(), 0);
       },
       error: (err) => {
         this.loading = false;

@@ -15,7 +15,7 @@ import {
   AvisResponse,
   VetRatingSummary,
   CommentaireAvisResponse,
-  ReponseAvisResponse
+  ReponseAvisResponse , 
 } from '../models/appointments.models';
 
 interface ApiResp<T> { message: string; data: T; }
@@ -304,28 +304,78 @@ analyzeChatbotImage(file: File, question = '', audience = 'farmer'): Observable<
     { headers: this.h() }
   ).pipe(map(r => r.data));
 }
-// Avis
-getAvisByVet(vetId: number): Observable<AvisResponse[]> {
-  return this.http.get<ApiResp<AvisResponse[]>>(`${this.inv}/avis/vet/${vetId}`, { headers: this.h() })
-    .pipe(map(r => r.data || []));
-}
-getVetRatingSummary(vetId: number): Observable<VetRatingSummary> {
-  return this.http.get<ApiResp<VetRatingSummary>>(`${this.inv}/avis/vet/${vetId}/summary`, { headers: this.h() })
-    .pipe(map(r => r.data));
-}
-createAvis(req: CreateAvisRequest): Observable<AvisResponse> {
-  return this.http.post<ApiResp<AvisResponse>>(`${this.inv}/avis`, req, { headers: this.h() })
-    .pipe(map(r => r.data));
-}
-toggleLike(avisId: number): Observable<void> {
-  return this.http.post<void>(`${this.inv}/avis/${avisId}/like`, {}, { headers: this.h() });
-}
-addCommentaire(avisId: number, contenu: string): Observable<CommentaireAvisResponse> {
-  return this.http.post<ApiResp<CommentaireAvisResponse>>(`${this.inv}/avis/${avisId}/commentaires`,
-    { contenu }, { headers: this.h() }).pipe(map(r => r.data));
-}
-addReponseVet(avisId: number, contenu: string): Observable<ReponseAvisResponse> {
-  return this.http.post<ApiResp<ReponseAvisResponse>>(`${this.inv}/avis/${avisId}/reponse`,
-    { contenu }, { headers: this.h() }).pipe(map(r => r.data));
-}
+ /**
+   * Récupère la liste des avis d'un vétérinaire.
+   * Les données likedByMe sont calculées côté backend selon l'utilisateur JWT.
+   */
+  getAvisByVet(vetId: number): Observable<AvisResponse[]> {
+    return this.http.get<ApiResp<AvisResponse[]>>(
+      `${this.inv}/avis/vet/${vetId}`,
+      { headers: this.h() }
+    ).pipe(map(r => (r.data || []).map((a: any) => ({
+      ...a,
+      createdAt: normDate(a.createdAt),
+      reponseVet: a.reponseVet ? { ...a.reponseVet, createdAt: normDate(a.reponseVet.createdAt) } : null,
+      commentaires: (a.commentaires || []).map((c: any) => ({ ...c, createdAt: normDate(c.createdAt) }))
+    }))));
+  }
+
+  /**
+   * Récupère le résumé de notation d'un vétérinaire
+   * (moyenne étoiles, total avis, distribution par note).
+   */
+  getVetRatingSummary(vetId: number): Observable<VetRatingSummary> {
+    return this.http.get<ApiResp<VetRatingSummary>>(
+      `${this.inv}/avis/vet/${vetId}/summary`,
+      { headers: this.h() }
+    ).pipe(map(r => r.data));
+  }
+
+  /**
+   * Crée un nouvel avis (agriculteur → vétérinaire).
+   * Un agriculteur ne peut donner qu'un seul avis par vétérinaire.
+   */
+  createAvis(req: CreateAvisRequest): Observable<AvisResponse> {
+    return this.http.post<ApiResp<AvisResponse>>(
+      `${this.inv}/avis`,
+      req,
+      { headers: this.h() }
+    ).pipe(map(r => ({ ...r.data, createdAt: normDate(r.data.createdAt) } as AvisResponse)));
+  }
+
+  /**
+   * Toggle le like d'un agriculteur sur un avis.
+   * Si déjà liké → retire le like. Sinon → ajoute le like.
+   */
+  toggleLike(avisId: number): Observable<void> {
+    return this.http.post<void>(
+      `${this.inv}/avis/${avisId}/like`,
+      {},
+      { headers: this.h() }
+    );
+  }
+
+  /**
+   * Ajoute un commentaire (réponse d'un agriculteur) sur un avis.
+   */
+  addCommentaire(avisId: number, contenu: string): Observable<CommentaireAvisResponse> {
+    return this.http.post<ApiResp<CommentaireAvisResponse>>(
+      `${this.inv}/avis/${avisId}/commentaires`,
+      { contenu },
+      { headers: this.h() }
+    ).pipe(map(r => ({ ...r.data, createdAt: normDate(r.data.createdAt) } as CommentaireAvisResponse)));
+  }
+
+  /**
+   * Ajoute la réponse officielle du vétérinaire à un avis.
+   * Un vétérinaire ne peut répondre qu'une seule fois par avis.
+   */
+  addReponseVet(avisId: number, contenu: string): Observable<ReponseAvisResponse> {
+    return this.http.post<ApiResp<ReponseAvisResponse>>(
+      `${this.inv}/avis/${avisId}/reponse`,
+      { contenu },
+      { headers: this.h() }
+    ).pipe(map(r => ({ ...r.data, createdAt: normDate(r.data.createdAt) } as ReponseAvisResponse)));
+  }
+
 }

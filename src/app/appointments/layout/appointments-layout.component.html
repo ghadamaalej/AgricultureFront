@@ -48,6 +48,10 @@
            <button class="ni" [class.active]="view==='ai-vet'" (click)="setView('ai-vet')">
           <i class="fas fa-microscope"></i><span>IA Clinique Image</span>
         </button>
+         <button class="ni" [class.active]="view==='avis'" (click)="setView('avis')">
+          <i class="fas fa-star"></i><span>Mes avis</span>
+        </button>
+
       </ng-container>
 
       <button class="ni back-btn" (click)="goBack()">
@@ -86,6 +90,7 @@
       <app-vet-profile-form     *ngIf="view==='profile'"></app-vet-profile-form>
       <app-chat                 *ngIf="view==='messages'"></app-chat>
         <app-vet-image-chatbot    *ngIf="view==='ai-vet'"></app-vet-image-chatbot>
+        <app-vet-avis             *ngIf="view==='avis'"></app-vet-avis>
     </ng-container>
   </main>
 </div>

@@ -1,0 +1,200 @@
+<div class="vet-avis-page">
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE HEADER                                            -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="page-header">
+    <div>
+      <h1 class="pt"><i class="fas fa-star"></i> Mes avis</h1>
+      <p class="ps">Consultez et répondez aux évaluations de vos patients</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- RÉSUMÉ GLOBAL                                          -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="summary-card" *ngIf="summary && summary.totalAvis > 0 && !loading">
+
+    <div class="summary-score">
+      <span class="score-number">{{ averageDisplay }}</span>
+      <div class="score-stars">
+        <i *ngFor="let filled of starsArray(summary.moyenneNote)"
+           [class]="filled ? 'fas fa-star star-gold' : 'fas fa-star star-empty'"></i>
+      </div>
+      <span class="score-label">Moyenne générale</span>
+      <span class="score-total">sur {{ summary.totalAvis }} avis</span>
+    </div>
+
+    <div class="summary-dist">
+      <div class="dist-row" *ngFor="let s of [5,4,3,2,1]">
+        <span class="dist-label">
+          <i class="fas fa-star star-gold-sm"></i> {{ s }}
+        </span>
+        <div class="dist-bar-wrap">
+          <div class="dist-bar" [style.width.%]="distributionWidth(s)"></div>
+        </div>
+        <span class="dist-count">{{ distributionCount(s) }}</span>
+      </div>
+    </div>
+
+    <div class="summary-stats">
+      <div class="sstat" *ngFor="let s of [5,4,3,2,1]">
+        <span class="sstat-val">{{ countByNote(s) }}</span>
+        <div class="sstat-stars">
+          <i *ngFor="let i of [1,2,3,4,5]" [class]="i<=s ? 'fas fa-star star-gold-sm' : 'fas fa-star star-empty-sm'"></i>
+        </div>
+        <span class="sstat-lbl">{{ noteLabel(s) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-avis-summary" *ngIf="!loading && (!summary || summary.totalAvis === 0) && !error">
+    <div class="empty-icon"><i class="fas fa-star"></i></div>
+    <h3>Aucun avis pour l'instant</h3>
+    <p>Les agriculteurs pourront vous évaluer après leurs consultations.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- FILTRES PAR NOTE                                       -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="filter-bar" *ngIf="!loading && avis.length > 0">
+    <button class="filter-chip" [class.active]="filterNote === null" (click)="setFilter(null)">
+      Tous <span class="chip-badge">{{ avis.length }}</span>
+    </button>
+    <button *ngFor="let s of [5,4,3,2,1]"
+      class="filter-chip"
+      [class.active]="filterNote === s"
+      (click)="setFilter(s)">
+      <i class="fas fa-star chip-star"></i> {{ s }}
+      <span class="chip-badge">{{ countByNote(s) }}</span>
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- CHARGEMENT / ERREUR                                    -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="loading-box" *ngIf="loading">
+    <div class="loader"></div> Chargement des avis…
+  </div>
+  <div class="err-box" *ngIf="error && !loading">
+    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- LISTE DES AVIS                                         -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="avis-list" *ngIf="!loading && filteredAvis.length > 0">
+    <div class="avis-card" *ngFor="let a of filteredAvis; trackBy: trackById"
+         [class.has-reply]="!!a.reponseVet">
+
+      <!-- En-tête -->
+      <div class="card-header">
+        <div class="farmer-info">
+          <div class="farmer-av">
+            <img *ngIf="a.agriculteurPhoto" [src]="a.agriculteurPhoto" alt="">
+            <div *ngIf="!a.agriculteurPhoto" class="farmer-av-ph">
+              {{ initials(a.agriculteurNom, a.agriculteurPrenom) }}
+            </div>
+          </div>
+          <div class="farmer-meta">
+            <span class="farmer-name">{{ a.agriculteurPrenom }} {{ a.agriculteurNom }}</span>
+            <span class="avis-date">
+              <i class="far fa-calendar-alt"></i> {{ formatDate(a.createdAt) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-note">
+          <div class="note-stars">
+            <i *ngFor="let filled of starsArray(a.note)"
+               [class]="filled ? 'fas fa-star star-gold-sm' : 'fas fa-star star-empty-sm'">
+            </i>
+          </div>
+          <span class="note-num">{{ a.note }}/5</span>
+          <span class="note-badge" [ngClass]="'badge-'+a.note">{{ noteLabel(a.note) }}</span>
+        </div>
+      </div>
+
+      <!-- Commentaire -->
+      <p class="avis-comment">{{ a.commentaire }}</p>
+
+      <!-- Stats réactions -->
+      <div class="avis-meta">
+        <span class="meta-item" *ngIf="a.nbLikes > 0">
+          <i class="fas fa-thumbs-up"></i> {{ a.nbLikes }} j'aime
+        </span>
+        <span class="meta-item" *ngIf="a.commentaires.length > 0">
+          <i class="fas fa-comments"></i> {{ a.commentaires.length }} commentaire(s)
+        </span>
+      </div>
+
+      <!-- Commentaires des agriculteurs (résumé) -->
+      <div class="farmer-comments" *ngIf="a.commentaires.length > 0">
+        <div class="fc-item" *ngFor="let c of a.commentaires">
+          <div class="fc-av">
+            <img *ngIf="c.agriculteurPhoto" [src]="c.agriculteurPhoto" alt="">
+            <div *ngIf="!c.agriculteurPhoto" class="fc-av-ph">
+              {{ initials(c.agriculteurNom, c.agriculteurPrenom) }}
+            </div>
+          </div>
+          <div class="fc-body">
+            <span class="fc-name">{{ c.agriculteurPrenom }} {{ c.agriculteurNom }}</span>
+            <p class="fc-text">{{ c.contenu }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Réponse déjà publiée -->
+      <div class="my-reply" *ngIf="a.reponseVet">
+        <div class="my-reply-header">
+          <i class="fas fa-reply"></i>
+          <span>Votre réponse</span>
+          <span class="my-reply-date">{{ formatDate(a.reponseVet.createdAt) }}</span>
+        </div>
+        <p class="my-reply-text">{{ a.reponseVet.contenu }}</p>
+      </div>
+
+      <!-- Bouton & formulaire de réponse -->
+      <div class="reply-section" *ngIf="!a.reponseVet">
+        <button
+          class="btn-reply"
+          (click)="toggleReplyInput(a.id)"
+          *ngIf="!showReplyInput[a.id]">
+          <i class="fas fa-reply"></i> Répondre à cet avis
+        </button>
+
+        <div class="reply-form" *ngIf="showReplyInput[a.id]">
+          <textarea
+            [(ngModel)]="replyInputs[a.id]"
+            rows="3"
+            placeholder="Rédigez votre réponse professionnelle…"
+            class="reply-ta"
+            maxlength="800">
+          </textarea>
+          <div class="reply-err" *ngIf="replyError[a.id]">
+            <i class="fas fa-exclamation-circle"></i> {{ replyError[a.id] }}
+          </div>
+          <div class="reply-actions">
+            <button class="btn-cancel-reply" (click)="toggleReplyInput(a.id)" [disabled]="submittingReply[a.id]">
+              Annuler
+            </button>
+            <button class="btn-send-reply" (click)="submitReply(a)" [disabled]="submittingReply[a.id] || !replyInputs[a.id]?.trim()">
+              <i class="fas fa-spinner fa-spin" *ngIf="submittingReply[a.id]"></i>
+              <i class="fas fa-paper-plane"    *ngIf="!submittingReply[a.id]"></i>
+              Publier la réponse
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Aucun résultat après filtre -->
+  <div class="empty-filter" *ngIf="!loading && filteredAvis.length === 0 && avis.length > 0">
+    <i class="fas fa-filter"></i>
+    <p>Aucun avis avec {{ filterNote }} étoile{{ filterNote && filterNote > 1 ? 's' : '' }}.</p>
+    <button class="btn-reset" (click)="setFilter(null)">Afficher tous les avis</button>
+  </div>
+
+</div>
