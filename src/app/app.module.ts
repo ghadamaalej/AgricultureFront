@@ -21,6 +21,7 @@ import { BlogDetailComponent }   from './components/blog-detail/blog-detail.comp
 import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
+import { CommonModule } from '@angular/common';
 
 
 import { FarmerModule } from './farmer/farmer.module';
@@ -56,7 +57,9 @@ registerLocaleData(localeFr);
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+     CommonModule,
     FormsModule,
+   
     ReactiveFormsModule,
     HttpClientModule,
     AppRoutingModule,

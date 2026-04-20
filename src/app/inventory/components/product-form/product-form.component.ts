@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { InventoryApiService } from '../../services/inventory-api.service';
 import { InventoryProduct, ProductCategory, CreateProductRequest, UpdateProductRequest } from '../../models/inventory.models';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-product-form',
@@ -23,7 +24,7 @@ export class ProductFormComponent implements OnInit {
     VACCIN: 'Vaccin', MEDICAMENT: 'Médicament', ALIMENT: 'Aliment', RECOLTE: 'Récolte', AUTRE: 'Autre'
   };
 
-  constructor(private api: InventoryApiService) {}
+  constructor(private api: InventoryApiService, private toast: ToastService) {}
 
   ngOnInit() {
     this.form = new FormGroup({
@@ -68,11 +69,16 @@ export class ProductFormComponent implements OnInit {
     obs.subscribe({
       next: () => {
         this.loading = false;
+        this.toast.success(this.isEdit
+          ? `Produit "${val.nom}" modifié avec succès !`
+          : `Produit "${val.nom}" ajouté avec succès !`
+        );
         this.saved.emit();
       },
       error: (e) => {
         this.loading = false;
         this.error = e.error?.message || 'Erreur';
+        this.toast.error(this.error);
       }
     });
   }

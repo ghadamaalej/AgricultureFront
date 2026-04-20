@@ -23,7 +23,7 @@ export class ProductListComponent implements OnInit {
   showAdjustModal = false;
   editingProduct: InventoryProduct | null = null;
 
-  constructor(private api: InventoryApiService , private toast: ToastService) {}
+  constructor(private api: InventoryApiService, private toast: ToastService) {}
 
   ngOnInit() { this.load(); }
 
@@ -53,7 +53,15 @@ export class ProductListComponent implements OnInit {
 
   delete(p: InventoryProduct) {
     if (!confirm(`Supprimer "${p.nom}" ?`)) return;
-    this.api.deleteProduct(p.id).subscribe({ next: () => this.load() });
+    this.api.deleteProduct(p.id).subscribe({
+      next: () => {
+        this.toast.success(`Produit "${p.nom}" supprimé avec succès !`);
+        this.load();
+      },
+      error: (e) => {
+        this.toast.error(e.error?.message || 'Erreur lors de la suppression du produit.');
+      }
+    });
   }
 
   openBatches(p: InventoryProduct) {
@@ -73,7 +81,7 @@ export class ProductListComponent implements OnInit {
   openConsume(p: InventoryProduct) { this.selectedProduct = { ...p }; this.showConsumeModal = true; }
   openAdjust(p: InventoryProduct)  { this.selectedProduct = { ...p }; this.showAdjustModal = true; }
 
-  onConsumed()  {
+  onConsumed() {
     this.showConsumeModal = false;
     this.load();
     if (this.view === 'batches' && this.selectedProduct) {
@@ -81,7 +89,7 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  onAdjusted()  {
+  onAdjusted() {
     this.showAdjustModal = false;
     this.load();
     if (this.view === 'batches' && this.selectedProduct) {
@@ -89,9 +97,7 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  onStockAdded() {
-    this.load();
-  }
+  onStockAdded() { this.load(); }
 
   isLowStock(p: InventoryProduct) { return p.currentQuantity <= p.minThreshold; }
 
@@ -102,8 +108,8 @@ export class ProductListComponent implements OnInit {
     };
     return map[c] || c;
   }
-get currentStock(): number {
-  return this.batches.reduce((sum, batch) => sum + Number(batch.quantity || 0), 0);
-}
 
+  get currentStock(): number {
+    return this.batches.reduce((sum, batch) => sum + Number(batch.quantity || 0), 0);
+  }
 }

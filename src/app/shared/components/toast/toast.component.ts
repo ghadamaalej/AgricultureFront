@@ -3,7 +3,7 @@ import { Subscription, timer } from 'rxjs';
 import { ToastMessage, ToastService } from '../../services/toast.service';
 
 @Component({
-  selector: 'app-toast',
+  selector: 'app-toast-legacy',
   templateUrl: './toast.component.html',
   styleUrls: ['./toast.component.css']
 })
@@ -30,9 +30,7 @@ export class ToastComponent implements OnInit, OnDestroy {
 
   close(): void {
     this.visible = false;
-    setTimeout(() => {
-      this.message = null;
-    }, 200);
+    setTimeout(() => { this.message = null; }, 200);
   }
 
   ngOnDestroy(): void {
