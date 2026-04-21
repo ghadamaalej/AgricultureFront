@@ -163,9 +163,9 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
       this.mapService.addMarker(
         delivery.pickupLat,
         delivery.pickupLng,
-        `<strong>Départ:</strong> ${delivery.pickup}`,
+        `<strong>Departure:</strong> ${delivery.pickup}`,
         {
-          title: 'Départ',
+          title: 'Departure',
           zIndexOffset: 1000,
           icon: this.mapService.getPointIcon('start')
         }
@@ -251,8 +251,8 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
     if (!this.canManageDelivery(delivery)) {
       this.pushNotification(
         'error',
-        'Modification indisponible',
-        'Une demande déjà acceptée par un livreur ne peut plus être modifiée.'
+        'Edit unavailable',
+        'A request already accepted by a transporter can no longer be edited.'
       );
       return;
     }
@@ -267,8 +267,8 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
     if (!this.canManageDelivery(delivery)) {
       this.pushNotification(
         'error',
-        'Suppression indisponible',
-        'Une demande déjà acceptée par un livreur ne peut plus être supprimée.'
+        'Deletion unavailable',
+        'A request already accepted by a transporter can no longer be deleted.'
       );
       return;
     }
@@ -298,14 +298,14 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
     if (delivery?.farmerName) {
       return delivery.farmerName;
     }
-    return 'Agriculteur';
+    return 'Farmer';
   }
 
   getTransporterDisplayName(delivery?: TrackingItem): string {
     if (delivery?.transporterName) {
       return delivery.transporterName;
     }
-    return 'Transporteur non assigne';
+    return 'Transporter not assigned';
   }
 
   canOpenTransporterProfile(delivery?: TrackingItem): boolean {
@@ -396,11 +396,11 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
     this.requestService.evaluerTransporteur(delivery.id, this.selectedRating, this.currentUserId).subscribe((updated) => {
       this.ratingInProgress = false;
       if (!updated) {
-        this.pushNotification('error', 'Notation impossible', 'La note n a pas pu etre enregistree.');
+        this.pushNotification('error', 'Rating not possible', 'The rating could not be saved.');
         return;
       }
 
-      this.pushNotification('success', 'Merci pour votre note', `Vous avez note ce livreur ${this.selectedRating}/5.`);
+      this.pushNotification('success', 'Thank you for your rating', `You rated this transporter ${this.selectedRating}/5.`);
       this.reloadDeliveries();
     });
   }
@@ -415,11 +415,11 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
     this.requestService.ignorerNotationTransporteur(delivery.id, this.currentUserId).subscribe((updated) => {
       this.ratingInProgress = false;
       if (!updated) {
-        this.pushNotification('error', 'Action impossible', 'Impossible d ignorer cette interface pour le moment.');
+        this.pushNotification('error', 'Action not possible', 'Unable to ignore this prompt at the moment.');
         return;
       }
 
-      this.pushNotification('info', 'Notation ignoree', 'Vous pouvez continuer sans noter ce livreur.');
+      this.pushNotification('info', 'Rating skipped', 'You can continue without rating this transporter.');
       this.reloadDeliveries();
     });
   }
@@ -449,8 +449,8 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
       if (!deleted) {
         this.pushNotification(
           'error',
-          'Suppression impossible',
-          'La demande a peut-être déjà été acceptée par un livreur. La liste a été rechargée.'
+          'Deletion not possible',
+          'The request may have already been accepted by a transporter. The list has been reloaded.'
         );
         this.reloadDeliveries();
         return;

@@ -1,7 +1,7 @@
 <div class="delivery-page">
   <div class="page-title">
-    <h2><i class="fas fa-calendar-days"></i> Calendrier des livraisons</h2>
-    <p>Vue jour par jour de vos livraisons acceptees/en cours/livrees.</p>
+    <h2><i class="fas fa-calendar-days"></i> Delivery calendar</h2>
+    <p>Day-by-day view of your accepted/in-progress/delivered deliveries.</p>
   </div>
 
   <div class="calendar-list" *ngIf="days.length; else emptyState">
@@ -25,8 +25,7 @@
   <ng-template #emptyState>
     <div class="empty-box">
       <i class="fas fa-calendar-xmark"></i>
-      <p>Aucune livraison planifiee.</p>
+      <p>No scheduled delivery.</p>
     </div>
   </ng-template>
 </div>
-

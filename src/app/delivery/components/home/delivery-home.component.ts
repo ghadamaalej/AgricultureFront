@@ -29,9 +29,9 @@ export class DeliveryHomeComponent implements OnInit {
   private ignoredRequestIds = new Set<string>();
 
   stats = [
-    { value: '0', label: 'Total des demandes', icon: 'fas fa-inbox', accent: '#4caf50' },
-    { value: '0', label: 'Longue distance', icon: 'fas fa-road', accent: '#00acc1' },
-    { value: '0', label: 'Livraisons regroupées', icon: 'fas fa-layer-group', accent: '#ff8f00' }
+    { value: '0', label: 'Total requests', icon: 'fas fa-inbox', accent: '#4caf50' },
+    { value: '0', label: 'Long distance', icon: 'fas fa-road', accent: '#00acc1' },
+    { value: '0', label: 'Grouped deliveries', icon: 'fas fa-layer-group', accent: '#ff8f00' }
   ];
 
   lastDeliveries: DeliveryPreview[] = [];
@@ -60,9 +60,9 @@ export class DeliveryHomeComponent implements OnInit {
     const grouped = mine.filter((r) => Boolean(r.grouped)).length;
 
     this.stats = [
-      { value: String(mine.length), label: 'Total des demandes', icon: 'fas fa-inbox', accent: '#4caf50' },
-      { value: String(longDistance), label: 'Longue distance', icon: 'fas fa-road', accent: '#00acc1' },
-      { value: String(grouped), label: 'Livraisons regroupées', icon: 'fas fa-layer-group', accent: '#ff8f00' }
+      { value: String(mine.length), label: 'Total requests', icon: 'fas fa-inbox', accent: '#4caf50' },
+      { value: String(longDistance), label: 'Long distance', icon: 'fas fa-road', accent: '#00acc1' },
+      { value: String(grouped), label: 'Grouped deliveries', icon: 'fas fa-layer-group', accent: '#ff8f00' }
     ];
 
     this.lastDeliveries = mine
@@ -82,7 +82,7 @@ export class DeliveryHomeComponent implements OnInit {
   private toRelativeLabel(isoDate: string): string {
     const created = new Date(isoDate);
     if (Number.isNaN(created.getTime())) {
-      return 'Date inconnue';
+      return 'Unknown date';
     }
 
     const now = new Date();
@@ -90,13 +90,13 @@ export class DeliveryHomeComponent implements OnInit {
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffDays <= 0) {
-      return "Aujourd'hui";
+      return 'Today';
     }
     if (diffDays === 1) {
-      return 'Hier';
+      return 'Yesterday';
     }
     if (diffDays < 7) {
-      return `Il y a ${diffDays} jours`;
+      return `${diffDays} days ago`;
     }
 
     return created.toLocaleDateString('fr-FR');
@@ -129,12 +129,12 @@ export class DeliveryHomeComponent implements OnInit {
     this.requestService.acceptByCurrentTransporter(request.id).subscribe((result) => {
       this.acceptingRequestIds.delete(request.id);
       if (!result.success) {
-        this.pushNotification(result.errorMessage || `Impossible de prendre en charge ${request.reference}.`);
+        this.pushNotification(result.errorMessage || `Unable to take over ${request.reference}.`);
         return;
       }
 
       this.reloadPendingRequests();
-      this.pushNotification(`Demande ${request.reference} prise en charge (Acceptee).`);
+      this.pushNotification(`Request ${request.reference} taken over (Accepted).`);
     });
   }
 
@@ -152,7 +152,7 @@ export class DeliveryHomeComponent implements OnInit {
     this.ignoredRequestIds.add(request.id);
     this.persistIgnoredRequests();
     this.reloadPendingRequests();
-    this.pushNotification(`Demande ${request.reference} ignorée pour votre compte.`);
+    this.pushNotification(`Request ${request.reference} ignored for your account.`);
   }
 
   private reloadPendingRequests(): void {

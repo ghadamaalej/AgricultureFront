@@ -39,7 +39,7 @@ export class DeliveryActiveRouteComponent implements OnInit, OnDestroy {
     this.route.paramMap.subscribe((params) => {
       const requestId = params.get('id') || '';
       if (!requestId) {
-        this.error = 'Livraison introuvable.';
+        this.error = 'Delivery not found.';
         return;
       }
       this.loadRequest(requestId);
@@ -53,8 +53,8 @@ export class DeliveryActiveRouteComponent implements OnInit, OnDestroy {
 
   get phaseTitle(): string {
     return this.phase === 'pickup'
-      ? 'Navigation vers le point de collecte'
-      : 'Navigation vers la destination finale';
+      ? 'Navigation to pickup point'
+      : 'Navigation to final destination';
   }
 
   get phaseSubtitle(): string {
@@ -62,8 +62,8 @@ export class DeliveryActiveRouteComponent implements OnInit, OnDestroy {
       return '';
     }
     return this.phase === 'pickup'
-      ? `Suivez la route pour recuperer la livraison a ${this.request.pickupLabel}.`
-      : `Livraison chargee. Suivez l itineraire vers ${this.request.dropoffLabel}.`;
+      ? `Follow the route to pick up the delivery at ${this.request.pickupLabel}.`
+      : `Package loaded. Follow the route to ${this.request.dropoffLabel}.`;
   }
 
   goBack(): void {
@@ -81,7 +81,7 @@ export class DeliveryActiveRouteComponent implements OnInit, OnDestroy {
 
     this.requestService.updateStatusApi(this.request.id, 'En cours').subscribe(() => {
       this.switchingPhase = false;
-      this.notification = 'Collecte confirmee. Itineraire mis a jour vers la destination.';
+      this.notification = 'Pickup confirmed. Route updated towards the destination.';
       window.setTimeout(() => (this.notification = null), 2600);
       this.renderRoute();
     });
@@ -97,7 +97,7 @@ export class DeliveryActiveRouteComponent implements OnInit, OnDestroy {
     this.requestService.updateStatusApi(requestId, 'Livrée').subscribe((updated) => {
       this.finishing = false;
       if (!updated) {
-        this.notification = 'Impossible de finaliser cette livraison pour le moment.';
+        this.notification = 'Unable to finalize this delivery at the moment.';
         window.setTimeout(() => (this.notification = null), 3000);
         return;
       }
@@ -117,7 +117,7 @@ export class DeliveryActiveRouteComponent implements OnInit, OnDestroy {
       if (!found) {
         this.request = null;
         this.loadingRoute = false;
-        this.error = 'Livraison introuvable.';
+        this.error = 'Delivery not found.';
         return;
       }
 
@@ -226,16 +226,16 @@ export class DeliveryActiveRouteComponent implements OnInit, OnDestroy {
     const points = [this.currentPosition, destination];
 
     this.mapService.clear();
-    this.mapService.addMarker(this.currentPosition.lat, this.currentPosition.lng, '<strong>Position actuelle</strong>', {
-      title: 'Position actuelle',
+    this.mapService.addMarker(this.currentPosition.lat, this.currentPosition.lng, '<strong>Current position</strong>', {
+      title: 'Current position',
       icon: this.mapService.getPointIcon('start')
     });
 
     this.mapService.addMarker(destination.lat, destination.lng, this.phase === 'pickup'
-      ? `<strong>Collecte:</strong> ${this.request.pickupLabel}`
+      ? `<strong>Pickup:</strong> ${this.request.pickupLabel}`
       : `<strong>Destination:</strong> ${this.request.dropoffLabel}`,
       {
-        title: this.phase === 'pickup' ? 'Point de collecte' : 'Destination finale',
+        title: this.phase === 'pickup' ? 'Pickup point' : 'Final destination',
         icon: this.mapService.getPointIcon('end')
       }
     );
@@ -251,12 +251,12 @@ export class DeliveryActiveRouteComponent implements OnInit, OnDestroy {
         this.guidance = guidance;
         this.loadingRoute = false;
         if (!guidance) {
-          this.error = 'Impossible de calculer l itineraire pour le moment.';
+          this.error = 'Unable to calculate the route at the moment.';
         }
       })
       .catch(() => {
         this.loadingRoute = false;
-        this.error = 'Impossible de calculer l itineraire pour le moment.';
+        this.error = 'Unable to calculate the route at the moment.';
       });
   }
 

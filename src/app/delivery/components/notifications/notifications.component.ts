@@ -233,8 +233,8 @@ export class NotificationsComponent implements OnInit {
       next: (updated) => {
         if (!updated) {
           const fallback = action === 'ACCEPT'
-            ? 'Acceptation impossible pour le moment.'
-            : 'Refus impossible pour le moment.';
+            ? 'Acceptance not possible at the moment.'
+            : 'Rejection not possible at the moment.';
           this.pushFeedback('error', fallback);
           this.processingNotificationIds.delete(notification.id);
           return;
@@ -242,7 +242,7 @@ export class NotificationsComponent implements OnInit {
 
         this.pushFeedback(
           'success',
-          action === 'ACCEPT' ? 'Negociation acceptee avec succes.' : 'Negociation refusee.'
+          action === 'ACCEPT' ? 'Negotiation accepted successfully.' : 'Negotiation rejected.'
         );
         this.selectedNotification = null;
         this.requestService.refreshFromBackend().subscribe(() => {
@@ -253,8 +253,8 @@ export class NotificationsComponent implements OnInit {
       },
       error: (err) => {
         const fallback = action === 'ACCEPT'
-          ? 'Erreur lors de l\'acceptation de la negociation.'
-          : 'Erreur lors du refus de la negociation.';
+          ? 'Error accepting the negotiation.'
+          : 'Error rejecting the negotiation.';
         this.pushFeedback('error', this.extractErrorMessage(err, fallback));
         this.processingNotificationIds.delete(notification.id);
       }
@@ -367,10 +367,10 @@ export class NotificationsComponent implements OnInit {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
     
-    if (diffMins < 1) return 'À l\'instant';
-    if (diffMins < 60) return `Il y a ${diffMins} min`;
-    if (diffHours < 24) return `Il y a ${diffHours}h`;
-    if (diffDays < 7) return `Il y a ${diffDays}j`;
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
     
     return date.toLocaleDateString('fr-FR', {
       day: 'numeric',
@@ -389,7 +389,7 @@ export class NotificationsComponent implements OnInit {
 
   formatDateTime(value?: string): string {
     if (!value) {
-      return 'Non précisée';
+      return 'Not specified';
     }
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
@@ -448,10 +448,10 @@ export class NotificationsComponent implements OnInit {
 
   getStatusText(status: string): string {
     const texts: { [key: string]: string } = {
-      'PENDING': 'En attente',
-      'ACCEPTED': 'Accepté',
-      'REJECTED': 'Refusé',
-      'COUNTERED': 'Contre-proposition'
+      'PENDING': 'Pending',
+      'ACCEPTED': 'Accepted',
+      'REJECTED': 'Rejected',
+      'COUNTERED': 'Counter-proposal'
     };
     return texts[status] || status;
   }
@@ -509,8 +509,8 @@ export class NotificationsComponent implements OnInit {
           toUserId: this.userId,
           livraisonId: Number(delivery.id),
           type: 'DELIVERY_REMINDER',
-          title: 'Rappel livraison imminent',
-          message: `La livraison ${delivery.reference} approche. Départ prévu dans ${diffMinutes} min.`,
+          title: 'Imminent delivery reminder',
+          message: `Delivery ${delivery.reference} is approaching. Planned departure in ${diffMinutes} min.`,
           status: 'PENDING',
           createdAt: new Date().toISOString(),
           seen: false,
@@ -540,8 +540,8 @@ export class NotificationsComponent implements OnInit {
           toUserId: this.userId,
           livraisonId: Number(delivery.id) || numericId,
           type: 'DELIVERY_GROUPED',
-          title: 'Demande groupée',
-          message: `Votre demande ${delivery.reference} a ete groupee. Gain estime: ${saved.toFixed(2)} TND.`,
+          title: 'Grouped request',
+          message: `Your request ${delivery.reference} has been grouped. Estimated saving: ${saved.toFixed(2)} TND.`,
           status: 'ACCEPTED',
           createdAt: delivery.createdAt || new Date().toISOString(),
           seen: this.groupedNotifReadIds.has(syntheticId)

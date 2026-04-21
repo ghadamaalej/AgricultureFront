@@ -31,19 +31,19 @@ export class DeliveryHistoryComponent implements OnInit {
   readonly isFarmer = this.requestService.isUserFarmerRole();
 
   get pageTitle(): string {
-    return this.isFarmer ? 'Historique de mes demandes' : 'Historique et suivi livreur';
+    return this.isFarmer ? 'My request history' : 'Transporter history and tracking';
   }
 
   get pageSubtitle(): string {
     return this.isFarmer
-      ? 'Retrouvez vos demandes acceptees, en cours et livrees.'
-      : 'Une vue utile de vos missions livrees, en cours et deja acceptees.';
+      ? 'Find your accepted, in-progress and delivered requests.'
+      : 'A useful view of your delivered, in-progress and already accepted missions.';
   }
 
   get emptyStateMessage(): string {
     return this.isFarmer
-      ? 'Aucune demande historisee pour le moment.'
-      : 'Aucune mission transporteur a afficher.';
+      ? 'No request history at the moment.'
+      : 'No transporter mission to display.';
   }
 
   constructor(
@@ -78,11 +78,11 @@ export class DeliveryHistoryComponent implements OnInit {
   getStatusLabel(status: DeliveryRequestStatus): string {
     switch (status) {
       case 'Livrée':
-        return 'Livraison terminée';
+        return 'Delivery completed';
       case 'En cours':
-        return 'Mission active';
+        return 'Active mission';
       case 'Acceptée':
-        return 'Mission planifiée';
+        return 'Planned mission';
       default:
         return status;
     }
@@ -90,32 +90,32 @@ export class DeliveryHistoryComponent implements OnInit {
 
   getJourneyMoment(req: DeliveryRequest): string {
     if (req.status === 'Livrée') {
-      return req.deliveredAt ? `Livrée le ${this.formatDateTime(req.deliveredAt)}` : 'Livrée et archivée';
+      return req.deliveredAt ? `Delivered on ${this.formatDateTime(req.deliveredAt)}` : 'Delivered and archived';
     }
     if (req.status === 'En cours') {
       return req.plannedDeliveryDate
-        ? `Fenêtre visée ${this.formatDateTime(req.plannedDeliveryDate)}`
-        : 'Trajet en exécution';
+        ? `Target window ${this.formatDateTime(req.plannedDeliveryDate)}`
+        : 'Trip in progress';
     }
 
     const probableArrival = this.getProbableArrival(req);
     if (probableArrival) {
-      return `Arrivée probable ${probableArrival}`;
+      return `Probable arrival ${probableArrival}`;
     }
 
     return req.departureDate
-      ? `Départ prévu ${this.formatDateTime(req.departureDate)}`
-      : 'En attente de départ';
+      ? `Planned departure ${this.formatDateTime(req.departureDate)}`
+      : 'Awaiting departure';
   }
 
   getInsightLabel(req: DeliveryRequest): string {
     if (req.status === 'Livrée') {
-      return req.rating ? `Note ${req.rating.toFixed(1)}/5` : 'Mission finalisée';
+      return req.rating ? `Rating ${req.rating.toFixed(1)}/5` : 'Mission finalized';
     }
     if (req.status === 'En cours') {
-      return req.grouped && req.groupReference ? `Tournée ${req.groupReference}` : 'Trajet direct';
+      return req.grouped && req.groupReference ? `Tour ${req.groupReference}` : 'Direct trip';
     }
-    return req.grouped && req.groupReference ? `Pré-groupée ${req.groupReference}` : 'Arrivée probable';
+    return req.grouped && req.groupReference ? `Pre-grouped ${req.groupReference}` : 'Probable arrival';
   }
 
   getInsightValue(req: DeliveryRequest): string {
@@ -130,31 +130,31 @@ export class DeliveryHistoryComponent implements OnInit {
 
   getHighlightTitle(req: DeliveryRequest): string {
     if (req.status === 'Livrée') {
-      return 'Bilan';
+      return 'Summary';
     }
     if (req.status === 'En cours') {
-      return 'Suivi';
+      return 'Tracking';
     }
-    return 'Préparation';
+    return 'Preparation';
   }
 
   getHighlightText(req: DeliveryRequest): string {
     if (req.status === 'Livrée') {
       if (req.rating) {
-        return `Course clôturée avec une note client de ${req.rating.toFixed(1)}/5.`;
+        return `Trip closed with a client rating of ${req.rating.toFixed(1)}/5.`;
       }
-      return 'Course clôturée. Revenus et trace de route conservés dans l’historique.';
+      return 'Trip closed. Revenue and route trace preserved in history.';
     }
     if (req.status === 'En cours') {
       return req.grouped && req.groupReference
-        ? `Livraison intégrée à la tournée ${req.groupReference}. Suivez la séquence d’arrêts sur la carte.`
-        : 'Mission active. Priorité au respect du créneau prévu et à la remise finale.';
+        ? `Delivery integrated in tour ${req.groupReference}. Follow the stop sequence on the map.`
+        : 'Active mission. Priority on respecting the scheduled slot and final handover.';
     }
 
     const probableArrival = this.getProbableArrival(req);
     return probableArrival
-      ? `Mission acceptée. Le calendrier du livreur prévoit une arrivée autour de ${probableArrival}.`
-      : 'Mission acceptée. Vérifiez le chargement, la disponibilité et le départ avant mise en route.';
+      ? `Mission accepted. The transporter schedule estimates arrival around ${probableArrival}.`
+      : 'Mission accepted. Verify the loading, availability and departure before setting off.';
   }
 
   getCardClass(req: DeliveryRequest): string {
@@ -185,14 +185,14 @@ export class DeliveryHistoryComponent implements OnInit {
 
   getProgressLabel(req: DeliveryRequest): string {
     if (req.status === 'Livrée') {
-      return 'Mission terminée';
+      return 'Mission completed';
     }
     if (req.status === 'En cours') {
-      return 'Mission en exécution';
+      return 'Mission in progress';
     }
     return this.getProbableArrival(req)
-      ? 'Arrivée estimée à partir du calendrier'
-      : 'Mission planifiée';
+      ? 'Estimated arrival from the schedule'
+      : 'Planned mission';
   }
 
   getProbableArrival(req: DeliveryRequest): string | null {
@@ -244,22 +244,22 @@ export class DeliveryHistoryComponent implements OnInit {
     return [
       {
         key: 'inProgress',
-        title: 'En cours',
-        subtitle: 'Missions actives à surveiller en priorité',
+        title: 'In progress',
+        subtitle: 'Active missions to monitor as a priority',
         icon: 'fa-truck-fast',
         requests: requests.filter((req) => req.status === 'En cours')
       },
       {
         key: 'accepted',
-        title: 'Acceptées',
-        subtitle: 'Courses confirmées, prêtes pour le départ',
+        title: 'Accepted',
+        subtitle: 'Confirmed trips, ready for departure',
         icon: 'fa-calendar-check',
         requests: requests.filter((req) => req.status === 'Acceptée')
       },
       {
         key: 'delivered',
-        title: 'Livrées',
-        subtitle: 'Missions terminées avec archive utile',
+        title: 'Delivered',
+        subtitle: 'Completed missions with useful archive',
         icon: 'fa-circle-check',
         requests: requests.filter((req) => req.status === 'Livrée')
       }

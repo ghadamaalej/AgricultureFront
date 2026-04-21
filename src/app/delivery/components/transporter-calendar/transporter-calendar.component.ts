@@ -24,7 +24,7 @@ export class TransporterCalendarComponent implements OnInit, OnChanges {
   isLoading: boolean = false;
   selectedDate: string | null = null;
   selectedDayDetails: CalendarDay | null = null;
-  readonly weekDayLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  readonly weekDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   // Pour la navigation
   currentYear: number = new Date().getFullYear();
@@ -130,15 +130,15 @@ export class TransporterCalendarComponent implements OnInit, OnChanges {
 
   getMonthName(): string {
     const months = [
-      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
     return months[this.currentMonth - 1];
   }
 
   getDayName(dateStr: string): string {
     const date = this.parseLocalDate(dateStr);
-    const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     return days[date.getDay()];
   }
 
@@ -277,7 +277,7 @@ export class TransporterCalendarComponent implements OnInit, OnChanges {
     const total = Number(day.totalEstimatedMinutes || 0);
     const capacity = Number(day.capacityMinutes || 0);
     if (!capacity || !total) {
-      return 'Planning vide';
+      return 'Empty schedule';
     }
     return `${this.formatDuration(total)} / ${this.formatDuration(capacity)}`;
   }

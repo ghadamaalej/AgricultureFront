@@ -96,14 +96,14 @@ export class DeliveryDemandesComponent implements OnInit, OnDestroy {
       if (!result.success) {
         this.pushNotification(
           'error',
-          'Acceptation bloquée',
-          result.errorMessage || 'Le planning du transporteur ne permet pas cette livraison.'
+          'Acceptance blocked',
+          result.errorMessage || 'The transporter schedule does not allow this delivery.'
         );
         return;
       }
 
       this.transporterRequests = this.transporterRequests.filter((item) => item.id !== card.id);
-      this.pushNotification('success', 'Demande acceptée', `${card.reference} a été prise en charge.`);
+      this.pushNotification('success', 'Request accepted', `${card.reference} has been taken over.`);
     });
   }
 
@@ -113,19 +113,19 @@ export class DeliveryDemandesComponent implements OnInit, OnDestroy {
 
   refuseRequest(card: NegotiationCard): void {
     this.transporterRequests = this.transporterRequests.filter((item) => item.id !== card.id);
-    this.pushNotification('success', 'Demande retirée', `${card.reference} a été retirée de votre liste.`);
+    this.pushNotification('success', 'Request removed', `${card.reference} has been removed from your list.`);
   }
 
   ignoreRequest(card: NegotiationCard): void {
     this.ignoredRequestIds.add(card.id);
     this.persistIgnoredRequests();
     this.transporterRequests = this.transporterRequests.filter((item) => item.id !== card.id);
-    this.pushNotification('success', 'Demande ignorée', `${card.reference} est masquée pour votre compte.`);
+    this.pushNotification('success', 'Request ignored', `${card.reference} is hidden for your account.`);
   }
 
   counterFromTransporter(card: NegotiationCard): void {
     if (!this.hasValidCounterRange(card)) {
-      this.pushNotification('error', 'Plage indisponible', 'La plage de negotiation est indisponible pour cette demande.');
+      this.pushNotification('error', 'Range unavailable', 'The negotiation range is unavailable for this request.');
       return;
     }
 
@@ -135,7 +135,7 @@ export class DeliveryDemandesComponent implements OnInit, OnDestroy {
       this.pushNotification(
         'error',
         'Prix hors plage',
-        `Le contre-prix doit être compris entre ${this.formatPrice(card.minCounterPrice)} et ${this.formatPrice(card.maxCounterPrice)}.`
+        `The counter-price must be between ${this.formatPrice(card.minCounterPrice)} and ${this.formatPrice(card.maxCounterPrice)}.`
       );
       return;
     }
@@ -148,34 +148,34 @@ export class DeliveryDemandesComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (result) => {
         if (!result) {
-          this.pushNotification('error', 'Échec', 'Impossible d’envoyer la contre-proposition.');
+          this.pushNotification('error', 'Failed', 'Unable to send the counter-proposal.');
           return;
         }
         this.transporterRequests = this.transporterRequests.filter((item) => item.id !== card.id);
         this.loadClientOffers();
         this.pushNotification(
           'success',
-          'Contre-prix envoyé',
-          `${card.reference} — proposition envoyée à l’agriculteur pour validation.`
+          'Counter-price sent',
+          `${card.reference} — proposal sent to the farmer for validation.`
         );
       },
       error: () => {
-        this.pushNotification('error', 'Erreur', 'La négociation a échoué.');
+        this.pushNotification('error', 'Error', 'The negotiation failed.');
       }
     });
   }
 
   acceptOffer(card: ClientOfferCard): void {
-    this.handleClientOffer(card, 'ACCEPT', 'Offre acceptée', `${card.reference} a été acceptée.`);
+    this.handleClientOffer(card, 'ACCEPT', 'Offer accepted', `${card.reference} has been accepted.`);
   }
 
   refuseOffer(card: ClientOfferCard): void {
-    this.handleClientOffer(card, 'REJECT', 'Offre refusée', `${card.reference} a été refusée.`);
+    this.handleClientOffer(card, 'REJECT', 'Offer rejected', `${card.reference} has been rejected.`);
   }
 
   proposeCounterFromClient(card: ClientOfferCard): void {
     if (!this.hasValidCounterRange(card)) {
-      this.pushNotification('error', 'Plage indisponible', 'La plage de negotiation est indisponible pour cette proposition.');
+      this.pushNotification('error', 'Range unavailable', 'The negotiation range is unavailable for this proposal.');
       return;
     }
 
@@ -190,14 +190,14 @@ export class DeliveryDemandesComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (updated) => {
         if (!updated) {
-          this.pushNotification('error', 'Échec', 'Impossible d’envoyer la contre-proposition.');
+          this.pushNotification('error', 'Failed', 'Unable to send the counter-proposal.');
           return;
         }
         this.loadClientOffers();
-        this.pushNotification('success', 'Contre-proposition envoyée', `${card.reference} — nouveau prix proposé.`);
+        this.pushNotification('success', 'Counter-proposal sent', `${card.reference} — new price proposed.`);
       },
       error: () => {
-        this.pushNotification('error', 'Erreur', 'La contre-proposition a échoué.');
+        this.pushNotification('error', 'Error', 'The counter-proposal failed.');
       }
     });
   }
@@ -206,7 +206,7 @@ export class DeliveryDemandesComponent implements OnInit, OnDestroy {
     this.extendedService.handleNotificationAction(card.notificationId, this.currentUserId, action).subscribe({
       next: (updated) => {
         if (!updated) {
-          this.pushNotification('error', 'Échec', 'L’action n’a pas pu être appliquée.');
+          this.pushNotification('error', 'Failed', 'The action could not be applied.');
           return;
         }
         this.requestService.refreshFromBackend().subscribe(() => {
@@ -216,7 +216,7 @@ export class DeliveryDemandesComponent implements OnInit, OnDestroy {
         });
       },
       error: () => {
-        this.pushNotification('error', 'Erreur', 'L’action a échoué.');
+        this.pushNotification('error', 'Error', 'The action failed.');
       }
     });
   }
@@ -361,7 +361,7 @@ export class DeliveryDemandesComponent implements OnInit, OnDestroy {
 
   formatDateTime(value?: string): string {
     if (!value) {
-      return 'Non précisée';
+      return 'Not specified';
     }
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {

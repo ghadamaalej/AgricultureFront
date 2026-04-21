@@ -8,7 +8,6 @@ import { HTTP_INTERCEPTORS, HttpClientModule, provideHttpClient } from '@angular
 
 import { AppComponent }          from './app.component';
 import { AppRoutingModule }      from './app-routing.module';
-import { NavbarComponent }       from './components/navbar/navbar.component';
 import { HeroComponent }         from './components/hero/hero.component';
 import { AboutComponent }        from './components/about/about.component';
 import { ServicesComponent }     from './components/services/services.component';
@@ -16,7 +15,6 @@ import { ProductsComponent }     from './components/products/products.component'
 import { CounterComponent }      from './components/counter/counter.component';
 import { TestimonialsComponent } from './components/testimonials/testimonials.component';
 import { BlogComponent }         from './components/blog/blog.component';
-import { FooterComponent }       from './components/footer/footer.component';
 import { AuthComponent }         from './components/auth/auth.component';
 import { BlogDetailComponent }   from './components/blog-detail/blog-detail.component';
 import { HomeComponent }         from './components/home/home.component';
@@ -42,7 +40,6 @@ registerLocaleData(localeFr);
     declarations: [
         AppComponent,
         AuthComponent,
-        NavbarComponent,
         HeroComponent,
         AboutComponent,
         ServicesComponent,
@@ -50,7 +47,6 @@ registerLocaleData(localeFr);
         CounterComponent,
         TestimonialsComponent,
         BlogComponent,
-        FooterComponent,
         BlogDetailComponent,
         HomeComponent,
         NotFoundComponent,

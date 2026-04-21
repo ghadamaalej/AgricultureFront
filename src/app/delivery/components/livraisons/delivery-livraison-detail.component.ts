@@ -34,7 +34,7 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
   priceTnd = 240;
   farmerId = 'far-123';
   transporterId = 'trk-456';
-  transporterName = 'Non assigné';
+  transporterName = 'Not assigned';
   private knownTransportersByIdCache = new Map<number, string>();
   departureDate = '2026-03-25';
   expectedDeliveryDate = '2026-03-26';
@@ -63,7 +63,7 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
     this.id = this.route.snapshot.paramMap.get('id') || '';
     const navigationState = this.router.getCurrentNavigation()?.extras.state;
     if (navigationState?.['createdDelivery']) {
-      this.setActionNotification('Livraison créée avec succès.');
+      this.setActionNotification('Delivery created successfully.');
     }
     this.requestService.getPreferredTransportersForCurrentFarmer().subscribe((items) => {
       items.forEach((t) => {
@@ -105,7 +105,7 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
       this.farmerId = String(request.createdById || request.createdByEmail);
       this.transporterId = request.acceptedById ? String(request.acceptedById) : 'Non assigne';
       this.transporterName = this.resolveTransporterName(request.acceptedById, request.acceptedByEmail);
-      this.details = request.details || 'Aucun detail fourni';
+      this.details = request.details || 'No details provided';
 
       const distance = this.haversineKm(this.pickupLat, this.pickupLng, this.dropoffLat, this.dropoffLng);
       this.distanceKm = Math.round(distance * 10) / 10;
@@ -143,9 +143,9 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
     this.mapService.addMarker(
       this.pickupLat,
       this.pickupLng,
-      `<strong>Départ:</strong> ${this.pickupAddress}`,
+      `<strong>Departure:</strong> ${this.pickupAddress}`,
       {
-        title: 'Départ',
+        title: 'Departure',
         zIndexOffset: 1000,
         icon: this.mapService.getPointIcon('start')
       }
@@ -195,25 +195,25 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
   changeStatus(): void {
     this.status = this.newStatus;
     this.requestService.updateStatus(this.id, this.status);
-    this.setActionNotification(`Statut mis à jour: ${this.status}`);
+    this.setActionNotification(`Status updated: ${this.status}`);
     this.renderRoute();
   }
 
   assignTransporter(): void {
     const transporteurId = Number(this.assignTransporterId);
     if (!Number.isFinite(transporteurId) || transporteurId <= 0) {
-      this.setActionNotification('ID transporteur invalide.');
+      this.setActionNotification('Invalid transporter ID.');
       return;
     }
 
     this.requestService.assignTransporteur(this.id, transporteurId).subscribe((updated) => {
       if (!updated) {
-        this.setActionNotification('Échec de l’affectation du transporteur.');
+        this.setActionNotification('Transporter assignment failed.');
         return;
       }
       this.apiDelivery = updated;
       this.applyApiData(updated);
-      this.setActionNotification('Transporteur assigné avec succès.');
+      this.setActionNotification('Transporter assigned successfully.');
     });
   }
 
@@ -221,31 +221,31 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
     const lat = parseFloat(this.gpsLat);
     const lng = parseFloat(this.gpsLng);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      this.setActionNotification('Coordonnées GPS invalides.');
+      this.setActionNotification('Invalid GPS coordinates.');
       return;
     }
 
     this.requestService.updateCurrentPosition(this.id, lat, lng).subscribe((updated) => {
       if (!updated) {
-        this.setActionNotification('Échec de la mise à jour GPS.');
+        this.setActionNotification('GPS update failed.');
         return;
       }
       this.apiDelivery = updated;
       this.currentLat = lat;
       this.currentLng = lng;
       this.renderRoute();
-      this.setActionNotification(`GPS mis à jour: ${lat}, ${lng}`);
+      this.setActionNotification(`GPS updated: ${lat}, ${lng}`);
     });
   }
 
   sendEvaluation(): void {
     this.requestService.evaluerTransporteur(this.id, this.evaluation, this.requestService.getCurrentUserId()).subscribe((updated) => {
       if (!updated) {
-        this.setActionNotification('Échec de l’envoi de l’évaluation.');
+        this.setActionNotification('Failed to send the rating.');
         return;
       }
       this.apiDelivery = updated;
-      this.setActionNotification(`Évaluation envoyée: ${this.evaluation}★`);
+      this.setActionNotification(`Rating sent: ${this.evaluation}★`);
     });
   }
 
@@ -326,7 +326,7 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
 
   private resolveTransporterName(transporterId?: number, email?: string): string {
     if (!transporterId || transporterId <= 0) {
-      return 'Non assigné';
+      return 'Not assigned';
     }
     const cached = this.knownTransportersByIdCache.get(transporterId);
     if (cached) {
@@ -336,7 +336,7 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
     if (prettified) {
       return prettified;
     }
-    return `Livreur #${transporterId}`;
+    return `Transporter #${transporterId}`;
   }
 
   private prettifyEmailName(email?: string): string {

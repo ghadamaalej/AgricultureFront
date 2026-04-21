@@ -28,8 +28,8 @@ export class DeliveryAdminFormComponent implements OnInit, AfterViewInit, OnDest
   selectMode: PointMode = 'start';
   startPoint: LatLng = { lat: 36.8065, lng: 10.1815 };
   endPoint: LatLng = { lat: 36.735, lng: 10.195 };
-  startLabel = 'Position actuelle de départ';
-  endLabel = 'Position actuelle de destination';
+  startLabel = 'Current departure position';
+  endLabel = 'Current destination position';
 
   private existingDelivery: LivraisonApi | null = null;
   private mapReady = false;
@@ -68,7 +68,7 @@ export class DeliveryAdminFormComponent implements OnInit, AfterViewInit, OnDest
     if (this.mode === 'edit' && this.id) {
       this.requestService.getApiById(this.id).subscribe((delivery) => {
         if (!delivery) {
-          this.notification = 'Impossible de charger la livraison à modifier.';
+          this.notification = 'Unable to load the delivery to edit.';
           return;
         }
 
@@ -128,13 +128,13 @@ export class DeliveryAdminFormComponent implements OnInit, AfterViewInit, OnDest
     request$.subscribe((saved) => {
       if (!saved?.id) {
         this.notification = this.isFarmerEdit()
-          ? 'Modification impossible. Une demande acceptée par un livreur ne peut plus être modifiée.'
-          : 'L’enregistrement a échoué.';
+          ? 'Edit not possible. A request accepted by a transporter can no longer be edited.'
+          : 'The save failed.';
         return;
       }
 
-      const action = this.isEdit() ? 'Mise à jour' : 'Création';
-      this.notification = `${action} effectuée avec succès pour ${saved.reference || 'la livraison'}.`;
+      const action = this.isEdit() ? 'Update' : 'Creation';
+      this.notification = `${action} completed successfully for ${saved.reference || 'the delivery'}.`;
       window.setTimeout(() => (this.notification = null), 3500);
       this.router.navigate(['/delivery/livraisons', saved.id]);
     });
@@ -176,9 +176,9 @@ export class DeliveryAdminFormComponent implements OnInit, AfterViewInit, OnDest
     const startMarker = this.mapService.addMarker(
       this.startPoint.lat,
       this.startPoint.lng,
-      `<strong>Départ</strong><br/>${this.startLabel}`,
+      `<strong>Departure</strong><br/>${this.startLabel}`,
       {
-        title: 'Départ',
+        title: 'Departure',
         draggable: true,
         zIndexOffset: 1000,
         icon: this.mapService.getPointIcon('start')
@@ -190,7 +190,7 @@ export class DeliveryAdminFormComponent implements OnInit, AfterViewInit, OnDest
       this.endPoint.lng,
       `<strong>Destination</strong><br/>${this.endLabel}`,
       {
-        title: 'Destination',
+        title: 'Destination point',
         draggable: true,
         zIndexOffset: 1000,
         icon: this.mapService.getPointIcon('end')
@@ -213,7 +213,7 @@ export class DeliveryAdminFormComponent implements OnInit, AfterViewInit, OnDest
   }
 
   private updatePoint(mode: PointMode, point: LatLng, moveToNext: boolean = false): void {
-    const fallback = this.formatFallbackLabel(mode === 'start' ? 'Départ mis à jour' : 'Destination mise à jour', point);
+    const fallback = this.formatFallbackLabel(mode === 'start' ? 'Departure updated' : 'Destination updated', point);
 
     if (mode === 'start') {
       this.startPoint = point;
@@ -239,8 +239,8 @@ export class DeliveryAdminFormComponent implements OnInit, AfterViewInit, OnDest
       lat: this.safeCoordinate(delivery.latArrivee, this.endPoint.lat),
       lng: this.safeCoordinate(delivery.lngArrivee, this.endPoint.lng)
     };
-    this.startLabel = delivery.adresseDepart || this.formatFallbackLabel('Départ actuel', this.startPoint);
-    this.endLabel = delivery.adresseArrivee || this.formatFallbackLabel('Destination actuelle', this.endPoint);
+    this.startLabel = delivery.adresseDepart || this.formatFallbackLabel('Current departure', this.startPoint);
+    this.endLabel = delivery.adresseArrivee || this.formatFallbackLabel('Current destination', this.endPoint);
 
     if (this.mapReady) {
       this.mapService.getMap()?.setView(

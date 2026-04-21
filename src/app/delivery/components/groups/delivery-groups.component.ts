@@ -54,7 +54,7 @@ export class DeliveryGroupsComponent implements OnInit, OnDestroy {
 
   createSuggestedGroup(): void {
     if (this.pendingGroupables.length < 2) {
-      this.pushNotification('Pas assez de demandes compatibles pour creer un groupe.');
+      this.pushNotification('Not enough compatible requests to create a group.');
       return;
     }
 
@@ -72,7 +72,7 @@ export class DeliveryGroupsComponent implements OnInit, OnDestroy {
     }
 
     if (selected.length < 2) {
-      this.pushNotification('Aucun regroupement valide avec la capacite actuelle du vehicule.');
+      this.pushNotification('No valid grouping with the current vehicle capacity.');
       return;
     }
 
@@ -81,23 +81,23 @@ export class DeliveryGroupsComponent implements OnInit, OnDestroy {
       next: (result) => {
         this.isLoading = false;
         if (!result?.groupReference) {
-          this.pushNotification('Le groupe n’a pas pu etre cree.');
+          this.pushNotification('The group could not be created.');
           return;
         }
 
-        this.pushNotification(`Groupe ${result.groupReference} cree avec ${selected.length} livraisons.`);
+        this.pushNotification(`Group ${result.groupReference} created with ${selected.length} deliveries.`);
         this.loadData(result.groupReference);
       },
       error: (err) => {
         this.isLoading = false;
-        this.pushNotification(err?.error?.message || 'Erreur lors de la creation du groupe.');
+        this.pushNotification(err?.error?.message || 'Error creating the group.');
       }
     });
   }
 
   showGroupOnMap(group: DeliveryGroup): void {
     this.selectedGroupRef = group.groupReference;
-    this.mapMessage = 'Chargement de la route du groupe...';
+    this.mapMessage = 'Loading group route...';
     this.deliveryService.getGroupDetails(group.groupReference, this.transporteurId).subscribe({
       next: (details) => {
         this.selectedGroupDetails = details;
@@ -105,7 +105,7 @@ export class DeliveryGroupsComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Erreur lors du chargement de la route du groupe:', err);
-        this.mapMessage = 'Impossible de charger la route de ce groupe.';
+        this.mapMessage = 'Unable to load the route for this group.';
       }
     });
   }
@@ -149,14 +149,14 @@ export class DeliveryGroupsComponent implements OnInit, OnDestroy {
         } else {
           this.selectedGroupRef = '';
           this.selectedGroupDetails = null;
-          this.mapMessage = 'Aucun groupe cree pour le moment.';
+          this.mapMessage = 'No group created yet.';
           this.mapService.clear();
         }
       },
       error: (err) => {
         console.error('Erreur lors du chargement des groupes:', err);
         this.activeGroups = [];
-        this.mapMessage = 'Impossible de charger les groupes.';
+        this.mapMessage = 'Unable to load the groups.';
       }
     });
   }
@@ -184,7 +184,7 @@ export class DeliveryGroupsComponent implements OnInit, OnDestroy {
     if (this.selectedGroupDetails) {
       this.renderSelectedGroupOnMap();
     } else {
-      this.mapMessage = 'Selectionnez un groupe pour afficher sa route.';
+      this.mapMessage = 'Select a group to display its route.';
     }
   }
 
@@ -197,7 +197,7 @@ export class DeliveryGroupsComponent implements OnInit, OnDestroy {
     this.mapService.clear();
     const routePoints = this.getRoutePoints();
     if (routePoints.length < 2) {
-      this.mapMessage = 'Ce groupe ne contient pas assez de points pour afficher une route.';
+      this.mapMessage = 'This group does not have enough points to display a route.';
       return;
     }
 
@@ -286,7 +286,7 @@ export class DeliveryGroupsComponent implements OnInit, OnDestroy {
       points.push({
         lat: currentLat,
         lng: currentLng,
-        label: `${points.length + 1}. Collecte ${delivery.reference || 'Livraison'}`,
+        label: `${points.length + 1}. Pickup ${delivery.reference || 'Delivery'}`,
         kind: 'start'
       });
     }
@@ -300,7 +300,7 @@ export class DeliveryGroupsComponent implements OnInit, OnDestroy {
       points.push({
         lat: currentLat,
         lng: currentLng,
-        label: `${points.length + 1}. Livraison ${delivery.reference || 'Livraison'}`,
+        label: `${points.length + 1}. Delivery ${delivery.reference || 'Delivery'}`,
         kind: 'end'
       });
     }

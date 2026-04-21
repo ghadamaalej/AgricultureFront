@@ -94,14 +94,14 @@ export class DeliveryLivraisonsListComponent implements OnInit {
   }
 
   delete(id: string): void {
-    const ok = window.confirm('Supprimer cette livraison ?');
+    const ok = window.confirm('Delete this delivery?');
     if (!ok) return;
     this.requestService.deleteApiDelivery(id).subscribe((deleted) => {
       if (!deleted) {
-        this.notification = `La suppression de ${id} a échoué.`;
+        this.notification = `Deletion of ${id} failed.`;
       } else {
         this.deliveries = this.deliveries.filter((delivery) => delivery.id !== id);
-        this.notification = `Livraison ${id} supprimée avec succès.`;
+        this.notification = `Delivery ${id} deleted successfully.`;
       }
       window.setTimeout(() => (this.notification = null), 3000);
     });
@@ -130,7 +130,7 @@ export class DeliveryLivraisonsListComponent implements OnInit {
 
   private toShortDate(iso: string): string {
     const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) return 'Date inconnue';
+    if (Number.isNaN(date.getTime())) return 'Unknown date';
     return date.toLocaleDateString('fr-FR');
   }
 }

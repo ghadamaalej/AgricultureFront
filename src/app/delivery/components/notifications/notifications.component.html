@@ -1,54 +1,54 @@
 <div class="notifications-container">
-  <!-- Bouton de notification avec badge -->
+  <!-- Notification button with badge -->
   <div class="notification-trigger" (click)="toggleNotificationsPanel()">
     <i class="fas fa-bell"></i>
     <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
   </div>
 
-  <!-- Panneau des notifications -->
-  <div class="notifications-panel" 
+  <!-- Notifications panel -->
+  <div class="notifications-panel"
        *ngIf="showNotificationsPanel"
        [class.active]="showNotificationsPanel">
-    
-    <!-- En-tête du panneau -->
+
+    <!-- Panel header -->
     <div class="panel-header">
       <h3>Notifications</h3>
       <div class="header-actions">
-        <button class="btn-mark-all-read" 
-                (click)="markAllAsRead($event)" 
+        <button class="btn-mark-all-read"
+                (click)="markAllAsRead($event)"
                 *ngIf="unreadCount > 0"
                 [disabled]="processingBulkRead"
-                title="Marquer tout comme lu">
+                title="Mark all as read">
           <i class="fas fa-check-double"></i>
         </button>
-        <button class="btn-close" (click)="showNotificationsPanel = false" title="Fermer">
+        <button class="btn-close" (click)="showNotificationsPanel = false" title="Close">
           <i class="fas fa-times"></i>
         </button>
       </div>
     </div>
 
-    <!-- Filtres -->
+    <!-- Filters -->
     <div class="panel-filters">
       <div class="filter-group">
         <label>Type:</label>
         <select [(ngModel)]="filterType" (change)="onFilterChange()">
-          <option value="all">Toutes</option>
-          <option value="negociation">Négociations</option>
-          <option value="PRICE_NEGOTIATION_BAR">Négociation de prix</option>
-          <option value="DELIVERY_UPDATE">Mise à jour de livraison</option>
-          <option value="DELIVERY_IN_TRANSIT">Livreur en route</option>
-          <option value="DELIVERY_ASSIGNED">Livraison assignée</option>
-          <option value="DELIVERY_COMPLETED">Livraison terminée</option>
+          <option value="all">All</option>
+          <option value="negociation">Negotiations</option>
+          <option value="PRICE_NEGOTIATION_BAR">Price negotiation</option>
+          <option value="DELIVERY_UPDATE">Delivery update</option>
+          <option value="DELIVERY_IN_TRANSIT">Transporter en route</option>
+          <option value="DELIVERY_ASSIGNED">Delivery assigned</option>
+          <option value="DELIVERY_COMPLETED">Delivery completed</option>
         </select>
       </div>
       <div class="filter-group">
-        <label>Statut:</label>
+        <label>Status:</label>
         <select [(ngModel)]="filterStatus" (change)="onFilterChange()">
-          <option value="all">Tous</option>
-          <option value="PENDING">En attente</option>
-          <option value="ACCEPTED">Accepté</option>
-          <option value="REJECTED">Refusé</option>
-          <option value="COUNTERED">Contre-proposé</option>
+          <option value="all">All</option>
+          <option value="PENDING">Pending</option>
+          <option value="ACCEPTED">Accepted</option>
+          <option value="REJECTED">Rejected</option>
+          <option value="COUNTERED">Counter-proposed</option>
         </select>
       </div>
     </div>
@@ -60,120 +60,120 @@
     <!-- Loading -->
     <div class="panel-loading" *ngIf="isLoading">
       <i class="fas fa-spinner fa-spin"></i>
-      <span>Chargement...</span>
+      <span>Loading...</span>
     </div>
 
-    <!-- Liste des notifications -->
+    <!-- Notifications list -->
     <div class="notifications-list" *ngIf="!isLoading">
       <!-- Notifications -->
-      <div class="notification-item" 
+      <div class="notification-item"
            *ngFor="let notification of notifications"
            [class.unread]="!notification.seen"
            [class.selected]="selectedNotification?.id === notification.id"
            (click)="selectNotification(notification)">
-        
-        <!-- Icône et statut -->
+
+        <!-- Icon and status -->
         <div class="notification-icon">
           <i class="fas" [class]="'fa-' + getNotificationIcon(notification.type)" [style.color]="getNotificationColor(notification.type)"></i>
-          <div class="status-indicator" 
+          <div class="status-indicator"
                *ngIf="notification.status !== 'ACCEPTED'"
                [style.background]="getStatusColor(notification.status)"></div>
         </div>
 
-        <!-- Contenu -->
+        <!-- Content -->
         <div class="notification-content">
           <div class="notification-header">
             <div class="notification-title">{{ notification.title }}</div>
             <div class="notification-time">{{ formatDate(notification.createdAt) }}</div>
           </div>
           <div class="notification-message">{{ notification.message }}</div>
-          
-          <!-- Détails de négociation -->
-          <div class="negotiation-details" 
+
+          <!-- Negotiation details -->
+          <div class="negotiation-details"
                *ngIf="notification.type === 'PRICE_NEGOTIATION_BAR' && (notification.proposedPrice || notification.minAllowedPrice)">
             <div class="price-info" *ngIf="notification.proposedPrice">
-              <span class="price-label">Proposition:</span>
+              <span class="price-label">Proposal:</span>
               <span class="price-value">{{ formatPrice(notification.proposedPrice || 0) }}</span>
             </div>
             <div class="price-info" *ngIf="notification.preferredDateTime">
-              <span class="price-label">Date favorite:</span>
+              <span class="price-label">Preferred date:</span>
               <span class="price-value">{{ formatDateTime(notification.preferredDateTime) }}</span>
             </div>
             <div class="price-info" *ngIf="notification.proposedDateTime">
-              <span class="price-label">Date proposée:</span>
+              <span class="price-label">Proposed date:</span>
               <span class="price-value">{{ formatDateTime(notification.proposedDateTime) }}</span>
             </div>
             <div class="price-range" *ngIf="notification.minAllowedPrice && notification.maxAllowedPrice">
-              <span class="range-label">Plage:</span>
+              <span class="range-label">Range:</span>
               <span class="range-value">
                 {{ formatPrice(notification.minAllowedPrice || 0) }} - {{ formatPrice(notification.maxAllowedPrice || 0) }}
               </span>
             </div>
           </div>
 
-          <!-- Actions pour les négociations -->
-          <div class="notification-actions" 
+          <!-- Actions for negotiations -->
+          <div class="notification-actions"
                *ngIf="canActOnNotification(notification)">
-            <button class="btn-accept" 
+            <button class="btn-accept"
                     (click)="acceptNegotiation(notification, $event)"
                     [disabled]="isProcessing(notification.id)"
-                    title="Accepter">
+                    title="Accept">
               <i class="fas fa-check"></i>
             </button>
-            <button class="btn-reject" 
+            <button class="btn-reject"
                     (click)="rejectNegotiation(notification, $event)"
                     [disabled]="isProcessing(notification.id)"
-                    title="Refuser">
+                    title="Reject">
               <i class="fas fa-times"></i>
             </button>
-            <button class="btn-counter" 
+            <button class="btn-counter"
                     (click)="openCounterProposal(notification, $event)"
                     [disabled]="isProcessing(notification.id)"
-                    title="Faire une contre-proposition">
+                    title="Make a counter-proposal">
               <i class="fas fa-exchange-alt"></i>
             </button>
           </div>
         </div>
 
-        <!-- Actions secondaires -->
+        <!-- Secondary actions -->
         <div class="notification-meta">
-          <button class="btn-view-delivery" 
+          <button class="btn-view-delivery"
                   *ngIf="!notification.seen && notification.id > 0"
                   (click)="markAsRead(notification.id, $event)"
                   [disabled]="isProcessing(notification.id)"
-                  title="Marquer comme lue">
+                  title="Mark as read">
             <i class="fas fa-envelope-open"></i>
           </button>
-          <button class="btn-view-delivery" 
+          <button class="btn-view-delivery"
                   *ngIf="notification.livraisonId"
                   (click)="viewDelivery(notification.livraisonId, $event)"
-                  title="Voir la livraison">
+                  title="View delivery">
             <i class="fas fa-eye"></i>
           </button>
-          <button class="btn-delete" 
+          <button class="btn-delete"
                   (click)="deleteNotification(notification.id, $event)"
                   [disabled]="isProcessing(notification.id)"
-                  title="Supprimer">
+                  title="Delete">
             <i class="fas fa-trash"></i>
           </button>
         </div>
       </div>
 
-      <!-- Message si aucune notification -->
+      <!-- Message if no notification -->
       <div class="no-notifications" *ngIf="notifications.length === 0">
         <i class="fas fa-bell-slash"></i>
-        <span>Aucune notification</span>
+        <span>No notifications</span>
       </div>
     </div>
   </div>
 
-  <!-- Détails de la notification sélectionnée -->
-  <div class="notification-details-modal" 
+  <!-- Selected notification details -->
+  <div class="notification-details-modal"
        *ngIf="selectedNotification"
        (click)="selectedNotification = null">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Détails de la notification</h3>
+        <h3>Notification details</h3>
         <button class="btn-close" (click)="selectedNotification = null">
           <i class="fas fa-times"></i>
         </button>
@@ -187,7 +187,7 @@
           <div class="detail-info">
             <div class="detail-title">{{ selectedNotification.title }}</div>
             <div class="detail-time">{{ formatDate(selectedNotification.createdAt) }}</div>
-            <div class="detail-status" 
+            <div class="detail-status"
                  [style.background]="getStatusColor(selectedNotification.status)"
                  [style.color]="'white'">
               {{ getStatusText(selectedNotification.status) }}
@@ -199,41 +199,41 @@
           {{ selectedNotification.message }}
         </div>
 
-        <!-- Détails de prix pour négociation -->
-          <div class="price-details" 
+        <!-- Price details for negotiation -->
+          <div class="price-details"
              *ngIf="selectedNotification.type === 'PRICE_NEGOTIATION_BAR'">
-          <h4>Détails de la négociation</h4>
+          <h4>Negotiation details</h4>
           <div class="price-grid">
             <div class="price-item" *ngIf="selectedNotification.proposedPrice">
-              <span class="label">Prix proposé:</span>
+              <span class="label">Proposed price:</span>
               <span class="value">{{ formatPrice(selectedNotification.proposedPrice || 0) }}</span>
             </div>
             <div class="price-item" *ngIf="selectedNotification.minAllowedPrice">
-              <span class="label">Minimum autorisé:</span>
+              <span class="label">Minimum allowed:</span>
               <span class="value">{{ formatPrice(selectedNotification.minAllowedPrice || 0) }}</span>
             </div>
             <div class="price-item" *ngIf="selectedNotification.maxAllowedPrice">
-              <span class="label">Maximum autorisé:</span>
+              <span class="label">Maximum allowed:</span>
               <span class="value">{{ formatPrice(selectedNotification.maxAllowedPrice || 0) }}</span>
             </div>
             <div class="price-item" *ngIf="selectedNotification.preferredDateTime">
-              <span class="label">Créneau favori:</span>
+              <span class="label">Preferred slot:</span>
               <span class="value">{{ formatDateTime(selectedNotification.preferredDateTime) }}</span>
             </div>
             <div class="price-item" *ngIf="selectedNotification.proposedDateTime">
-              <span class="label">Créneau proposé:</span>
+              <span class="label">Proposed slot:</span>
               <span class="value">{{ formatDateTime(selectedNotification.proposedDateTime) }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Contre-proposition -->
-        <div class="counter-proposal" 
+        <!-- Counter-proposal -->
+        <div class="counter-proposal"
              *ngIf="isNegotiationNotification(selectedNotification) && canActOnNotification(selectedNotification)">
-          <h4>Faire une contre-proposition</h4>
+          <h4>Make a counter-proposal</h4>
           <div class="counter-form">
             <div class="form-group">
-              <label>Prix proposé (TND):</label>
+              <label>Proposed price (TND):</label>
               <input
                 *ngIf="hasCounterRange(selectedNotification); else noRangeCounter"
                 type="range"
@@ -248,22 +248,22 @@
                 {{ formatPrice(counterPrice) }}
               </div>
               <ng-template #noRangeCounter>
-                <div class="counter-range-unavailable">Plage de négociation indisponible.</div>
+                <div class="counter-range-unavailable">Negotiation range unavailable.</div>
               </ng-template>
             </div>
             <div class="form-group">
-              <label>Nouvelle date/heure proposée:</label>
+              <label>New proposed date/time:</label>
               <input type="datetime-local"
                      [(ngModel)]="counterDateTime"
-                     [placeholder]="'Choisir une date et heure'">
+                     [placeholder]="'Choose a date and time'">
             </div>
             <div class="counter-actions">
-              <button class="btn-secondary" (click)="selectedNotification = null">Annuler</button>
-              <button class="btn-primary" 
+              <button class="btn-secondary" (click)="selectedNotification = null">Cancel</button>
+              <button class="btn-primary"
                       (click)="counterNegotiation(selectedNotification, counterPrice, counterDateTime || selectedNotification.proposedDateTime || selectedNotification.preferredDateTime || null, $event)"
                       [disabled]="isProcessing(selectedNotification.id) || !hasCounterRange(selectedNotification)"
                       >
-                Envoyer la contre-proposition
+                Send counter-proposal
               </button>
             </div>
           </div>
@@ -271,26 +271,26 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn-view-delivery" 
+        <button class="btn-view-delivery"
                 *ngIf="selectedNotification.livraisonId"
                 (click)="viewDelivery(selectedNotification.livraisonId, $event)">
           <i class="fas fa-eye"></i>
-          Voir la livraison
+          View delivery
         </button>
         <div class="modal-actions">
-          <button class="btn-accept" 
+          <button class="btn-accept"
                   *ngIf="canActOnNotification(selectedNotification)"
                   (click)="acceptNegotiation(selectedNotification, $event)"
                   [disabled]="isProcessing(selectedNotification.id)">
             <i class="fas fa-check"></i>
-            Accepter
+            Accept
           </button>
-          <button class="btn-reject" 
+          <button class="btn-reject"
                   *ngIf="canActOnNotification(selectedNotification)"
                   (click)="rejectNegotiation(selectedNotification, $event)"
                   [disabled]="isProcessing(selectedNotification.id)">
             <i class="fas fa-times"></i>
-            Refuser
+            Reject
           </button>
         </div>
       </div>

@@ -1,12 +1,12 @@
 <div class="delivery-page">
   <div class="page-title">
-    <h2><i class="fas fa-list"></i> Historique & liste complète</h2>
-    <p>Filtrer par statut/type, recherche textuelle et actions contextuelles selon le rôle.</p>
+    <h2><i class="fas fa-list"></i> History & complete list</h2>
+    <p>Filter by status/type, text search and contextual actions by role.</p>
   </div>
 
   <div class="filters-bar">
     <div class="filter">
-      <label class="filter-label">Statut</label>
+      <label class="filter-label">Status</label>
       <select [(ngModel)]="selectedStatus" class="filter-input" (change)="goFirst()">
         <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
       </select>
@@ -18,8 +18,8 @@
       </select>
     </div>
     <div class="filter grow">
-      <label class="filter-label">Recherche</label>
-      <input class="filter-input" type="text" [(ngModel)]="searchText" placeholder="Référence, produit, statut..." (input)="goFirst()">
+      <label class="filter-label">Search</label>
+      <input class="filter-input" type="text" [(ngModel)]="searchText" placeholder="Reference, product, status..." (input)="goFirst()">
     </div>
   </div>
 
@@ -29,11 +29,11 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Référence</th>
-          <th>Produit</th>
-          <th>Poids</th>
+          <th>Reference</th>
+          <th>Product</th>
+          <th>Weight</th>
           <th>Type</th>
-          <th>Statut</th>
+          <th>Status</th>
           <th>Date</th>
           <th>Actions</th>
         </tr>
@@ -50,17 +50,17 @@
           <td>{{ d.createdAt }}</td>
           <td class="actions-td">
             <button class="btn btn-outline small" type="button" (click)="consult(d.id)">
-              <i class="fas fa-eye"></i> Détail
+              <i class="fas fa-eye"></i> Detail
             </button>
             <button class="btn btn-secondary small" type="button" (click)="goTracking()">
-              <i class="fas fa-location-arrow"></i> Suivi
+              <i class="fas fa-location-arrow"></i> Tracking
             </button>
             <ng-container *ngIf="isAdmin()">
               <button class="btn btn-primary small" type="button" (click)="edit(d.id)">
-                <i class="fas fa-edit"></i> Modifier
+                <i class="fas fa-edit"></i> Edit
               </button>
               <button class="btn btn-outline small danger" type="button" (click)="delete(d.id)">
-                <i class="fas fa-trash"></i> Supprimer
+                <i class="fas fa-trash"></i> Delete
               </button>
             </ng-container>
           </td>
@@ -70,9 +70,8 @@
   </div>
 
   <div class="pagination">
-    <button class="btn btn-outline small" type="button" (click)="prevPage()" [disabled]="page === 1">Précédent</button>
+    <button class="btn btn-outline small" type="button" (click)="prevPage()" [disabled]="page === 1">Previous</button>
     <div class="page-info">Page {{ page }} / {{ totalPages }}</div>
-    <button class="btn btn-outline small" type="button" (click)="nextPage()" [disabled]="page === totalPages">Suivant</button>
+    <button class="btn btn-outline small" type="button" (click)="nextPage()" [disabled]="page === totalPages">Next</button>
   </div>
 </div>
-

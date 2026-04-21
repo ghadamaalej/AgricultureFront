@@ -2,10 +2,10 @@
   <div class="page-title">
     <h2>
       <i class="fas fa-user-shield"></i>
-      {{ isFarmerEdit() ? 'Modifier ma demande' : (isEdit() ? 'Formulaire administratif - Modification' : 'Formulaire administratif - Création') }}
+      {{ isFarmerEdit() ? 'Edit my request' : (isEdit() ? 'Administrative form - Edit' : 'Administrative form - Create') }}
     </h2>
     <p>
-      {{ isFarmerEdit() ? 'Vous pouvez corriger votre demande tant qu’elle n’a pas été acceptée par un livreur.' : (isEdit() ? 'Correction manuelle pour une livraison existante.' : 'Création manuelle (corrections admin).') }}
+      {{ isFarmerEdit() ? 'You can correct your request as long as it has not been accepted by a transporter.' : (isEdit() ? 'Manual correction for an existing delivery.' : 'Manual creation (admin corrections).') }}
     </p>
   </div>
 
@@ -17,34 +17,34 @@
         <label class="field" *ngIf="!isEdit()">
           <span class="label">Type</span>
           <select formControlName="type">
-            <option value="Locale">Locale</option>
-            <option value="Longue distance">Longue distance</option>
+            <option value="Locale">Local</option>
+            <option value="Longue distance">Long distance</option>
           </select>
         </label>
 
         <label class="field" *ngIf="!isFarmerEdit()">
-          <span class="label">Statut</span>
+          <span class="label">Status</span>
           <select formControlName="status">
-            <option value="En attente">En attente</option>
-            <option value="Acceptée">Acceptée</option>
-            <option value="En cours">En cours</option>
-            <option value="Livrée">Livrée</option>
-            <option value="Refusée">Refusée</option>
+            <option value="En attente">Pending</option>
+            <option value="Acceptée">Accepted</option>
+            <option value="En cours">In progress</option>
+            <option value="Livrée">Delivered</option>
+            <option value="Refusée">Refused</option>
           </select>
         </label>
 
         <div class="map-editor full" *ngIf="isEdit()">
           <div class="map-editor-head">
             <div>
-              <div class="map-editor-title">Positions actuelles</div>
+              <div class="map-editor-title">Current positions</div>
               <p class="map-editor-help">
-                Cliquez sur la carte ou déplacez les marqueurs pour corriger le départ et la destination.
+                Click on the map or drag the markers to correct the departure and destination.
               </p>
             </div>
 
             <div class="mode-switch">
               <button class="chip" type="button" [class.active]="selectMode === 'start'" (click)="setMode('start')">
-                Départ
+                Departure
               </button>
               <button class="chip" type="button" [class.active]="selectMode === 'end'" (click)="setMode('end')">
                 Destination
@@ -58,7 +58,7 @@
                 <i class="fas fa-location-dot"></i>
               </div>
               <div class="point-copy">
-                <div class="point-label">Départ actuel</div>
+                <div class="point-label">Current departure</div>
                 <div class="point-value">{{ startLabel }}</div>
                 <div class="point-coords">{{ startPoint.lat | number:'1.4-4' }}, {{ startPoint.lng | number:'1.4-4' }}</div>
               </div>
@@ -69,7 +69,7 @@
                 <i class="fas fa-flag-checkered"></i>
               </div>
               <div class="point-copy">
-                <div class="point-label">Destination actuelle</div>
+                <div class="point-label">Current destination</div>
                 <div class="point-value">{{ endLabel }}</div>
                 <div class="point-coords">{{ endPoint.lat | number:'1.4-4' }}, {{ endPoint.lng | number:'1.4-4' }}</div>
               </div>
@@ -80,68 +80,68 @@
         </div>
 
         <label class="field full" *ngIf="!isEdit()">
-          <span class="label">Adresse départ</span>
+          <span class="label">Departure address</span>
           <input type="text" formControlName="startAddress">
         </label>
 
         <label class="field full" *ngIf="!isEdit()">
-          <span class="label">Adresse arrivée</span>
+          <span class="label">Arrival address</span>
           <input type="text" formControlName="endAddress">
         </label>
 
         <label class="field">
-          <span class="label">Produit</span>
+          <span class="label">Product</span>
           <select formControlName="productType">
-            <option value="Tomates">Tomates</option>
-            <option value="Blé">Blé</option>
-            <option value="Orge">Orge</option>
-            <option value="Légumes">Légumes</option>
+            <option value="Tomates">Tomatoes</option>
+            <option value="Blé">Wheat</option>
+            <option value="Orge">Barley</option>
+            <option value="Légumes">Vegetables</option>
             <option value="Fruits">Fruits</option>
           </select>
         </label>
 
         <label class="field">
-          <span class="label">Poids (kg)</span>
+          <span class="label">Weight (kg)</span>
           <input type="number" formControlName="weightKg">
         </label>
 
         <label class="field">
-          <span class="label">Prix (TND)</span>
+          <span class="label">Price (TND)</span>
           <input type="number" formControlName="priceTnd">
         </label>
 
         <label class="field">
-          <span class="label">Date départ</span>
+          <span class="label">Departure date</span>
           <input type="date" formControlName="departureDate">
         </label>
 
         <label class="field" *ngIf="!isEdit()">
-          <span class="label">Livraison prévue</span>
+          <span class="label">Planned delivery</span>
           <input type="date" formControlName="expectedDeliveryDate">
         </label>
 
         <label class="field full">
-          <span class="label">Détails libres</span>
+          <span class="label">Free details</span>
           <textarea formControlName="details" rows="4"></textarea>
         </label>
 
         <label class="field checkfield">
           <input type="checkbox" formControlName="autoGrouping">
-          <span>Regroupement automatique</span>
+          <span>Automatic grouping</span>
         </label>
 
         <label class="field full" *ngIf="!isEdit() && form.get('autoGrouping')?.value">
-          <span class="label">Référence regroupement</span>
-          <input type="text" formControlName="groupingReference" placeholder="Optionnel">
+          <span class="label">Grouping reference</span>
+          <input type="text" formControlName="groupingReference" placeholder="Optional">
         </label>
       </div>
 
       <div class="actions">
         <button class="btn btn-primary" type="submit">
-          <i class="fas fa-save"></i> {{ isEdit() ? 'Mettre à jour' : 'Créer' }}
+          <i class="fas fa-save"></i> {{ isEdit() ? 'Update' : 'Create' }}
         </button>
         <button class="btn btn-outline" type="button" (click)="goBack()">
-          <i class="fas fa-arrow-left"></i> Retour liste
+          <i class="fas fa-arrow-left"></i> Back to list
         </button>
       </div>
     </form>

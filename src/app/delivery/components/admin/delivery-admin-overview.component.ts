@@ -74,7 +74,7 @@ export class DeliveryAdminOverviewComponent implements OnInit {
           totalAmount: 0,
           activeTransporters: 0
         };
-        this.loadError = 'Impossible de charger les données administrateur.';
+        this.loadError = 'Unable to load administrator data.';
         this.isLoading = false;
       }
     });
@@ -93,8 +93,8 @@ export class DeliveryAdminOverviewComponent implements OnInit {
         product: request.product,
         weightKg: request.weightKg,
         price: Number(request.estimatedPrice || 0),
-        farmer: request.createdByEmail || 'Agriculteur',
-        transporter: request.acceptedByEmail || 'Non assigné',
+        farmer: request.createdByEmail || 'Farmer',
+        transporter: request.acceptedByEmail || 'Not assigned',
         createdAt: this.toDateTime(request.createdAt),
         deliveredAt: request.deliveredAt ? this.toDateTime(request.deliveredAt) : '—'
       }))

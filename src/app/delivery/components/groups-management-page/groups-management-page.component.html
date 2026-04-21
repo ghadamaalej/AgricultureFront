@@ -1,8 +1,8 @@
 <div class="page-container">
   <div class="page-header">
-    <h1>Gestion des Groupes</h1>
-    <p class="page-description" *ngIf="!isFarmer">Créez et gérez des groupes de livraisons pour optimiser vos trajets</p>
-    <p class="page-description" *ngIf="isFarmer">Consultez vos groupes existants, leur carte, leur trajet et les statistiques de prix et de temps.</p>
+    <h1>Group Management</h1>
+    <p class="page-description" *ngIf="!isFarmer">Create and manage delivery groups to optimize your routes</p>
+    <p class="page-description" *ngIf="isFarmer">View your existing groups, their map, their route and price and time statistics.</p>
   </div>
 
   <div class="page-content" *ngIf="!isFarmer">
@@ -16,25 +16,25 @@
   <div class="farmer-groups" *ngIf="isFarmer">
     <div class="farmer-summary" *ngIf="farmerGroups.length > 0">
       <div class="summary-card">
-        <span class="summary-label">Groupes</span>
+        <span class="summary-label">Groups</span>
         <strong>{{ getTotalGroupsCount() }}</strong>
       </div>
       <div class="summary-card">
-        <span class="summary-label">Prix total avant remise</span>
+        <span class="summary-label">Total price before discount</span>
         <strong>{{ getGlobalBeforeDiscount() | number:'1.2-2' }} TND</strong>
       </div>
       <div class="summary-card">
-        <span class="summary-label">Prix total après remise</span>
+        <span class="summary-label">Total price after discount</span>
         <strong>{{ getGlobalAfterDiscount() | number:'1.2-2' }} TND</strong>
       </div>
       <div class="summary-card">
-        <span class="summary-label">Temps estimé cumulé</span>
+        <span class="summary-label">Cumulative estimated time</span>
         <strong>{{ formatDuration(getGlobalEstimatedMinutes()) }}</strong>
       </div>
     </div>
 
     <div class="farmer-info">
-      Le regroupement est réservé au livreur. Vous pouvez garder la vue groupes, consulter la map, le path et les prix, sans bouton d’ajout.
+      Grouping is reserved for the transporter. You can view the groups, consult the map, the path and the prices, without an add button.
     </div>
 
     <div class="farmer-groups-grid">
@@ -47,18 +47,18 @@
           (click)="selectFarmerGroup(group)">
           <div class="group-card-head">
             <strong>{{ group.groupReference }}</strong>
-            <span>{{ group.totalStops }} arrêts</span>
+            <span>{{ group.totalStops }} stops</span>
           </div>
           <div class="group-card-row">
-            <span>Après remise</span>
+            <span>After discount</span>
             <strong>{{ group.totalPriceAfterDiscount | number:'1.2-2' }} TND</strong>
           </div>
           <div class="group-card-row">
-            <span>Temps estimé</span>
+            <span>Estimated time</span>
             <strong>{{ formatDuration(group.totalEstimatedMinutes) }}</strong>
           </div>
           <div class="group-card-row">
-            <span>Distance inter-arrêts</span>
+            <span>Distance between stops</span>
             <strong>{{ group.totalDistanceKm | number:'1.1-1' }} km</strong>
           </div>
         </button>
@@ -67,34 +67,34 @@
       <div class="group-detail-panel" *ngIf="selectedFarmerGroup as group">
         <div class="group-stats">
           <div class="stat-box">
-            <span>Prix avant remise</span>
+            <span>Price before discount</span>
             <strong>{{ group.totalPriceBeforeDiscount | number:'1.2-2' }} TND</strong>
           </div>
           <div class="stat-box">
-            <span>Prix après remise</span>
+            <span>Price after discount</span>
             <strong>{{ group.totalPriceAfterDiscount | number:'1.2-2' }} TND</strong>
           </div>
           <div class="stat-box">
-            <span>Remise totale</span>
+            <span>Total discount</span>
             <strong>{{ group.totalDiscount | number:'1.2-2' }} TND</strong>
           </div>
           <div class="stat-box">
-            <span>Temps estimé</span>
+            <span>Estimated time</span>
             <strong>{{ formatDuration(group.totalEstimatedMinutes) }}</strong>
           </div>
         </div>
 
         <div class="map-panel">
           <div class="panel-title-row">
-            <h3>Carte du groupe {{ group.groupReference }}</h3>
-            <span>{{ group.totalStops }} points (collectes + livraisons)</span>
+            <h3>Group map {{ group.groupReference }}</h3>
+            <span>{{ group.totalStops }} points (pickups + deliveries)</span>
           </div>
           <div #farmerGroupMap class="farmer-group-map"></div>
           <div class="group-map-message" *ngIf="farmerMapMessage">{{ farmerMapMessage }}</div>
         </div>
 
         <div class="deliveries-panel">
-          <h3>Parcours du groupe</h3>
+          <h3>Group route</h3>
           <div class="delivery-stop" *ngFor="let delivery of group.deliveries">
             <div class="stop-order">{{ delivery.stopOrder }}</div>
             <div class="stop-main">
@@ -102,19 +102,19 @@
                 <strong>{{ delivery.reference }}</strong>
                 <button class="view-btn" type="button" (click)="onDeliverySelected(delivery)">
                   <i class="fas fa-eye"></i>
-                  Voir
+                  View
                 </button>
               </div>
               <div class="stop-route">{{ delivery.pickupLabel }} → {{ delivery.dropoffLabel }}</div>
               <div class="stop-meta">
-                <span>Arrivée estimée: {{ formatDateTime(delivery.estimatedArrivalTime) }}</span>
-                <span>Temps estimé: {{ formatDuration(delivery.estimatedServiceMinutes) }}</span>
-                <span *ngIf="delivery.stopOrder > 1">Trajet depuis l’arrêt précédent: {{ delivery.routeDistanceFromPreviousKm | number:'1.1-1' }} km</span>
+                <span>Estimated arrival: {{ formatDateTime(delivery.estimatedArrivalTime) }}</span>
+                <span>Estimated time: {{ formatDuration(delivery.estimatedServiceMinutes) }}</span>
+                <span *ngIf="delivery.stopOrder > 1">Route from previous stop: {{ delivery.routeDistanceFromPreviousKm | number:'1.1-1' }} km</span>
               </div>
               <div class="stop-pricing">
-                <span>Prix avant: {{ delivery.estimatedBeforeDiscount | number:'1.2-2' }} TND</span>
-                <span>Prix après: {{ delivery.estimatedPrice | number:'1.2-2' }} TND</span>
-                <span>Remise: {{ delivery.discountAmount | number:'1.2-2' }} TND</span>
+                <span>Price before: {{ delivery.estimatedBeforeDiscount | number:'1.2-2' }} TND</span>
+                <span>Price after: {{ delivery.estimatedPrice | number:'1.2-2' }} TND</span>
+                <span>Discount: {{ delivery.discountAmount | number:'1.2-2' }} TND</span>
               </div>
             </div>
           </div>
@@ -123,7 +123,7 @@
     </div>
 
     <div class="farmer-info" *ngIf="farmerGroups.length === 0">
-      Aucune de vos livraisons n’a encore été regroupée par un livreur.
+      None of your deliveries have been grouped by a transporter yet.
     </div>
   </div>
 </div>

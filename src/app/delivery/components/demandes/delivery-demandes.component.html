@@ -1,8 +1,8 @@
 <div class="delivery-page">
   <div class="page-title">
-    <h2><i class="fas fa-handshake"></i> Demandes & négociations</h2>
-    <p *ngIf="isTransporter">Négociez la demande sélectionnée ou acceptez-la directement.</p>
-    <p *ngIf="isFarmer">Répondez aux contre-propositions envoyées par les livreurs.</p>
+    <h2><i class="fas fa-handshake"></i> Requests & negotiations</h2>
+    <p *ngIf="isTransporter">Negotiate the selected request or accept it directly.</p>
+    <p *ngIf="isFarmer">Respond to counter-proposals sent by transporters.</p>
   </div>
 
   <div class="notification" *ngIf="notification" [class.success]="notification.type === 'success'" [class.error]="notification.type === 'error'">
@@ -16,12 +16,12 @@
   <div class="negotiation-grid single-panel">
     <section class="side-panel" *ngIf="isTransporter">
       <div class="panel-head">
-        <h3><i class="fas fa-motorcycle"></i> Côté livreur</h3>
+        <h3><i class="fas fa-motorcycle"></i> Transporter side</h3>
       </div>
 
       <div class="focus-banner" *ngIf="isFocusedMode">
         <i class="fas fa-bullseye"></i>
-        Négociation ciblée: seule la demande choisie est affichée ici.
+        Targeted negotiation: only the chosen request is displayed here.
       </div>
 
       <div class="cards">
@@ -32,31 +32,31 @@
           </div>
 
           <div class="card-body">
-            <div class="row"><span class="lbl">Trajet</span><span class="val">{{ c.pickup }} → {{ c.dropoff }}</span></div>
-            <div class="row"><span class="lbl">Prix proposé</span><span class="val">{{ c.price }} TND</span></div>
-            <div class="row"><span class="lbl">Créneau favori agriculteur</span><span class="val">{{ formatDateTime(c.preferredDateTime) }}</span></div>
-            <div class="row" *ngIf="c.proposedDateTime"><span class="lbl">Créneau déjà proposé</span><span class="val">{{ formatDateTime(c.proposedDateTime) }}</span></div>
-            <div class="row"><span class="lbl">Distance réelle</span><span class="val">{{ c.distanceKm | number:'1.1-1' }} km</span></div>
-            <div class="row"><span class="lbl">Ratio km</span><span class="val">{{ c.pricePerKm | number:'1.2-2' }} TND/km</span></div>
-            <div class="row"><span class="lbl">Supplément quantité</span><span class="val">{{ c.quantityAmount | number:'1.2-2' }} TND</span></div>
+            <div class="row"><span class="lbl">Route</span><span class="val">{{ c.pickup }} → {{ c.dropoff }}</span></div>
+            <div class="row"><span class="lbl">Proposed price</span><span class="val">{{ c.price }} TND</span></div>
+            <div class="row"><span class="lbl">Farmer's preferred slot</span><span class="val">{{ formatDateTime(c.preferredDateTime) }}</span></div>
+            <div class="row" *ngIf="c.proposedDateTime"><span class="lbl">Already proposed slot</span><span class="val">{{ formatDateTime(c.proposedDateTime) }}</span></div>
+            <div class="row"><span class="lbl">Actual distance</span><span class="val">{{ c.distanceKm | number:'1.1-1' }} km</span></div>
+            <div class="row"><span class="lbl">km ratio</span><span class="val">{{ c.pricePerKm | number:'1.2-2' }} TND/km</span></div>
+            <div class="row"><span class="lbl">Quantity surcharge</span><span class="val">{{ c.quantityAmount | number:'1.2-2' }} TND</span></div>
           </div>
 
           <div class="actions">
             <button class="btn btn-primary small" type="button" (click)="acceptRequest(c)" [disabled]="isAccepting(c.id)">
-              <i class="fas fa-check"></i> {{ isAccepting(c.id) ? 'Acceptation...' : 'Accepter' }}
+              <i class="fas fa-check"></i> {{ isAccepting(c.id) ? 'Accepting...' : 'Accept' }}
             </button>
             <button class="btn btn-outline small" type="button" (click)="ignoreRequest(c)">
-              <i class="fas fa-eye-slash"></i> Ignorer
+              <i class="fas fa-eye-slash"></i> Ignore
             </button>
             <button class="btn btn-outline small" type="button" (click)="refuseRequest(c)">
-              <i class="fas fa-times"></i> Refuser
+              <i class="fas fa-times"></i> Refuse
             </button>
           </div>
 
           <div class="counter">
-            <label class="counter-label">Contre-prix</label>
+            <label class="counter-label">Counter-price</label>
             <div class="counter-hint">
-              Plage autorisée: {{ c.minCounterPrice | number:'1.2-2' }} TND à {{ c.maxCounterPrice | number:'1.2-2' }} TND
+              Allowed range: {{ c.minCounterPrice | number:'1.2-2' }} TND to {{ c.maxCounterPrice | number:'1.2-2' }} TND
             </div>
             <div class="counter-row" *ngIf="hasValidCounterRange(c); else noCounterRangeTransporter">
               <input
@@ -72,59 +72,59 @@
             <div class="slider-value" *ngIf="hasValidCounterRange(c)">
               <span class="slider-bubble">{{ c.counterPrice | number:'1.2-2' }} TND</span>
             </div>
-            <label class="counter-label">Créneau proposé par le livreur</label>
+            <label class="counter-label">Slot proposed by transporter</label>
             <div class="counter-row">
               <input class="counter-input" type="datetime-local" [(ngModel)]="c.counterDateTime">
               <button class="btn btn-secondary small" type="button" (click)="counterFromTransporter(c)">
-                Envoyer
+                Send
               </button>
             </div>
             <ng-template #noCounterRangeTransporter>
-              <div class="counter-hint">Plage de négociation indisponible.</div>
+              <div class="counter-hint">Negotiation range unavailable.</div>
             </ng-template>
           </div>
         </div>
 
         <div class="empty-state" *ngIf="visibleTransporterRequests.length === 0">
           <i class="fas fa-inbox"></i>
-          <span *ngIf="isFocusedMode">Cette demande n’est plus disponible pour négociation.</span>
-          <span *ngIf="!isFocusedMode">Aucune demande en attente pour le moment.</span>
+          <span *ngIf="isFocusedMode">This request is no longer available for negotiation.</span>
+          <span *ngIf="!isFocusedMode">No pending requests at the moment.</span>
         </div>
       </div>
     </section>
 
     <section class="side-panel" *ngIf="isFarmer">
       <div class="panel-head">
-        <h3><i class="fas fa-user-tie"></i> Côté client</h3>
+        <h3><i class="fas fa-user-tie"></i> Client side</h3>
       </div>
 
       <div class="cards">
         <div class="card" *ngFor="let c of clientOffers">
           <div class="card-title">
             <span class="ref">{{ c.reference }}</span>
-            <span class="pill">Offre de {{ c.from }}</span>
+            <span class="pill">Offer from {{ c.from }}</span>
           </div>
 
           <div class="card-body">
-            <div class="row"><span class="lbl">Trajet</span><span class="val">{{ c.pickup }} → {{ c.dropoff }}</span></div>
-            <div class="row"><span class="lbl">Prix proposé</span><span class="val">{{ c.price }} TND</span></div>
-            <div class="row"><span class="lbl">Date favorite envoyée</span><span class="val">{{ formatDateTime(c.preferredDateTime) }}</span></div>
-            <div class="row" *ngIf="c.proposedDateTime"><span class="lbl">Nouvelle heure proposée</span><span class="val">{{ formatDateTime(c.proposedDateTime) }}</span></div>
+            <div class="row"><span class="lbl">Route</span><span class="val">{{ c.pickup }} → {{ c.dropoff }}</span></div>
+            <div class="row"><span class="lbl">Proposed price</span><span class="val">{{ c.price }} TND</span></div>
+            <div class="row"><span class="lbl">Preferred date sent</span><span class="val">{{ formatDateTime(c.preferredDateTime) }}</span></div>
+            <div class="row" *ngIf="c.proposedDateTime"><span class="lbl">New proposed time</span><span class="val">{{ formatDateTime(c.proposedDateTime) }}</span></div>
           </div>
 
           <div class="actions">
             <button class="btn btn-primary small" type="button" (click)="acceptOffer(c)">
-              <i class="fas fa-check"></i> Accepter
+              <i class="fas fa-check"></i> Accept
             </button>
             <button class="btn btn-outline small" type="button" (click)="refuseOffer(c)">
-              <i class="fas fa-times"></i> Refuser
+              <i class="fas fa-times"></i> Refuse
             </button>
           </div>
 
           <div class="counter">
-            <label class="counter-label">Contre-proposition</label>
+            <label class="counter-label">Counter-proposal</label>
             <div class="counter-hint" *ngIf="c.minCounterPrice > 0 && c.maxCounterPrice > 0">
-              Plage de réponse: {{ c.minCounterPrice | number:'1.2-2' }} TND à {{ c.maxCounterPrice | number:'1.2-2' }} TND
+              Response range: {{ c.minCounterPrice | number:'1.2-2' }} TND to {{ c.maxCounterPrice | number:'1.2-2' }} TND
             </div>
             <div class="counter-row" *ngIf="hasValidCounterRange(c); else noCounterRangeClient">
               <input
@@ -140,22 +140,22 @@
             <div class="slider-value" *ngIf="hasValidCounterRange(c)">
               <span class="slider-bubble">{{ c.counterPrice | number:'1.2-2' }} TND</span>
             </div>
-            <label class="counter-label">Votre contre-créneau</label>
+            <label class="counter-label">Your counter-slot</label>
             <div class="counter-row">
               <input class="counter-input" type="datetime-local" [(ngModel)]="c.counterDateTime">
               <button class="btn btn-secondary small" type="button" (click)="proposeCounterFromClient(c)">
-                Soumettre
+                Submit
               </button>
             </div>
             <ng-template #noCounterRangeClient>
-              <div class="counter-hint">Plage de négociation indisponible.</div>
+              <div class="counter-hint">Negotiation range unavailable.</div>
             </ng-template>
           </div>
         </div>
 
         <div class="empty-state" *ngIf="clientOffers.length === 0">
           <i class="fas fa-inbox"></i>
-          <span>Aucune contre-proposition en attente.</span>
+          <span>No pending counter-proposals.</span>
         </div>
       </div>
     </section>

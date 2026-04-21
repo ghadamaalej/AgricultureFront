@@ -19,8 +19,8 @@ const routes: Routes = [
       // ↓ Décommente au fur et à mesure que tu crées les modules
        {
           path: 'users',component: UsersComponent
-          
-        }
+
+        },
       // {
       //   path: 'deliveries',
       //   loadChildren: () =>

@@ -30,7 +30,7 @@ export class DeliveryActiveComponent implements OnInit {
     if (request.status === 'Acceptée') {
       const blocking = this.getBlockingInProgressRequest(request.id);
       if (blocking) {
-        this.notification = `Impossible de commencer ${request.reference}. Terminez d'abord ${blocking.reference} ou annulez-la.`;
+        this.notification = `Cannot start ${request.reference}. Please finish or cancel ${blocking.reference} first.`;
         window.setTimeout(() => (this.notification = null), 3600);
         return;
       }
@@ -51,7 +51,7 @@ export class DeliveryActiveComponent implements OnInit {
     this.requestService.startRouteToPickup(request.id).subscribe((result) => {
       this.startingRouteIds.delete(request.id);
       if (!result.success) {
-        this.notification = result.errorMessage || 'Impossible de demarrer la route pour le moment.';
+        this.notification = result.errorMessage || 'Unable to start the route at the moment.';
         window.setTimeout(() => (this.notification = null), 3500);
         return;
       }
@@ -79,7 +79,7 @@ export class DeliveryActiveComponent implements OnInit {
     if (!blocking) {
       return '';
     }
-    return `Livraison en cours: ${blocking.reference}. Terminez-la ou annulez-la d'abord.`;
+    return `Delivery in progress: ${blocking.reference}. Finish or cancel it first.`;
   }
 
 

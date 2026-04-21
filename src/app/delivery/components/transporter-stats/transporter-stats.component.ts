@@ -98,7 +98,7 @@ export class TransporterStatsComponent implements OnInit {
     this.monthlyData = Object.entries(monthlyDeliveries)
       .map(([month, count]) => {
         const [year, monthNum] = month.split('-');
-        const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return {
           month: `${monthNames[parseInt(monthNum) - 1]} ${year}`,
           count

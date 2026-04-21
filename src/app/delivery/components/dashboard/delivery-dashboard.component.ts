@@ -41,7 +41,7 @@ export class DeliveryDashboardComponent implements OnInit {
         this.summary = this.buildSummary([]);
         this.statusProgress = this.buildStatusProgress([]);
         this.isLoading = false;
-        this.loadError = 'Impossible de charger les statistiques depuis le backend.';
+        this.loadError = 'Unable to load statistics from the backend.';
       }
     });
 
@@ -57,10 +57,10 @@ export class DeliveryDashboardComponent implements OnInit {
         }
 
         this.backendMetrics = [
-          { label: 'Taux de planification', value: `${(stats.planningRate ?? 0).toFixed(1)}%` },
-          { label: 'Affectation transporteur', value: `${(stats.transportAssignmentRate ?? 0).toFixed(1)}%` },
-          { label: 'Taux de livraison', value: `${(stats.deliverySuccessRate ?? 0).toFixed(1)}%` },
-          { label: 'Livraisons prévues (30 jours)', value: String(stats.next30DaysPlanned ?? 0) }
+          { label: 'Planning rate', value: `${(stats.planningRate ?? 0).toFixed(1)}%` },
+          { label: 'Transporter assignment', value: `${(stats.transportAssignmentRate ?? 0).toFixed(1)}%` },
+          { label: 'Delivery success rate', value: `${(stats.deliverySuccessRate ?? 0).toFixed(1)}%` },
+          { label: 'Planned deliveries (30 days)', value: String(stats.next30DaysPlanned ?? 0) }
         ];
       });
       return;
@@ -73,10 +73,10 @@ export class DeliveryDashboardComponent implements OnInit {
       }
 
       this.backendMetrics = [
-        { label: 'Taux de regroupement', value: `${this.toPercent(stats.grouped, stats.total)}%` },
-        { label: 'Distance moyenne', value: `${(stats.avgDistancePerDelivery ?? 0).toFixed(1)} km` },
-        { label: 'Revenus livrés', value: `${(stats.revenueDelivered ?? 0).toFixed(2)} TND` },
-        { label: 'Taux de réussite', value: `${(stats.deliverySuccessRate ?? 0).toFixed(1)}%` }
+        { label: 'Grouping rate', value: `${this.toPercent(stats.grouped, stats.total)}%` },
+        { label: 'Average distance', value: `${(stats.avgDistancePerDelivery ?? 0).toFixed(1)} km` },
+        { label: 'Delivered revenue', value: `${(stats.revenueDelivered ?? 0).toFixed(2)} TND` },
+        { label: 'Success rate', value: `${(stats.deliverySuccessRate ?? 0).toFixed(1)}%` }
       ];
     });
   }
@@ -101,10 +101,10 @@ export class DeliveryDashboardComponent implements OnInit {
     const delivered = requests.filter((r) => r.status === 'Livrée').length;
 
     return [
-      { value: String(total), label: 'Nombre total de demandes', icon: 'fas fa-inbox', color: '#4caf50' },
-      { value: `${amount.toLocaleString('fr-FR')} TND`, label: 'Montant cumulé', icon: 'fas fa-coins', color: '#ff8f00' },
-      { value: String(inProgress), label: 'Demandes en cours', icon: 'fas fa-route', color: '#00acc1' },
-      { value: String(delivered), label: 'Demandes livrées', icon: 'fas fa-check-circle', color: '#7b1fa2' }
+      { value: String(total), label: 'Total requests', icon: 'fas fa-inbox', color: '#4caf50' },
+      { value: `${amount.toLocaleString('fr-FR')} TND`, label: 'Cumulative amount', icon: 'fas fa-coins', color: '#ff8f00' },
+      { value: String(inProgress), label: 'Requests in progress', icon: 'fas fa-route', color: '#00acc1' },
+      { value: String(delivered), label: 'Delivered requests', icon: 'fas fa-check-circle', color: '#7b1fa2' }
     ];
   }
 

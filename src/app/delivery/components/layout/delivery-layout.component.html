@@ -1,11 +1,11 @@
 <div class="delivery-wrap" [class.sidebar-closed]="!sidebarOpen">
   <aside class="delivery-sidebar">
-    <a class="sidebar-logo" routerLink="/" title="Retour à l'accueil">
+    <a class="sidebar-logo" routerLink="/" title="Back to home">
       <img src="assets/images/logo.png" alt="GreenRoots" class="sidebar-logo-img">
       <span class="sidebar-logo-text">Green<em>Roots</em></span>
     </a>
 
-    <div class="sidebar-section-label">Menu Delivery</div>
+    <div class="sidebar-section-label">Delivery Menu</div>
     <nav class="sidebar-nav">
       <button
         type="button"
@@ -19,7 +19,7 @@
       </button>
     </nav>
 
-    <div class="sidebar-section-label">Compte</div>
+    <div class="sidebar-section-label">Account</div>
     <div class="sidebar-role">
       <i class="fas fa-user"></i>
       <span class="sidebar-role-value">{{ role }}</span>
@@ -42,7 +42,7 @@
       <div class="topbar-right">
         <div class="topbar-search" title="Search (placeholder)">
           <i class="fas fa-search"></i>
-          <input type="text" placeholder="Rechercher...">
+          <input type="text" placeholder="Search...">
         </div>
         <app-notifications
           [userId]="currentUserId"

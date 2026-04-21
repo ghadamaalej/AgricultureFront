@@ -1,14 +1,14 @@
 <div class="delivery-page">
   <div class="page-title">
-    <h2><i class="fas fa-layer-group"></i> Groupes de livraisons</h2>
-    <p>Gestion du regroupement logistique (actifs + regroupables en attente).</p>
+    <h2><i class="fas fa-layer-group"></i> Delivery groups</h2>
+    <p>Logistics grouping management (active + groupable pending).</p>
   </div>
 
   <div class="groups-toolbar">
     <button class="btn btn-primary" type="button" (click)="createSuggestedGroup()">
-      <i class="fas fa-object-group"></i> Creer un groupe suggere
+      <i class="fas fa-object-group"></i> Create a suggested group
     </button>
-    <div class="group-note">Regroupement base sur region voisine + capacite vehicule.</div>
+    <div class="group-note">Grouping based on neighboring region + vehicle capacity.</div>
   </div>
 
   <div class="notification" *ngIf="groupNotification">{{ groupNotification }}</div>
@@ -16,7 +16,7 @@
   <section class="groups-section">
     <div class="section-title-row">
       <div class="panel-title">
-        <i class="fas fa-check-circle"></i> Groupes actifs
+        <i class="fas fa-check-circle"></i> Active groups
       </div>
     </div>
 
@@ -25,20 +25,20 @@
         <div class="group-head">
           <div class="group-ref">
             <strong>{{ g.groupReference }}</strong>
-            <div class="group-sub">{{ g.deliveriesCount }} livraisons incluses</div>
+            <div class="group-sub">{{ g.deliveriesCount }} included deliveries</div>
           </div>
 
           <div class="group-economy">
             <div class="eco-row">
-              <span class="eco-label">Prix avant</span>
+              <span class="eco-label">Price before</span>
               <span class="eco-value">{{ g.priceBefore }} TND</span>
             </div>
             <div class="eco-row">
-              <span class="eco-label">Prix après</span>
+              <span class="eco-label">Price after</span>
               <span class="eco-value after">{{ g.priceAfter }} TND</span>
             </div>
             <div class="eco-row">
-              <span class="eco-label">Économies</span>
+              <span class="eco-label">Savings</span>
               <span class="eco-value save">{{ g.savings }} TND</span>
             </div>
           </div>
@@ -46,17 +46,17 @@
 
         <div class="group-metrics">
           <div class="metric">
-            <div class="metric-label">Poids total</div>
+            <div class="metric-label">Total weight</div>
             <div class="metric-value">{{ g.totalWeightKg }} kg</div>
           </div>
           <div class="metric">
-            <div class="metric-label">Distance totale</div>
+            <div class="metric-label">Total distance</div>
             <div class="metric-value">{{ g.totalDistanceKm }} km</div>
           </div>
         </div>
 
         <div class="recommendation">
-          <div class="rec-title">Séquence recommandée</div>
+          <div class="rec-title">Recommended sequence</div>
           <div class="rec-list">
             <div class="rec-item" *ngFor="let r of getRecommendedOrder(g); let i = index">
               <span class="rec-index">{{ i + 1 }}</span>
@@ -68,14 +68,14 @@
 
         <div class="group-actions">
           <button class="btn btn-secondary" type="button" (click)="showGroupOnMap(g)">
-            <i class="fas fa-map"></i> Visualiser la route
+            <i class="fas fa-map"></i> View route
           </button>
         </div>
       </div>
     </div>
 
     <div class="group-map-wrap">
-      <div class="panel-title"><i class="fas fa-route"></i> Carte du groupe selectionne</div>
+      <div class="panel-title"><i class="fas fa-route"></i> Selected group map</div>
       <div #groupMap class="group-map"></div>
       <div class="group-map-message" *ngIf="mapMessage">{{ mapMessage }}</div>
     </div>
@@ -83,25 +83,25 @@
 
   <section class="groups-section pending-section">
     <div class="panel-title">
-      <i class="fas fa-hourglass-half"></i> Demandes regroupables encore en attente
+      <i class="fas fa-hourglass-half"></i> Groupable requests still pending
     </div>
 
     <div class="pending-list">
       <div class="pending-item" *ngFor="let p of pendingGroupables">
         <div class="p-left">
           <div class="p-ref">{{ p.reference }}</div>
-          <div class="p-meta">{{ p.adresseDepart || 'Départ' }} → {{ p.adresseArrivee || 'Arrivée' }}</div>
+          <div class="p-meta">{{ p.adresseDepart || 'Departure' }} → {{ p.adresseArrivee || 'Arrival' }}</div>
         </div>
         <div class="p-right">
           <div class="p-saving">
-            Prix actuel: <strong>{{ p.prix }} TND</strong>
+            Current price: <strong>{{ p.prix }} TND</strong>
           </div>
         </div>
       </div>
 
       <div class="empty-box" *ngIf="!pendingGroupables.length">
         <i class="fas fa-inbox"></i>
-        <p>Aucune demande regroupable en attente (auto-regroupement non active).</p>
+        <p>No groupable requests pending (auto-grouping not enabled).</p>
       </div>
     </div>
   </section>

@@ -70,7 +70,7 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
   selectGroup(group: DeliveryGroup): void {
     this.selectedGroup = group;
     this.groupDetails = null;
-    this.groupMapMessage = 'Chargement de la route du groupe...';
+    this.groupMapMessage = 'Loading group route...';
     this.loadGroupDetails(group.groupReference);
     this.groupSelected.emit(group.groupReference);
   }
@@ -86,7 +86,7 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
       },
       error: (err) => {
         console.error('Erreur lors du chargement des détails du groupe:', err);
-        this.groupMapMessage = 'Impossible de charger la route de ce groupe.';
+        this.groupMapMessage = 'Unable to load the route for this group.';
       }
     });
   }
@@ -121,7 +121,7 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
       },
       error: (err) => {
         console.error('Erreur lors du chargement des livraisons disponibles:', err);
-        this.showFeedback('Impossible de charger les livraisons disponibles.', 'error');
+        this.showFeedback('Unable to load available deliveries.', 'error');
       }
     });
   }
@@ -141,7 +141,7 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
 
   createGroup(): void {
     if (this.selectedDeliveriesForGroup.length < 2) {
-      this.showFeedback('Veuillez sélectionner au moins 2 livraisons pour constituer un groupe.', 'error');
+      this.showFeedback('Please select at least 2 deliveries to form a group.', 'error');
       return;
     }
 
@@ -154,7 +154,7 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
       next: (result) => {
         this.isLoading = false;
         if (!result) {
-          this.showFeedback('L\'enregistrement du groupe a échoué.', 'error');
+          this.showFeedback('Group save failed.', 'error');
           return;
         }
         const targetReference = result.groupReference || this.editingGroupReference;
@@ -163,23 +163,23 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
           ? ({ groupReference: targetReference } as DeliveryGroup)
           : this.selectedGroup;
         this.loadGroups();
-        this.showFeedback(result.message || 'Groupe enregistré avec succès.', 'success');
+        this.showFeedback(result.message || 'Group saved successfully.', 'success');
         if (targetReference) {
-          this.groupMapMessage = 'Chargement de la route du groupe...';
+          this.groupMapMessage = 'Loading group route...';
           this.loadGroupDetails(targetReference);
         }
       },
       error: (err) => {
         this.isLoading = false;
         console.error('Erreur lors de la création du groupe:', err);
-        this.showFeedback('Erreur lors de l\'enregistrement du groupe.', 'error');
+        this.showFeedback('Error saving the group.', 'error');
       }
     });
   }
 
   openEditGroupModal(): void {
     if (!this.selectedGroup || !this.groupDetails) {
-      this.showFeedback('Sélectionnez d\'abord un groupe à modifier.', 'info');
+      this.showFeedback('Please select a group to edit first.', 'info');
       return;
     }
 
@@ -194,7 +194,7 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
 
   deleteSelectedGroup(): void {
     if (!this.selectedGroup) {
-      this.showFeedback('Sélectionnez d\'abord un groupe à supprimer.', 'info');
+      this.showFeedback('Please select a group to delete first.', 'info');
       return;
     }
 
@@ -204,17 +204,17 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
       next: (result) => {
         this.isLoading = false;
         if (!result) {
-          this.showFeedback('La suppression du groupe a échoué.', 'error');
+          this.showFeedback('Group deletion failed.', 'error');
           return;
         }
-        this.showFeedback(result.message || 'Groupe supprimé avec succès.', 'success');
+        this.showFeedback(result.message || 'Group deleted successfully.', 'success');
         this.closeSelectedGroup();
         this.loadGroups();
       },
       error: (err) => {
         this.isLoading = false;
         console.error('Erreur lors de la suppression du groupe:', err);
-        this.showFeedback('Erreur lors de la suppression du groupe.', 'error');
+        this.showFeedback('Error deleting the group.', 'error');
       }
     });
   }
@@ -258,12 +258,12 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
 
   getStatusText(status: string): string {
     const texts: { [key: string]: string } = {
-      'EN_ATTENTE': 'En attente',
-      'ACCEPTEE': 'Acceptée',
-      'EN_COURS': 'En cours',
-      'RETARD': 'Retard',
-      'LIVREE': 'Livrée',
-      'ANNULEE': 'Annulée'
+      'EN_ATTENTE': 'Pending',
+      'ACCEPTEE': 'Accepted',
+      'EN_COURS': 'In progress',
+      'RETARD': 'Delayed',
+      'LIVREE': 'Delivered',
+      'ANNULEE': 'Cancelled'
     };
     return texts[status] || status;
   }
@@ -279,9 +279,9 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
 
   getGroupStatusText(status: string): string {
     const texts: { [key: string]: string } = {
-      'COMPLETED': 'Terminé',
-      'IN_PROGRESS': 'En cours',
-      'PENDING': 'En attente'
+      'COMPLETED': 'Completed',
+      'IN_PROGRESS': 'In progress',
+      'PENDING': 'Pending'
     };
     return texts[status] || status;
   }
@@ -321,14 +321,14 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   getModalTitle(): string {
-    return this.editingGroupReference ? `Modifier le groupe ${this.editingGroupReference}` : 'Créer un nouveau groupe';
+    return this.editingGroupReference ? `Edit group ${this.editingGroupReference}` : 'Create a new group';
   }
 
   getModalActionLabel(): string {
     if (this.isLoading) {
-      return this.editingGroupReference ? 'Mise à jour...' : 'Création...';
+      return this.editingGroupReference ? 'Updating...' : 'Creating...';
     }
-    return this.editingGroupReference ? 'Mettre à jour le groupe' : 'Créer le groupe';
+    return this.editingGroupReference ? 'Update group' : 'Create group';
   }
 
   private showFeedback(message: string, type: 'success' | 'error' | 'info'): void {
@@ -348,7 +348,7 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
     }
 
     if (routePoints.length < 2) {
-      this.groupMapMessage = 'Ce groupe ne contient pas assez de coordonnées pour afficher la route.';
+      this.groupMapMessage = 'This group does not have enough coordinates to display the route.';
       this.mapService.destroy();
       return;
     }
@@ -435,7 +435,7 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
         points.push({
           lat: Number(nextPickup.latDepart),
           lng: Number(nextPickup.lngDepart),
-          label: `${points.length + 1}. Collecte ${nextPickup.reference || 'Livraison'} - départ`,
+          label: `${points.length + 1}. Pickup ${nextPickup.reference || 'Delivery'} - departure`,
           kind: 'start'
         });
         picked.push(nextPickup);
@@ -466,7 +466,7 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
         points.push({
           lat: Number(pickedDelivery.latDepart),
           lng: Number(pickedDelivery.lngDepart),
-          label: `${points.length + 1}. Collecte ${pickedDelivery.reference || 'Livraison'} - départ`,
+          label: `${points.length + 1}. Pickup ${pickedDelivery.reference || 'Delivery'} - departure`,
           kind: 'start'
         });
         picked.push(pickedDelivery);
@@ -478,7 +478,7 @@ export class GroupsManagementComponent implements OnInit, AfterViewInit, OnDestr
         points.push({
           lat: Number(delivered.latArrivee),
           lng: Number(delivered.lngArrivee),
-          label: `${points.length + 1}. Livraison ${delivered.reference || 'Livraison'} - arrivée`,
+          label: `${points.length + 1}. Delivery ${delivered.reference || 'Delivery'} - arrival`,
           kind: 'stop'
         });
         completed.add(Number(delivered.id));

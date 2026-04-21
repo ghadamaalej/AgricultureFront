@@ -7,41 +7,41 @@
   <div class="history-shortcuts">
     <button class="btn btn-secondary small" type="button" (click)="goTo('/delivery/livraisons')">
       <i class="fas fa-list"></i>
-      Toutes les livraisons
+      All deliveries
     </button>
     <button class="btn btn-secondary small" type="button" *ngIf="!isFarmer" (click)="goTo('/delivery/active')">
       <i class="fas fa-truck-fast"></i>
-      En cours
+      In progress
     </button>
     <button class="btn btn-secondary small" type="button" *ngIf="isFarmer" (click)="goTo('/delivery/tracking')">
       <i class="fas fa-route"></i>
-      Suivi
+      Tracking
     </button>
     <button class="btn btn-secondary small" type="button" *ngIf="!isFarmer" (click)="goTo('/delivery/calendar')">
       <i class="fas fa-calendar-days"></i>
-      Calendrier
+      Calendar
     </button>
     <button class="btn btn-secondary small" type="button" *ngIf="isFarmer" (click)="goTo('/delivery/create')">
       <i class="fas fa-plus"></i>
-      Nouvelle demande
+      New request
     </button>
   </div>
 
   <div class="history-overview" *ngIf="hasAnyRequest(); else emptyState">
     <div class="overview-card overview-card--active">
-      <span class="overview-label">En cours</span>
+      <span class="overview-label">In progress</span>
       <strong>{{ getSectionCount('inProgress') }}</strong>
-      <small>Priorité immédiate</small>
+      <small>Immediate priority</small>
     </div>
     <div class="overview-card overview-card--planned">
-      <span class="overview-label">Acceptées</span>
+      <span class="overview-label">Accepted</span>
       <strong>{{ getSectionCount('accepted') }}</strong>
-      <small>Départs à préparer</small>
+      <small>Departures to prepare</small>
     </div>
     <div class="overview-card overview-card--done">
-      <span class="overview-label">Livrées</span>
+      <span class="overview-label">Delivered</span>
       <strong>{{ getSectionCount('delivered') }}</strong>
-      <small>Missions clôturées</small>
+      <small>Closed missions</small>
     </div>
   </div>
 
@@ -57,7 +57,7 @@
 
       <div class="section-empty" *ngIf="!section.requests.length">
         <i class="fas fa-inbox"></i>
-        <span>Aucune mission dans cette section.</span>
+        <span>No mission in this section.</span>
       </div>
 
       <div class="history-list" *ngIf="section.requests.length">
@@ -111,7 +111,7 @@
           <div class="card-actions">
             <button class="btn btn-secondary small" type="button" (click)="openDetail(req.id)">
               <i class="fas fa-eye"></i>
-              Voir détail
+              View detail
             </button>
           </div>
         </article>
@@ -120,13 +120,13 @@
       <div class="section-pagination" *ngIf="section.requests.length > sectionPageSize">
         <button class="btn btn-secondary small" type="button" (click)="goPrev(section.key)" [disabled]="!canGoPrev(section.key)">
           <i class="fas fa-chevron-left"></i>
-          Precedent
+          Previous
         </button>
         <span class="page-indicator">
           Page {{ getSectionCurrentPage(section.key) }} / {{ getSectionPageCount(section) }}
         </span>
         <button class="btn btn-secondary small" type="button" (click)="goNext(section)" [disabled]="!canGoNext(section)">
-          Suivant
+          Next
           <i class="fas fa-chevron-right"></i>
         </button>
       </div>

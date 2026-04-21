@@ -38,7 +38,7 @@ export class NegotiationComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur lors du chargement de la plage de négociation:', err);
-        this.negotiationError.emit('Impossible de charger la plage de négociation');
+        this.negotiationError.emit('Unable to load the negotiation range');
       }
     });
   }
@@ -74,7 +74,7 @@ export class NegotiationComponent implements OnInit {
 
   submitNegotiation(): void {
     if (!this.isPriceValid()) {
-      this.negotiationError.emit('Le prix proposé n\'est pas dans la plage autorisée');
+      this.negotiationError.emit('The proposed price is not within the allowed range');
       return;
     }
 
@@ -90,7 +90,7 @@ export class NegotiationComponent implements OnInit {
         },
         error: (err) => {
           this.isNegotiating = false;
-          this.negotiationError.emit('Erreur lors de la soumission de la négociation');
+          this.negotiationError.emit('Error submitting the negotiation');
         }
       });
     }
@@ -108,7 +108,7 @@ export class NegotiationComponent implements OnInit {
       },
       error: (err) => {
         this.isNegotiating = false;
-        this.negotiationError.emit('Erreur lors de l\'acceptation de la négociation');
+        this.negotiationError.emit('Error accepting the negotiation');
       }
     });
   }
@@ -125,7 +125,7 @@ export class NegotiationComponent implements OnInit {
       },
       error: (err) => {
         this.isNegotiating = false;
-        this.negotiationError.emit('Erreur lors du refus de la négociation');
+        this.negotiationError.emit('Error rejecting the negotiation');
       }
     });
   }
@@ -141,11 +141,11 @@ export class NegotiationComponent implements OnInit {
   getNegotiationStatusText(): string {
     switch (this.negotiationStatus) {
       case 'EN_NEGOCIATION':
-        return 'En cours de négociation';
+        return 'Negotiation in progress';
       case 'ACCEPTEE_NEGO':
-        return 'Négociation acceptée';
+        return 'Negotiation accepted';
       case 'REFUSEE_NEGO':
-        return 'Négociation refusée';
+        return 'Negotiation rejected';
       default:
         return '';
     }

@@ -31,8 +31,8 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
 
   startSearchText = '';
   endSearchText = '';
-  startLabel = 'Point de départ';
-  endLabel = 'Point de destination';
+  startLabel = 'Departure point';
+  endLabel = 'Destination point';
   searchingStart = false;
   searchingEnd = false;
   searchError: string | null = null;
@@ -100,7 +100,7 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
       this.knownTransporters = items;
       this.loadingTransporters = false;
       if (!items.length) {
-        this.preferredTransporterError = 'Aucun transporteur disponible. Vous devez d abord terminer au moins une livraison avec un transporteur.';
+        this.preferredTransporterError = 'No transporter available. You must first complete at least one delivery with a transporter.';
       } else {
         this.selectedTransporteurId = items[0].transporteurId;
       }
@@ -133,12 +133,12 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
       const point: LatLng = { lat: latlng.lat, lng: latlng.lng };
       if (this.selectMode === 'start') {
         this.startPoint = point;
-        this.startLabel = 'Départ défini sur la carte';
+        this.startLabel = 'Departure set on the map';
         // Smooth UX: after picking departure, switch to destination.
         this.selectMode = 'end';
       } else if (this.selectMode === 'end') {
         this.endPoint = point;
-        this.endLabel = 'Destination définie sur la carte';
+        this.endLabel = 'Destination set on the map';
       }
 
       this.renderPoints();
@@ -156,7 +156,7 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
       this.startPoint.lng,
       `<strong>${this.startLabel}</strong>`,
       {
-        title: 'Départ',
+        title: 'Departure',
         draggable: true,
         icon: this.mapService.getPointIcon('start')
       }
@@ -175,7 +175,7 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
     startMarker.on('dragend', () => {
       const p = startMarker.getLatLng();
       this.startPoint = { lat: p.lat, lng: p.lng };
-      this.startLabel = 'Départ déplacé';
+      this.startLabel = 'Departure moved';
       this.recomputeEstimation();
       this.renderPoints();
     });
@@ -183,7 +183,7 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
     endMarker.on('dragend', () => {
       const p = endMarker.getLatLng();
       this.endPoint = { lat: p.lat, lng: p.lng };
-      this.endLabel = 'Destination déplacée';
+      this.endLabel = 'Destination moved';
       this.recomputeEstimation();
       this.renderPoints();
     });
@@ -271,7 +271,7 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
   private async searchLocation(mode: 'start' | 'end'): Promise<void> {
     const query = (mode === 'start' ? this.startSearchText : this.endSearchText).trim();
     if (!query) {
-      this.searchError = 'Veuillez saisir un lieu à rechercher.';
+      this.searchError = 'Please enter a location to search.';
       return;
     }
 
@@ -286,19 +286,19 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
       });
 
       if (!response.ok) {
-        throw new Error('Service de géocodage indisponible.');
+        throw new Error('Geocoding service unavailable.');
       }
 
       const results = (await response.json()) as PlaceSuggestion[];
       if (!results.length) {
-        this.searchError = `Aucun résultat trouvé pour "${query}".`;
+        this.searchError = `No result found for "${query}".`;
         return;
       }
 
       const best = results[0];
       const point: LatLng = { lat: Number(best.lat), lng: Number(best.lon) };
       if (!Number.isFinite(point.lat) || !Number.isFinite(point.lng)) {
-        this.searchError = 'Coordonnées invalides reçues depuis la recherche.';
+        this.searchError = 'Invalid coordinates received from the search.';
         return;
       }
 
@@ -315,7 +315,7 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
       this.mapService.getMap()?.flyTo([point.lat, point.lng], 12, { animate: true });
     } catch (error) {
       console.error('Location search failed', error);
-      this.searchError = 'La recherche a échoué. Réessayez dans quelques instants.';
+      this.searchError = 'Search failed. Please try again in a moment.';
     } finally {
       if (mode === 'start') this.searchingStart = false;
       else this.searchingEnd = false;
@@ -417,15 +417,15 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
     this.aiSuggestion = null;
 
     if (!this.departureDate) {
-      this.aiError = 'Choisissez d abord une date favorite.';
+      this.aiError = 'Please choose a preferred date first.';
       return;
     }
     if (!Number.isFinite(this.startPoint.lat) || !Number.isFinite(this.startPoint.lng)) {
-      this.aiError = 'Definissez le point de depart sur la carte.';
+      this.aiError = 'Please set the departure point on the map.';
       return;
     }
     if (!this.estimatedPrice || this.estimatedPrice <= 0) {
-      this.aiError = 'Le prix estime n est pas encore calcule. Patientez.';
+      this.aiError = 'The estimated price has not been calculated yet. Please wait.';
       return;
     }
 
@@ -444,7 +444,7 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
           this.refreshMapSize();
         },
         error: (err: Error) => {
-          this.aiError = err?.message || 'Analyse IA indisponible pour le moment.';
+          this.aiError = err?.message || 'AI analysis unavailable at the moment.';
           this.checkingAi = false;
           this.refreshMapSize();
         }
@@ -499,7 +499,7 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.isPreferredTransporterFlow) {
       if (!this.selectedTransporteurId) {
         this.isSubmitting = false;
-        this.submitError = 'Veuillez choisir un transporteur.';
+        this.submitError = 'Please choose a transporter.';
         return;
       }
 
@@ -507,7 +507,7 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
         this.isSubmitting = false;
         const created = result.delivery;
         if (!created) {
-          this.submitError = result.errorMessage || 'Le transporteur n est pas disponible sur ce creneau. Merci de changer la date et reessayer.';
+          this.submitError = result.errorMessage || 'The transporter is not available on this slot. Please change the date and try again.';
           return;
         }
 
@@ -525,7 +525,7 @@ export class DeliveryCreateComponent implements OnInit, AfterViewInit, OnDestroy
       this.isSubmitting = false;
 
       if (!created) {
-        this.submitError = 'La livraison n’a pas été enregistrée côté backend. Vérifiez que le service Livraison est démarré puis réessayez.';
+        this.submitError = 'The delivery was not saved on the backend. Please verify the Delivery service is running and try again.';
         return;
       }
 

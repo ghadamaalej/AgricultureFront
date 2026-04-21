@@ -1,7 +1,7 @@
 <div class="delivery-page">
   <div class="page-title">
-    <h2><i class="fas fa-route"></i> Suivi des demandes</h2>
-    <p>Tableau de suivi avec panneau gauche (liste) et carte à droite.</p>
+    <h2><i class="fas fa-route"></i> Request tracking</h2>
+    <p>Tracking panel with left list and right map.</p>
   </div>
 
   <div class="notification" *ngIf="notification" [class.success]="notification.type === 'success'" [class.error]="notification.type === 'error'" [class.info]="notification.type === 'info'">
@@ -16,32 +16,32 @@
     <!-- Left panel -->
     <aside class="left-panel">
       <div class="panel-title-row">
-        <div class="panel-title">Livraisons</div>
+        <div class="panel-title">Deliveries</div>
       </div>
 
       <div class="filters">
         <div class="filter-row">
-          <label class="filter-label">Statut</label>
+          <label class="filter-label">Status</label>
           <select [(ngModel)]="selectedStatus" class="filter-select">
-            <option value="Tous" *ngIf="showAllStatusOption">Tous</option>
+            <option value="Tous" *ngIf="showAllStatusOption">All</option>
             <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
           </select>
         </div>
 
         <div class="filter-row">
-          <label class="filter-label">Recherche</label>
+          <label class="filter-label">Search</label>
           <input
             class="filter-input"
             type="text"
             [(ngModel)]="searchText"
-            placeholder="Référence, produit, villes..."
+            placeholder="Reference, product, cities..."
           />
         </div>
       </div>
 
       <div class="delivery-list">
         <div class="d-meta" *ngIf="filteredDeliveries.length === 0">
-          Aucune livraison à suivre avec les filtres actuels.
+          No delivery to track with the current filters.
         </div>
         <div
           class="delivery-item"
@@ -62,7 +62,7 @@
               <div class="progress-bar" [style.width.%]="d.progress"></div>
             </div>
             <button class="item-detail-btn" type="button" (click)="openDeliveryDetail(d.id, $event)">
-              <i class="fas fa-eye"></i> Détail
+              <i class="fas fa-eye"></i> Detail
             </button>
           </div>
         </div>
@@ -89,11 +89,11 @@
 
       <div class="track-details" *ngIf="selectedDelivery">
         <div class="detail-card">
-          <div class="detail-label">Statut</div>
+          <div class="detail-label">Status</div>
           <div class="detail-value">{{ selectedDelivery.status }}</div>
         </div>
         <div class="detail-card">
-          <div class="detail-label">Progression</div>
+          <div class="detail-label">Progress</div>
           <div class="detail-value">{{ selectedDelivery.progress }}%</div>
         </div>
         <div class="detail-card">
@@ -101,15 +101,15 @@
           <div class="detail-value">{{ selectedDelivery.etaMinutes > 0 ? (selectedDelivery.etaMinutes + ' min') : '—' }}</div>
         </div>
         <div class="detail-card" *ngIf="selectedDelivery.status === 'En cours'">
-          <div class="detail-label">Mode suivi</div>
-          <div class="detail-value">Vers collecte agriculteur</div>
+          <div class="detail-label">Tracking mode</div>
+          <div class="detail-value">Towards farmer pickup</div>
         </div>
         <div class="detail-card" *ngIf="!isFarmer()">
-          <div class="detail-label">Agriculteur</div>
+          <div class="detail-label">Farmer</div>
           <div class="detail-value actor-name">{{ getFarmerDisplayName(selectedDelivery) }}</div>
         </div>
         <div class="detail-card">
-          <div class="detail-label">Transporteur</div>
+          <div class="detail-label">Transporter</div>
           <button
             class="actor-link"
             type="button"
@@ -127,20 +127,20 @@
       <div class="manage-panel" *ngIf="selectedDelivery && isFarmer()">
         <div class="manage-title">
           <i class="fas fa-pen-to-square"></i>
-          Gestion de la demande
+          Request management
         </div>
         <div class="manage-help" *ngIf="canManageSelectedDelivery()">
-          Cette demande est encore en attente. Vous pouvez la modifier ou la supprimer.
+          This request is still pending. You can edit or delete it.
         </div>
         <div class="manage-help" *ngIf="!canManageSelectedDelivery()">
-          Une fois acceptée par un livreur, la demande ne peut plus être modifiée ou supprimée.
+          Once accepted by a transporter, the request can no longer be edited or deleted.
         </div>
         <div class="manage-actions">
           <button class="btn btn-primary" type="button" (click)="editSelectedDelivery()" [disabled]="!canManageSelectedDelivery()">
-            <i class="fas fa-edit"></i> Modifier
+            <i class="fas fa-edit"></i> Edit
           </button>
           <button class="btn btn-outline danger" type="button" (click)="deleteSelectedDelivery()" [disabled]="!canManageSelectedDelivery()">
-            <i class="fas fa-trash"></i> Supprimer
+            <i class="fas fa-trash"></i> Delete
           </button>
         </div>
       </div>
@@ -148,9 +148,9 @@
       <div class="rating-panel" *ngIf="canShowRatingPanel(selectedDelivery)">
         <div class="rating-title">
           <i class="fas fa-star"></i>
-          Evaluer le livreur
+          Rate the transporter
         </div>
-        <p class="rating-help">Cette livraison est terminee. Vous pouvez noter le livreur ou ignorer.</p>
+        <p class="rating-help">This delivery is complete. You can rate the transporter or skip.</p>
         <div class="rating-stars-select">
           <button
             type="button"
@@ -164,17 +164,17 @@
         </div>
         <div class="rating-actions">
           <button class="btn btn-primary" type="button" (click)="submitRating()" [disabled]="ratingInProgress">
-            <i class="fas fa-check"></i> Noter
+            <i class="fas fa-check"></i> Rate
           </button>
           <button class="btn btn-outline" type="button" (click)="ignoreRatingPrompt()" [disabled]="ratingInProgress">
-            <i class="fas fa-xmark"></i> Ignorer
+            <i class="fas fa-xmark"></i> Skip
           </button>
         </div>
       </div>
 
       <div class="rated-panel" *ngIf="canShowRatedInfo(selectedDelivery)">
         <i class="fas fa-circle-check"></i>
-        Vous avez note ce livreur: {{ selectedDelivery?.rating }} / 5
+        You rated this transporter: {{ selectedDelivery?.rating }} / 5
       </div>
     </section>
   </div>
@@ -183,47 +183,47 @@
     <div class="confirm-modal" (click)="$event.stopPropagation()">
       <div class="confirm-header">
         <div>
-          <div class="confirm-kicker">Suppression</div>
-          <h3>Supprimer cette demande ?</h3>
+          <div class="confirm-kicker">Deletion</div>
+          <h3>Delete this request?</h3>
         </div>
-        <button class="close-button" type="button" (click)="closeDeleteDialog()" [disabled]="deleteInProgress" aria-label="Fermer">
+        <button class="close-button" type="button" (click)="closeDeleteDialog()" [disabled]="deleteInProgress" aria-label="Close">
           <i class="fas fa-times"></i>
         </button>
       </div>
 
       <div class="confirm-body" *ngIf="pendingDeleteDelivery">
         <p class="confirm-copy">
-          Cette action retirera définitivement la demande du suivi tant qu’elle est encore en attente.
+          This action will permanently remove the request from tracking as long as it is still pending.
         </p>
 
         <div class="confirm-summary">
           <div class="summary-item">
-            <span class="summary-label">Référence</span>
+            <span class="summary-label">Reference</span>
             <strong>{{ pendingDeleteDelivery.reference }}</strong>
           </div>
           <div class="summary-item">
-            <span class="summary-label">Produit</span>
+            <span class="summary-label">Product</span>
             <strong>{{ pendingDeleteDelivery.product }}</strong>
           </div>
           <div class="summary-item full">
-            <span class="summary-label">Trajet</span>
+            <span class="summary-label">Route</span>
             <strong>{{ pendingDeleteDelivery.pickup }} → {{ pendingDeleteDelivery.dropoff }}</strong>
           </div>
         </div>
 
         <div class="confirm-warning">
           <i class="fas fa-triangle-exclamation"></i>
-          Vous pourrez recréer une nouvelle demande après suppression si besoin.
+          You can create a new request after deletion if needed.
         </div>
       </div>
 
       <div class="confirm-footer">
         <button class="btn btn-outline" type="button" (click)="closeDeleteDialog()" [disabled]="deleteInProgress">
-          Annuler
+          Cancel
         </button>
         <button class="btn confirm-delete" type="button" (click)="confirmDelete()" [disabled]="deleteInProgress">
           <i class="fas fa-trash"></i>
-          {{ deleteInProgress ? 'Suppression...' : 'Supprimer la demande' }}
+          {{ deleteInProgress ? 'Deleting...' : 'Delete request' }}
         </button>
       </div>
     </div>
@@ -233,25 +233,25 @@
     <div class="confirm-modal profile-modal" (click)="$event.stopPropagation()">
       <div class="confirm-header">
         <div>
-          <div class="confirm-kicker">Profil transporteur</div>
+          <div class="confirm-kicker">Transporter profile</div>
           <h3>{{ selectedTransporterProfile.displayName }}</h3>
         </div>
-        <button class="close-button" type="button" (click)="closeTransporterProfile()" aria-label="Fermer">
+        <button class="close-button" type="button" (click)="closeTransporterProfile()" aria-label="Close">
           <i class="fas fa-times"></i>
         </button>
       </div>
       <div class="confirm-body" *ngIf="selectedTransporterProfile as profile">
         <div class="confirm-summary">
           <div class="summary-item">
-            <span class="summary-label">Total livraisons</span>
+            <span class="summary-label">Total deliveries</span>
             <strong>{{ profile.totalDeliveries }}</strong>
           </div>
           <div class="summary-item">
-            <span class="summary-label">Taux de reussite</span>
+            <span class="summary-label">Success rate</span>
             <strong>{{ profile.successRate.toFixed(2) }} %</strong>
           </div>
           <div class="summary-item full">
-            <span class="summary-label">Note moyenne</span>
+            <span class="summary-label">Average rating</span>
             <strong>{{ profile.avgRating.toFixed(2) }} / 5</strong>
           </div>
         </div>
