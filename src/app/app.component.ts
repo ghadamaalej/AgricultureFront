@@ -33,7 +33,6 @@ import { DomSanitizer } from '@angular/platform-browser';
         <i class="fas fa-arrow-up"></i>
       </span>
     </button>
-
     <!-- Router outlet — gère tout -->
     <router-outlet></router-outlet>
 
