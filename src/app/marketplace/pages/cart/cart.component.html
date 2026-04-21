@@ -14,6 +14,12 @@
 
 <section class="section-padding cart-page">
   <div class="container">
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+  <button class="btn btn-secondary" routerLink="/marketplace/orders">
+    <i class="fas fa-history" style="margin-right: 8px;"></i>
+    History of Past Orders
+  </button>
+</div>
 
     <div *ngIf="loading" class="empty-box">
       Loading cart...
@@ -61,9 +67,44 @@
 
       <div class="cart-summary">
         <h3>Cart Summary</h3>
+
         <div class="summary-row">
-          <span>Total</span>
-          <strong>{{ cart?.montantEstime | number:'1.2-2' }} DT</strong>
+          <span>Subtotal</span>
+          <strong>{{ subtotal | number:'1.2-2' }} DT</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Commission 20%</span>
+          <strong>{{ commissionAmount | number:'1.2-2' }} DT</strong>
+        </div>
+
+        <hr>
+
+        <div class="tip-box">
+          <h4>Want to support our farmers?</h4>
+          <p>Add a small tip to show your appreciation 🌱</p>
+
+          <div class="tip-buttons">
+            <button type="button" (click)="addTip(1)">+1 DT</button>
+            <button type="button" (click)="addTip(2)">+2 DT</button>
+            <button type="button" (click)="addTip(5)">+5 DT</button>
+            <button type="button" (click)="removeTip()" *ngIf="tipAmount > 0">Remove</button>
+          </div>
+
+          <div class="tip-thanks" *ngIf="showTipThanks">
+            <i class="fas fa-heart"></i>
+            Thank you! Your tip helps support the Greenroots community.
+          </div>
+        </div>
+
+        <div class="summary-row" *ngIf="tipAmount > 0">
+          <span>Tip</span>
+          <strong>{{ tipAmount | number:'1.2-2' }} DT</strong>
+        </div>
+
+        <div class="summary-row total-to-pay">
+          <span>Total to Pay</span>
+          <strong>{{ totalToPay | number:'1.2-2' }} DT</strong>
         </div>
 
         <button class="btn btn-primary checkout-btn" (click)="checkout()">
@@ -71,8 +112,142 @@
         </button>
       </div>
 
+      
+
+    </div>
+  
+  <div *ngIf="recommendations.length > 0" class="recommendation-section">
+
+  <div class="container">
+
+    <div class="carousel-header">
+      <h3 class="recommendation-title">You Might AlsoLike</h3>
+
+      <div class="carousel-controls">
+        <button (click)="scrollLeft()">‹</button>
+        <button (click)="scrollRight()">›</button>
+      </div>
+    </div>
+
+    <div class="carousel-wrapper" #carousel>
+
+      <div class="product-card" *ngFor="let p of recommendations">
+
+        <div class="product-img">
+          <img [src]="p.imageUrl" [alt]="p.nom">
+          <span class="product-badge">Recommended</span>
+        </div>
+
+        <div class="product-info">
+          <h4>{{ p.nom }}</h4>
+          <p>{{ p.prix }} DT / KG</p>
+
+          <button class="add-to-cart-btn" (click)="addToCart(p)">
+            Add to Cart
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<div
+  *ngIf="showPopup"
+  (click)="closePopup()"
+  style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    padding: 20px;
+  ">
+
+  <div
+    (click)="$event.stopPropagation()"
+    [ngStyle]="{
+      width: '100%',
+      'max-width': '520px',
+      background: 'white',
+      'border-radius': '24px',
+      padding: '32px 28px',
+      'text-align': 'center',
+      'box-shadow': popupType === 'success'
+        ? '0 25px 60px rgba(76,175,80,0.18)'
+        : '0 25px 60px rgba(220,53,69,0.18)'
+    }">
+
+    <div
+      [ngStyle]="{
+        width: '72px',
+        height: '72px',
+        margin: '0 auto 18px',
+        'border-radius': '50%',
+        display: 'flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        background: popupType === 'success'
+          ? 'rgba(76,175,80,0.12)'
+          : 'rgba(220,53,69,0.12)'
+      }">
+
+      <i
+        class="fas"
+        [class.fa-check-circle]="popupType === 'success'"
+        [class.fa-times-circle]="popupType === 'error'"
+        [ngStyle]="{
+          'font-size': '34px',
+          color: popupType === 'success' ? '#4caf50' : '#dc3545'
+        }">
+      </i>
+    </div>
+
+    <h3
+      [ngStyle]="{
+        margin: '0 0 10px',
+        'font-size': '24px',
+        'font-weight': '700',
+        color: popupType === 'success' ? '#222' : '#b02a37'
+      }">
+      {{ popupTitle }}
+    </h3>
+
+    <p
+      [ngStyle]="{
+        margin: '0 0 24px',
+        'font-size': '15px',
+        'line-height': '1.6',
+        color: '#555'
+      }">
+      {{ popupMessage }}
+    </p>
+
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <button
+        *ngIf="showDeliveryButton"
+        type="button"
+        class="btn btn-primary"
+        (click)="useDeliveryService()">
+        Use Delivery Service
+      </button>
+
+      <button
+        type="button"
+        class="btn"
+        [ngClass]="popupType === 'success' ? 'btn-secondary' : 'btn-danger'"
+        (click)="closePopup()">
+        Close
+      </button>
     </div>
   </div>
+</div>
 </section>
 
 <app-footer></app-footer>

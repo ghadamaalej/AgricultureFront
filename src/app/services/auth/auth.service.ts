@@ -140,4 +140,5 @@ export class AuthService {
     localStorage.removeItem('authToken');
     localStorage.removeItem('authUser');
   }
+
 }

@@ -33,6 +33,16 @@ export class MyVisitReservationsComponent implements OnInit {
 
   filteredAvailabilities: any[] = [];
 
+  proposalOpen = false;
+  selectedProposalReservation: any = null;
+
+  proposalDateDebut = '';
+  proposalDateFin = '';
+  proposalNbMois = 0;
+  proposalTotal = 0;
+
+  rentalProposals: any[] = [];
+
   daysOfWeek = [
     { label: 'Monday', value: 'LUNDI' },
     { label: 'Tuesday', value: 'MARDI' },
@@ -64,6 +74,7 @@ export class MyVisitReservationsComponent implements OnInit {
     }
 
     this.loadReservations();
+    this.loadRentalProposals();
   }
 
   goBack(): void {
@@ -558,4 +569,222 @@ export class MyVisitReservationsComponent implements OnInit {
       }
     });
   }
+  
+
+openRentalProposalForm(reservation: any): void {
+  this.selectedProposalReservation = reservation;
+  this.proposalDateDebut = '';
+  this.proposalDateFin = '';
+  this.proposalNbMois = 0;
+  this.proposalTotal = 0;
+  this.proposalOpen = true;
+}
+
+closeRentalProposalForm(): void {
+  this.proposalOpen = false;
+  this.selectedProposalReservation = null;
+  this.proposalDateDebut = '';
+  this.proposalDateFin = '';
+  this.proposalNbMois = 0;
+  this.proposalTotal = 0;
+}
+
+updateProposalSummary(): void {
+  if (!this.proposalDateDebut || !this.proposalDateFin) {
+    this.proposalNbMois = 0;
+    this.proposalTotal = 0;
+    return;
+  }
+
+  const start = new Date(this.proposalDateDebut);
+  const end = new Date(this.proposalDateFin);
+
+  const months =
+    (end.getFullYear() - start.getFullYear()) * 12 +
+    (end.getMonth() - start.getMonth());
+
+  const sameDay = end.getDate() === start.getDate();
+
+  if (!sameDay || months < 1) {
+    this.proposalNbMois = 0;
+    this.proposalTotal = 0;
+    return;
+  }
+
+  this.proposalNbMois = months;
+
+  const monthlyPrice = this.selectedProposalReservation?.location?.prix || 0;
+  this.proposalTotal = monthlyPrice * months;
+}
+
+isWholeMonthRange(startStr: string, endStr: string): boolean {
+  if (!startStr || !endStr) return false;
+
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+
+  const months =
+    (end.getFullYear() - start.getFullYear()) * 12 +
+    (end.getMonth() - start.getMonth());
+
+  return end.getDate() === start.getDate() && months >= 1;
+}
+
+confirmRentalProposal(): void {
+  if (!this.currentUserId) {
+    this.openReservationPopup('Proposal Failed', 'Please sign in first.', 'error');
+    return;
+  }
+
+  if (this.hasProposalForReservation(this.selectedProposalReservation)) {
+    this.openReservationPopup(
+      'Proposal Failed',
+      'You already sent a rental proposal for this reservation.',
+      'error'
+    );
+    return;
+  }
+
+  if (!this.selectedProposalReservation?.id) {
+    this.openReservationPopup('Proposal Failed', 'Reservation not found.', 'error');
+    return;
+  }
+
+  if (!this.proposalDateDebut || !this.proposalDateFin) {
+    this.openReservationPopup('Proposal Failed', 'Please choose start and end dates.', 'error');
+    return;
+  }
+
+  if (!this.isWholeMonthRange(this.proposalDateDebut, this.proposalDateFin)) {
+    this.openReservationPopup(
+      'Proposal Failed',
+      'Rental period must be whole months only, with a minimum of 1 month.',
+      'error'
+    );
+    return;
+  }
+
+  const rental = this.selectedProposalReservation?.location;
+  if (rental?.dateDebutLocation && this.proposalDateDebut < rental.dateDebutLocation) {
+    this.openReservationPopup(
+      'Proposal Failed',
+      'Start date must be within rental availability.',
+      'error'
+    );
+    return;
+  }
+
+  if (rental?.dateFinLocation && this.proposalDateFin > rental.dateFinLocation) {
+    this.openReservationPopup(
+      'Proposal Failed',
+      'End date must be within rental availability.',
+      'error'
+    );
+    return;
+  }
+
+  const payload = {
+    dateDebut: this.proposalDateDebut,
+    dateFin: this.proposalDateFin
+  };
+
+  this.reservationVisiteService.createRentalProposal(
+    this.selectedProposalReservation.id,
+    this.currentUserId,
+    payload
+  ).subscribe({
+    next: () => {
+      this.closeRentalProposalForm();
+      this.loadRentalProposals();
+
+      this.openReservationPopup(
+        'Proposal Sent',
+        'Your rental proposal has been sent to the farmer.',
+        'success'
+      );
+    },
+    error: (err) => {
+      this.openReservationPopup(
+        'Proposal Failed',
+        err?.error?.message || 'Unable to create rental proposal.',
+        'error'
+      );
+    }
+  });
+}
+
+loadRentalProposals(): void {
+  if (!this.currentUserId) return;
+
+  this.reservationVisiteService.getProposalsByLocataire(this.currentUserId).subscribe({
+    next: (data: any) => {
+      this.rentalProposals = Array.isArray(data) ? data : [];
+    },
+    error: (err) => {
+      console.error('Error loading rental proposals:', err);
+      this.rentalProposals = [];
+    }
+  });
+}
+
+hasProposalForReservation(reservation: any): boolean {
+  if (!reservation?.id) return false;
+
+  return this.rentalProposals.some(p => p.reservationId === reservation.id);
+}
+
+canProposeRental(reservation: any): boolean {
+  const status = this.getStatus(reservation);
+  const isCompleted = status === 'TERMINEE' || status === 'DONE';
+
+  return isCompleted && !this.hasProposalForReservation(reservation);
+}
+
+getProposalButtonLabel(reservation: any): string {
+  return this.hasProposalForReservation(reservation)
+    ? 'Rental Already Proposed'
+    : 'Propose Rental';
+}
+
+getProposalRentalName(): string {
+  const r = this.selectedProposalReservation?.location;
+  if (!r) return 'Rental';
+
+  return r.nom || (r.type === 'terrain' ? 'Land Rental' : 'Machine Rental');
+}
+
+getProposalRentalImage(): string {
+  const r = this.selectedProposalReservation?.location;
+  const imageName = r?.image || r?.photo || r?.locationImage;
+
+  return imageName
+    ? 'http://localhost:8090/uploads/' + imageName
+    : 'assets/images/product1.jpg';
+}
+
+getProposalAvailabilityText(): string {
+  const r = this.selectedProposalReservation?.location;
+  const start = r?.dateDebutLocation || '-';
+  const end = r?.dateFinLocation || '-';
+
+  return `${start} → ${end}`;
+}
+
+getProposalExtraLabel(): string {
+  const r = this.selectedProposalReservation?.location;
+  if (!r) return 'Details';
+
+  return r.type === 'terrain' ? 'Region' : 'Brand';
+}
+
+getProposalExtraValue(): string {
+  const r = this.selectedProposalReservation?.location;
+  if (!r) return '-';
+
+  if (r.type === 'terrain') {
+    return r.localisation || '-';
+  }
+
+  return r.marque || '-';
+}
 }

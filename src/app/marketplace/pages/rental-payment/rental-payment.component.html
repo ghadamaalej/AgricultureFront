@@ -1,0 +1,179 @@
+<app-navbar></app-navbar>
+
+<section class="payment-page">
+  <div class="container">
+
+    <div class="payment-topbar">
+      <button class="back-btn" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+        Back to Proposals
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="empty-box">
+      Loading rental payments...
+    </div>
+
+    <div *ngIf="errorMessage && !loading" class="empty-box">
+      {{ errorMessage }}
+    </div>
+
+    <ng-container *ngIf="!loading && !errorMessage">
+
+      <section class="payment-hero">
+        <div class="hero-left">
+          <div class="hero-icon" [class.active]="isAutoPaymentActive()">
+            <i class="fas" [ngClass]="isAutoPaymentActive() ? 'fa-shield-alt' : 'fa-credit-card'"></i>
+          </div>
+
+          <div>
+            <span class="eyebrow">Rental Payment</span>
+
+            <h1>
+              {{ isAutoPaymentActive() ? 'Automatic payment is active' : 'Activate automatic payment' }}
+            </h1>
+
+            <p>
+              {{
+                isAutoPaymentActive()
+                  ? 'Your saved card will be charged automatically on each monthly due date.'
+                  : 'Save your card once with Stripe. GreenRoots will charge each month automatically.'
+              }}
+            </p>
+          </div>
+        </div>
+
+        <div class="hero-right">
+          <div class="mini-card">
+            <span>Next payment</span>
+            <strong>{{ getNextPayment()?.dateEcheance || 'Completed' }}</strong>
+          </div>
+
+          <div class="mini-card">
+            <span>Amount due</span>
+            <strong>{{ getNextPayment()?.montant || 0 }} DT</strong>
+          </div>
+
+          
+
+          <div class="mini-card">
+            <span>Paid</span>
+            <strong>{{ getPaidCount() }}/{{ payments.length }}</strong>
+          </div>
+
+          <button
+            *ngIf="!isAutoPaymentActive()"
+            class="activate-btn"
+            (click)="activateAutoPayment()"
+            [disabled]="activating">
+
+            <i class="fas fa-lock"></i>
+            {{ activating ? 'Redirecting to Stripe...' : 'Activate Secure Auto Payment' }}
+          </button>
+
+          <button
+            *ngIf="isAutoPaymentActive()"
+            class="active-btn"
+            disabled>
+
+            <i class="fas fa-check-circle"></i>
+            Auto Payment Active
+          </button>
+        </div>
+      </section>
+
+      <section class="summary-grid">
+        <div class="summary-card">
+          <span>Total rental</span>
+          <strong>{{ getTotalAmount() }} DT</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Paid amount</span>
+          <strong>{{ getPaidAmount() }} DT</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Remaining</span>
+          <strong>{{ getTotalAmount() - getPaidAmount() }} DT</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Payment status</span>
+          <strong>{{ isAutoPaymentActive() ? 'Active' : 'Not active' }}</strong>
+        </div>
+      </section>
+
+      <section class="schedule-section">
+        <div class="schedule-header">
+          <div>
+            <span class="eyebrow green">Timeline</span>
+            <h2>Monthly Payment Schedule</h2>
+            <p>Track each rental month and its payment status.</p>
+          </div>
+        </div>
+
+        <div class="schedule-grid">
+          <div
+            class="payment-card"
+            *ngFor="let p of payments"
+            [ngClass]="getStatusClass(p.statut)">
+
+            <div class="card-head">
+              <div class="month-badge">
+                {{ p.moisNumero }}
+              </div>
+
+              <span class="status-pill">
+                <i
+                  class="fas"
+                  [ngClass]="{
+                    'fa-check-circle': p.statut === 'PAID',
+                    'fa-times-circle': p.statut === 'FAILED',
+                    'fa-clock': p.statut === 'UNPAID'
+                  }">
+                </i>
+                {{ p.statut }}
+              </span>
+            </div>
+
+            <h3>Month {{ p.moisNumero }}</h3>
+
+            <div class="payment-row">
+              <span>Due date</span>
+              <strong>{{ p.dateEcheance }}</strong>
+            </div>
+
+            <div class="payment-row">
+              <span>Amount</span>
+              <strong>{{ p.montant }} DT</strong>
+            </div>
+
+            <div class="payment-row commission-row">
+              <span>GreenRoots commission</span>
+              <strong>{{ p.commissionAmount || 0 }} DT</strong>
+            </div>
+
+            <div class="payment-row farmer-row">
+              <span>Farmer earning</span>
+              <strong>{{ p.farmerAmount || 0 }} DT</strong>
+            </div>
+
+            <div class="paid-note" *ngIf="p.statut === 'PAID'">
+              <i class="fas fa-receipt"></i>
+              Paid on {{ p.datePaiement | date:'mediumDate' }}
+            </div>
+
+            <div class="failed-note" *ngIf="p.statut === 'FAILED'">
+              <i class="fas fa-exclamation-triangle"></i>
+              Automatic charge failed.
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </ng-container>
+  </div>
+</section>
+
+<app-footer></app-footer>

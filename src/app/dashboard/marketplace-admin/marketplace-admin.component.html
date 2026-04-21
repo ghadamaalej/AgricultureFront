@@ -1,0 +1,621 @@
+<div class="dash-content">
+  <div class="dash-page-title">
+    <h1>Marketplace Management</h1>
+    <p>Admins can manage products, rentals, orders, reservations, paiement, and contracts from one place.</p>
+  </div>
+
+  <div class="market-admin-tabs">
+    <button [class.active]="activeTab === 'products'" (click)="setTab('products')">Products</button>
+    <button [class.active]="activeTab === 'rentals'" (click)="setTab('rentals')">Rentals</button>
+    <button [class.active]="activeTab === 'orders'" (click)="setTab('orders')">Orders</button>
+    <button [class.active]="activeTab === 'reservations'" (click)="setTab('reservations')">Reservations</button>
+    <button [class.active]="activeTab === 'paiement'" (click)="setTab('paiement')">Paiement</button>
+    <button [class.active]="activeTab === 'contracts'" (click)="setTab('contracts')">Contracts</button>
+  </div>
+
+  <div class="dash-card admin-market-card">
+    <div class="admin-toolbar" *ngIf="activeTab === 'products' || activeTab === 'rentals'">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="applyFilter()"
+          [placeholder]="activeTab === 'products'
+            ? 'Search by product, category or user...'
+            : 'Search by rental, type, location or user...'" />
+      </div>
+
+      <button class="refresh-btn" *ngIf="activeTab === 'products'" (click)="loadProducts()">
+        <i class="fas fa-rotate-right"></i>
+        Refresh
+      </button>
+
+      <button class="refresh-btn" *ngIf="activeTab === 'rentals'" (click)="loadRentals()">
+        <i class="fas fa-rotate-right"></i>
+        Refresh
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="empty-state">
+      Loading...
+    </div>
+
+    <!-- PRODUCTS -->
+    <div *ngIf="!loading && activeTab === 'products'">
+      <div *ngIf="paginatedProducts.length === 0" class="empty-state">
+        No products found.
+      </div>
+
+      <div class="products-table-wrap" *ngIf="paginatedProducts.length > 0">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Posted By</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let p of paginatedProducts">
+              <td>
+                <div class="product-cell">
+                  <img [src]="p.photoProduit" [alt]="p.nom">
+                  <div>
+                    <strong>{{ p.nom }}</strong>
+                    <span>{{ p.description }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <td><span class="category-badge">{{ p.category || 'Uncategorized' }}</span></td>
+              <td>{{ p.prix }} DT/KG</td>
+              <td>{{ p.quantiteDisponible }} KG</td>
+              <td><span class="user-badge">{{ p.userName }}</span></td>
+              <td>
+                <button class="delete-post-btn" (click)="deleteProduct(p)">
+                  <i class="fas fa-trash"></i>
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
+          <button
+            *ngFor="let page of pages"
+            (click)="goToPage(page)"
+            [class.active]="page === currentPage">
+            {{ page }}
+          </button>
+          <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RENTALS -->
+    <div *ngIf="!loading && activeTab === 'rentals'">
+      <div *ngIf="paginatedRentals.length === 0" class="empty-state">
+        No rentals found.
+      </div>
+
+      <div class="products-table-wrap" *ngIf="paginatedRentals.length > 0">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>Rental</th>
+              <th>Type</th>
+              <th>Price</th>
+              <th>Location / Details</th>
+              <th>Posted By</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let r of paginatedRentals">
+              <td>
+                <div class="product-cell">
+                  <img [src]="r.image" [alt]="r.nom">
+                  <div>
+                    <strong>{{ r.nom }}</strong>
+                    <span>{{ r.description }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <span class="category-badge">
+                  {{ r.type === 'terrain' ? 'Land' : 'Machine' }}
+                </span>
+              </td>
+
+              <td>{{ r.prix }} DT/Month</td>
+
+              <td>
+                <div class="rental-details">
+                  <span *ngIf="r.localisation"><strong>Location:</strong> {{ r.localisation }}</span>
+                  <span *ngIf="r.superficie"><strong>Surface:</strong> {{ r.superficie }} {{ r.uniteSuperficie }}</span>
+                  <span *ngIf="r.marque || r.modele"><strong>Machine:</strong> {{ r.marque }} {{ r.modele }}</span>
+                </div>
+              </td>
+
+              <td><span class="user-badge">{{ r.userName }}</span></td>
+
+              <td>
+                <button class="delete-post-btn" (click)="deleteRental(r)">
+                  <i class="fas fa-trash"></i>
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
+          <button
+            *ngFor="let page of pages"
+            (click)="goToPage(page)"
+            [class.active]="page === currentPage">
+            {{ page }}
+          </button>
+          <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders -->
+    <div *ngIf="!loading && activeTab === 'orders'">
+    <div class="admin-toolbar">
+        <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilter()"
+            placeholder="Search by order id, user or status..." />
+        </div>
+
+        <div class="orders-toolbar-right">
+        <select [(ngModel)]="selectedOrderStatus" (change)="applyFilter()" class="status-filter">
+            <option value="">All Statuses</option>
+            <option value="VALIDEE">Validated</option>
+            <option value="ANNULEE">Cancelled</option>
+            <option value="EN_COURS">In Progress</option>
+        </select>
+
+        <button class="refresh-btn" (click)="loadOrders()">
+            <i class="fas fa-rotate-right"></i>
+            Refresh
+        </button>
+        </div>
+    </div>
+
+    <div *ngIf="paginatedOrders.length === 0" class="empty-state">
+        No orders found.
+    </div>
+
+    <div class="products-table-wrap" *ngIf="paginatedOrders.length > 0">
+        <table class="products-table">
+        <thead>
+            <tr>
+            <th>Order ID</th>
+            <th>Date</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>User</th>
+            <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr *ngFor="let o of paginatedOrders">
+            <td>#{{ o.id }}</td>
+            <td>{{ o.dateCommande | date:'medium' }}</td>
+            <td>{{ o.montantTotal | number:'1.2-2' }} DT</td>
+            <td>
+                <span class="status-badge"
+                    [ngClass]="{
+                        'validated': o.statut === 'VALIDEE',
+                        'cancelled': o.statut === 'ANNULEE',
+                        'pending': o.statut === 'EN_COURS'
+                    }">
+                {{ getOrderStatusLabel(o.statut) }}
+                </span>
+            </td>
+            
+            <td>
+                <span class="user-badge">{{ o.userName }}</span>
+            </td>
+            <td>
+                <button class="details-btn" (click)="openOrderDetails(o)">
+                <i class="fas fa-eye"></i>
+                Details
+                </button>
+            </td>
+            </tr>
+        </tbody>
+        </table>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
+        <button
+            *ngFor="let page of pages"
+            (click)="goToPage(page)"
+            [class.active]="page === currentPage">
+            {{ page }}
+        </button>
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+        </div>
+    </div>
+    </div>
+
+
+
+    <div class="order-modal-overlay" *ngIf="showOrderDetails" (click)="closeOrderDetails()">
+  <div class="order-modal" (click)="$event.stopPropagation()" *ngIf="selectedOrder">
+    <div class="order-modal-header">
+      <h3>Order #{{ selectedOrder.id }}</h3>
+      <button class="close-modal-btn" (click)="closeOrderDetails()">✕</button>
+    </div>
+
+    <div class="order-summary-grid">
+      <div class="summary-item">
+        <span>User</span>
+        <strong>{{ selectedOrder.userName }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Date</span>
+        <strong>{{ selectedOrder.dateCommande | date:'medium' }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Status</span>
+        <strong>{{ selectedOrder.statut }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Total</span>
+        <strong>{{ selectedOrder.montantTotal | number:'1.2-2' }} DT</strong>
+      </div>
+    </div>
+
+    <div class="order-products-box">
+      <h4>Ordered Products</h4>
+
+      <div *ngIf="selectedOrder?.loadingDetails" class="empty-state small">
+        Loading products...
+      </div>
+
+      <div *ngIf="!selectedOrder?.loadingDetails && (!selectedOrder?.items || selectedOrder.items.length === 0)"
+          class="empty-state small">
+        No products found for this order.
+      </div>
+
+      <table class="products-table"
+            *ngIf="!selectedOrder?.loadingDetails && selectedOrder?.items?.length > 0">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of selectedOrder.items">
+            <td>{{ item.nom }}</td>
+            <td>{{ item.quantite }} KG</td>
+            <td>{{ item.prixUnitaire | number:'1.2-2' }} DT</td>
+            <td>{{ item.sousTotal | number:'1.2-2' }} DT</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!--reservation-->
+<div *ngIf="!loading && activeTab === 'reservations'">
+  <div class="admin-toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="applyFilter()"
+        placeholder="Search by user, rental or status..." />
+    </div>
+
+    <div class="orders-toolbar-right">
+      <select [(ngModel)]="selectedReservationStatus" (change)="applyFilter()" class="status-filter">
+        <option value="">All Statuses</option>
+        <option value="EN_ATTENTE">Pending</option>
+        <option value="CONFIRMEE">Confirmed</option>
+        <option value="TERMINEE">Completed</option>
+        <option value="ANNULEE">Cancelled</option>
+      </select>
+
+      <button class="refresh-btn" (click)="loadReservations()">
+        <i class="fas fa-rotate-right"></i>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="paginatedReservations.length === 0" class="empty-state">
+    No reservations found.
+  </div>
+
+  <div class="products-table-wrap" *ngIf="paginatedReservations.length > 0">
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Visit Date</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Status</th>
+          <th>Reserved Rental</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let r of paginatedReservations">
+          <td>
+            <span class="user-badge">{{ r.userName }}</span>
+          </td>
+
+          <td>{{ r.dateVisite | date:'mediumDate' }}</td>
+          <td>{{ r.heureDebut }}</td>
+          <td>{{ r.heureFin }}</td>
+
+          <td>
+            <span class="status-badge"
+                  [ngClass]="{
+                    'pending': r.statut === 'EN_ATTENTE',
+                    'validated': r.statut === 'CONFIRMEE',
+                    'completed': r.statut === 'TERMINEE',
+                    'cancelled': r.statut === 'ANNULEE'
+                  }">
+              {{ getReservationStatusLabel(r.statut) }}
+            </span>
+          </td>
+
+          <td>
+            <div class="rental-details">
+              <strong>{{ r.rentalName }}</strong>
+              <span *ngIf="r.rentalType">
+                {{ r.rentalType === 'terrain' ? 'Land' : 'Machine' }}
+              </span>
+              <span *ngIf="r.rentalLocation">{{ r.rentalLocation }}</span>
+            </div>
+          </td>
+
+          <td>
+            <button class="delete-post-btn" (click)="deleteReservation(r)">
+              <i class="fas fa-trash"></i>
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
+      <button
+        *ngFor="let page of pages"
+        (click)="goToPage(page)"
+        [class.active]="page === currentPage">
+        {{ page }}
+      </button>
+      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+</div>
+  <!--paiement-->
+  <div *ngIf="!loading && activeTab === 'paiement'">
+    <div class="payment-hero">
+      <div class="payment-stat-card income">
+        <div class="payment-icon"><i class="fas fa-coins"></i></div>
+        <div>
+          <span>Total Income</span>
+          <strong>{{ paymentStats.totalIncome | number:'1.2-2' }} DT</strong>
+        </div>
+      </div>
+
+      <div class="payment-stat-card orders">
+        <div class="payment-icon"><i class="fas fa-receipt"></i></div>
+        <div>
+          <span>Paid Orders</span>
+          <strong>{{ paymentStats.paidOrdersCount }}</strong>
+        </div>
+      </div>
+
+      <div class="payment-stat-card product">
+        <div class="payment-icon"><i class="fas fa-star"></i></div>
+        <div>
+          <span>Most Bought Product</span>
+          <strong>{{ paymentStats.mostBoughtProduct }}</strong>
+        </div>
+      </div>
+
+      <div class="payment-stat-card sold">
+        <div class="payment-icon"><i class="fas fa-shopping-basket"></i></div>
+        <div>
+          <span>Total Sold Quantity</span>
+          <strong>{{ paymentStats.totalProductsSold }} KG</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-card payment-table-card">
+      <div class="admin-toolbar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilter()"
+            placeholder="Search by order id or buyer..." />
+        </div>
+
+        <button class="refresh-btn" (click)="loadPaidOrders()">
+          <i class="fas fa-rotate-right"></i>
+          Refresh
+        </button>
+      </div>
+
+      <div *ngIf="paginatedPaidOrders.length === 0" class="empty-state">
+        No paid orders found.
+      </div>
+
+      <div class="products-table-wrap" *ngIf="paginatedPaidOrders.length > 0">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Buyer</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Total</th>
+              <th>Products</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let o of paginatedPaidOrders">
+              <td>#{{ o.id }}</td>
+              <td><span class="user-badge">{{ o.userName }}</span></td>
+              <td>{{ o.dateCommande | date:'medium' }}</td>
+              <td>
+                <span class="status-badge validated">
+                  {{ getOrderStatusLabel(o.statut) }}
+                </span>
+              </td>
+              <td><strong>{{ o.montantTotal | number:'1.2-2' }} DT</strong></td>
+              <td>
+                <div class="payment-products-mini">
+                <span *ngFor="let item of ($any(o.items) || []).slice(0, 2)">
+                  {{ item.nom }} ({{ item.quantite }} KG)
+                </span>
+                <small *ngIf="($any(o.items) || []).length > 2">
+                  +{{ ($any(o.items) || []).length - 2 }} more
+                </small>
+              </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
+          <button
+            *ngFor="let page of pages"
+            (click)="goToPage(page)"
+            [class.active]="page === currentPage">
+            {{ page }}
+          </button>
+          <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- contracts -->
+<div *ngIf="!loading && activeTab === 'contracts'">
+  <div class="admin-toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="applyFilter()"
+        placeholder="Search by contract id, owner, tenant or rental..." />
+    </div>
+
+    <button class="refresh-btn" (click)="loadContracts()">
+      <i class="fas fa-rotate-right"></i>
+      Refresh
+    </button>
+  </div>
+
+  <div *ngIf="paginatedContracts.length === 0" class="empty-state">
+    No finalized contracts found.
+  </div>
+
+  <div class="products-table-wrap" *ngIf="paginatedContracts.length > 0">
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>Contract ID</th>
+          <th>Owner</th>
+          <th>Tenant</th>
+          <th>Rental</th>
+          <th>Period</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let c of paginatedContracts">
+          <td>#{{ c.id }}</td>
+
+          <td><span class="user-badge">{{ c.ownerName }}</span></td>
+
+          <td><span class="user-badge">{{ c.tenantName }}</span></td>
+
+          <td>
+            <div class="rental-details">
+              <strong>{{ c.rentalName }}</strong>
+              <span *ngIf="c.rentalType">{{ c.rentalType === 'terrain' ? 'Land' : 'Machine' }}</span>
+              <span *ngIf="c.rentalLocation">{{ c.rentalLocation }}</span>
+            </div>
+          </td>
+
+          <td>
+            <div class="rental-details">
+              <span><strong>From:</strong> {{ c.dateDebut }}</span>
+              <span><strong>To:</strong> {{ c.dateFin }}</span>
+            </div>
+          </td>
+
+          <td><strong>{{ c.montantTotal }} DT</strong></td>
+
+          <td>
+            <span class="status-badge completed">
+              {{ getContractStatusLabel(c.statut) }}
+            </span>
+          </td>
+
+          <td>
+            <button class="details-btn" (click)="viewContract(c)">
+              <i class="fas fa-file-contract"></i>
+              View Contract
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
+      <button
+        *ngFor="let page of pages"
+        (click)="goToPage(page)"
+        [class.active]="page === currentPage">
+        {{ page }}
+      </button>
+      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+</div>
+  </div>
+</div>

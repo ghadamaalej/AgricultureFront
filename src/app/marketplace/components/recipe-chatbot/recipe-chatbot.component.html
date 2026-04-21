@@ -1,0 +1,124 @@
+<button class="recipe-ai-fab" (click)="toggleChat()">
+  <i class="fas fa-robot"></i>
+</button>
+
+<div class="chatbot-panel" *ngIf="isOpen">
+  <div class="chatbot-header">
+    <div>
+      <h3>Recipe AI</h3>
+      <p>Recipes from available products</p>
+    </div>
+
+    <button class="close-btn" (click)="toggleChat()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <div class="chatbot-body">
+    <div class="quick-prompts" *ngIf="messages.length <= 1">
+      <button
+        *ngFor="let item of quickPrompts"
+        type="button"
+        class="quick-chip"
+        (click)="useQuickPrompt(item)">
+        {{ item }}
+      </button>
+    </div>
+
+    <div
+      *ngFor="let msg of messages"
+      class="message-wrapper"
+      [ngClass]="msg.sender === 'user' ? 'user-wrap' : 'bot-wrap'">
+
+      <div class="message-bubble" [ngClass]="msg.sender === 'user' ? 'user-bubble' : 'bot-bubble'">
+
+        <ng-container *ngIf="msg.loading">
+          <div class="typing">
+            <span></span><span></span><span></span>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="!msg.loading && msg.text">
+          <p>{{ msg.text }}</p>
+        </ng-container>
+
+        <ng-container *ngIf="!msg.loading && msg.result">
+          <h4>{{ msg.result.recipeTitle }}</h4>
+          <p>{{ msg.result.recipeDescription }}</p>
+
+          <ng-container *ngIf="!isUnsupported(msg.result); else unsupportedBlock">
+
+            <div class="recipe-section" *ngIf="msg.result.instructions">
+              <strong>Instructions</strong>
+              <p>{{ msg.result.instructions }}</p>
+            </div>
+
+            <div class="recipe-section" *ngIf="msg.result.items?.length">
+              <strong>Matched Products</strong>
+
+              <div class="matched-list">
+                <div class="matched-item" *ngFor="let item of msg.result.items">
+                  <div>
+                    <div class="item-name">{{ item.productName || item.ingredientName }}</div>
+                    <small *ngIf="item.matched">{{ item.requestedQuantityKg }} KG</small>
+                    <small *ngIf="!item.matched">Unavailable</small>
+                  </div>
+
+                  <div class="item-price" *ngIf="item.matched">
+                    {{ item.estimatedCost | number:'1.2-2' }} DT
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="recipe-section" *ngIf="msg.result.missingIngredients?.length">
+              <strong>Missing Ingredients</strong>
+              <ul>
+                <li *ngFor="let miss of msg.result.missingIngredients">{{ miss }}</li>
+              </ul>
+            </div>
+
+            <div class="recipe-footer">
+              <div class="total" *ngIf="msg.result.estimatedTotal != null">
+                Total: {{ msg.result.estimatedTotal | number:'1.2-2' }} DT
+              </div>
+
+              <button
+                type="button"
+                class="add-cart-btn"
+                (click)="addMatchedItemsToCart(msg.result)">
+                Add matched items
+              </button>
+            </div>
+
+          </ng-container>
+
+          <ng-template #unsupportedBlock>
+            <div class="unsupported-box">
+              <strong>Try something like:</strong>
+              <ul>
+                <li>Give me a Tunisian salad recipe</li>
+                <li>Make me a dinner under 20 DT</li>
+                <li>What can I cook with available vegetables?</li>
+              </ul>
+            </div>
+          </ng-template>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="chatbot-input">
+    <textarea
+      [(ngModel)]="prompt"
+      rows="2"
+      placeholder="Ask for a recipe..."
+      (keydown)="onEnter($event)">
+    </textarea>
+
+    <button type="button" (click)="sendMessage()" [disabled]="sending">
+      <i class="fas fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
