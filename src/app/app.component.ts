@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
+import { CartService } from './services/cart/cart.service';
 
 @Component({
     selector: 'app-root',
@@ -17,7 +18,7 @@ import { DomSanitizer } from '@angular/platform-browser';
       </div>
     </div>
 
-    <!-- Floating Action -->
+    <!-- Floating Action Button (scroll-to-top / jump-to-reply) -->
     <button
       class="back-to-top"
       [class.visible]="showBackTop"
@@ -31,6 +32,14 @@ import { DomSanitizer } from '@angular/platform-browser';
       <span class="fab-label" [class.active]="fabMode === 'jump-reply'">Reply</span>
       <span class="fab-icon top-icon" [class.active]="fabMode === 'scroll-top'">
         <i class="fas fa-arrow-up"></i>
+      </span>
+    </button>
+
+    <!-- Floating Cart -->
+    <button class="floating-cart" routerLink="/marketplace/cart">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="cart-badge" *ngIf="cartCount > 0">
+        {{ cartCount }}
       </span>
     </button>
 
@@ -99,24 +108,60 @@ import { DomSanitizer } from '@angular/platform-browser';
       transition: opacity 0.22s ease, transform 0.22s ease;
       position: absolute;
     }
-
     .fab-icon.active,
     .fab-label.active {
       opacity: 1;
       transform: translateY(0);
       position: static;
     }
-
     .fab-label {
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.3px;
       text-transform: uppercase;
     }
-
     .top-icon i,
-    .fab-icon i {
-      font-size: 16px;
+    .fab-icon i { font-size: 16px; }
+
+    .floating-cart {
+      position: fixed;
+      bottom: 95px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 20px rgba(76,175,80,0.4);
+    }
+    .floating-cart:hover {
+      background: var(--primary-dark);
+      transform: translateY(-3px);
+    }
+    .cart-badge {
+      position: absolute;
+      top: -6px;
+      right: -4px;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: #dc3545;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
     }
 
     /* ===== PERSISTENT 3D EXPLORER ===== */
@@ -128,9 +173,7 @@ import { DomSanitizer } from '@angular/platform-browser';
       flex-direction: column;
       background: #000;
     }
-    .explorer-overlay.explorer-active {
-      display: flex;
-    }
+    .explorer-overlay.explorer-active { display: flex; }
     .explorer-back-btn {
       position: absolute;
       top: 16px;
@@ -164,6 +207,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     fabMode: 'jump-reply' | 'scroll-top' = 'scroll-top';
     isForumsPostPage = false;
     isExplorerRoute  = false;
+    cartCount        = 0;
 
     @ViewChild('explorerFrame') private explorerFrame?: ElementRef<HTMLIFrameElement>;
     private explorerLoaded = false;
@@ -191,13 +235,22 @@ export class AppComponent implements OnInit, AfterViewInit {
         '/help-request': '/',
     };
 
-    constructor(private router: Router, private sanitizer: DomSanitizer) {}
+    constructor(
+        private router: Router,
+        private sanitizer: DomSanitizer,
+        private cartService: CartService
+    ) {}
 
     ngOnInit() {
         setTimeout(() => {
             this.preloaderHidden = true;
             this.initScrollAnimations();
         }, 3000);
+
+        this.cartService.cartCount$.subscribe(count => {
+            this.cartCount = count;
+        });
+        this.cartService.refreshCartCount();
 
         this.isForumsPostPage = this.router.url.startsWith('/forums/post/');
         this.isExplorerRoute  = this.router.url.startsWith('/explorer');
@@ -305,7 +358,6 @@ export class AppComponent implements OnInit, AfterViewInit {
             this.scrollTop();
             return;
         }
-
         composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
         const textarea = composer.querySelector('textarea');
         if (textarea instanceof HTMLTextAreaElement) {

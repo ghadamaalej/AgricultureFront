@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators ,AbstractControl, ValidationErrors} from '@angular/forms';
+import { FormGroup, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService, BackendRole, SignupStep1Request, SignupResponse } from '../../services/auth/auth.service';
 import { Router } from '@angular/router';
 
@@ -50,8 +50,8 @@ export class AuthComponent implements OnInit {
   }
 
   constructor(
-    private authService: AuthService,
-    private router: Router
+      private authService: AuthService,
+      private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -60,12 +60,12 @@ export class AuthComponent implements OnInit {
       this.mode = savedMode;
     }
 
-    const pendingVerificationId = localStorage.getItem('pendingVerificationUserId');
-    const pendingVerificationEmail = localStorage.getItem('pendingVerificationEmail');
+    const pendingVerificationId      = localStorage.getItem('pendingVerificationUserId');
+    const pendingVerificationEmail   = localStorage.getItem('pendingVerificationEmail');
     const pendingVerificationMessage = localStorage.getItem('pendingVerificationMessage');
     if (this.mode === 'verify') {
-      this.verificationUserId = pendingVerificationId ? Number(pendingVerificationId) : null;
-      this.verificationEmail = pendingVerificationEmail;
+      this.verificationUserId  = pendingVerificationId ? Number(pendingVerificationId) : null;
+      this.verificationEmail   = pendingVerificationEmail;
       this.verificationMessage = pendingVerificationMessage || 'Please verify your email to continue.';
     }
 
@@ -78,13 +78,13 @@ export class AuthComponent implements OnInit {
     });
 
     this.signUpForm = new FormGroup({
-      firstName: new FormControl('', [Validators.required,Validators.pattern(/^[a-zA-Z]+$/)]),
-      lastName: new FormControl('', [Validators.required,Validators.pattern(/^[a-zA-Z]+$/)]),
+      firstName: new FormControl('', [Validators.required, Validators.pattern(/^[a-zA-Z]+$/)]),
+      lastName:  new FormControl('', [Validators.required, Validators.pattern(/^[a-zA-Z]+$/)]),
       email:     new FormControl('', [Validators.required, Validators.email]),
-      phone: new FormControl('', [ Validators.required,Validators.pattern(/^[0-9]{8}$/)]),
+      phone:     new FormControl('', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]),
       password:  new FormControl('', [Validators.required, Validators.minLength(8)]),
-      photo: new FormControl(null, [ Validators.required,this.imageValidator]),
-      role: new FormControl('', Validators.required)
+      photo:     new FormControl(null, [Validators.required, this.imageValidator]),
+      role:      new FormControl('', Validators.required)
     });
 
     if (this.authService.hasActiveSession()) {
@@ -104,17 +104,13 @@ export class AuthComponent implements OnInit {
   }
 
   siInvalid(field: string): boolean {
-    if (!this.signInForm) {
-      return false;
-    }
+    if (!this.signInForm) return false;
     const c = this.signInForm.get(field);
     return !!(c && c.invalid && c.touched);
   }
 
   suInvalid(field: string): boolean {
-    if (!this.signUpForm) {
-      return false;
-    }
+    if (!this.signUpForm) return false;
     const c = this.signUpForm.get(field);
     return !!(c && c.invalid && c.touched);
   }
@@ -131,12 +127,12 @@ export class AuthComponent implements OnInit {
       next: (response) => {
         if (response.token) {
           if (remember) {
-            localStorage.setItem('rememberedEmail', email);  
+            localStorage.setItem('rememberedEmail', email);
           } else {
-            localStorage.removeItem('rememberedEmail');      
+            localStorage.removeItem('rememberedEmail');
           }
           const redirectRoute = this.authService.getDefaultRouteForRole(
-            response.role ? response.role as BackendRole : null
+              response.role ? response.role as BackendRole : null
           );
           this.router.navigate([redirectRoute]);
         } else if (response.verificationRequired || response.nextStep === 'VERIFY_EMAIL') {
@@ -160,13 +156,13 @@ export class AuthComponent implements OnInit {
     this.loginError = null;
 
     const payload: SignupStep1Request = {
-      nom: this.signUpForm.value.firstName ?? '',
-      prenom: this.signUpForm.value.lastName ?? '',
-      email: this.signUpForm.value.email ?? '',
-      motDePasse: this.signUpForm.value.password ?? '',
-      role: this.selectedRole,
-      photo: this.photoUploadUrl,
-      telephone: this.signUpForm.value.phone ?? ''
+      nom:        this.signUpForm.value.firstName ?? '',
+      prenom:     this.signUpForm.value.lastName  ?? '',
+      email:      this.signUpForm.value.email     ?? '',
+      motDePasse: this.signUpForm.value.password  ?? '',
+      role:       this.selectedRole,
+      photo:      this.photoUploadUrl,
+      telephone:  this.signUpForm.value.phone     ?? ''
     };
 
     this.authService.signupStep1(payload).subscribe({
@@ -177,9 +173,9 @@ export class AuthComponent implements OnInit {
             ...this.signUpForm.value,
             photo: this.photoUploadUrl
           }));
-          localStorage.setItem('signupRole', this.selectedRole);
-          localStorage.setItem('signupUserId', String(response.userId));
-          localStorage.setItem('signupEmail', response.email || payload.email);
+          localStorage.setItem('signupRole',    this.selectedRole);
+          localStorage.setItem('signupUserId',  String(response.userId));
+          localStorage.setItem('signupEmail',   response.email || payload.email);
           localStorage.setItem('signupMessage', response.message || 'Complete your profile.');
           this.router.navigate(['/register-extra']);
           return;
@@ -207,7 +203,8 @@ export class AuthComponent implements OnInit {
     }
 
     this.verificationLoading = true;
-    this.verificationError = null;
+    this.verificationError   = null;
+
     this.authService.verifyEmail(this.verificationUserId).subscribe({
       next: (response) => {
         this.verificationLoading = false;
@@ -255,8 +252,8 @@ export class AuthComponent implements OnInit {
   }
 
   private enterVerificationMode(userId: number | null, email: string | null, message: string): void {
-    this.verificationUserId = userId;
-    this.verificationEmail = email;
+    this.verificationUserId  = userId;
+    this.verificationEmail   = email;
     this.verificationMessage = message;
     this.mode = 'verify';
     localStorage.setItem('authMode', 'verify');

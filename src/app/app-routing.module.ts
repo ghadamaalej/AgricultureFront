@@ -35,6 +35,10 @@ const routes: Routes = [
         loadChildren: () => import('./forums/forums.module').then(m => m.ForumsModule)
     },
     {
+        path: 'marketplace',
+        loadChildren: () => import('./marketplace/marketplace.module').then(m => m.MarketplaceModule)
+    },
+    {
         path: 'delivery',
         loadChildren: () => import('./delivery/delivery.module').then(m => m.DeliveryModule),
         canActivate: [AuthGuard]

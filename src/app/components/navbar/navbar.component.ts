@@ -70,6 +70,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.isHomePage = this.router.url === '/';
         this.activeLink = this.router.url;
 
+        // Reactively sync isLoggedIn when auth state changes
+        this.authService.currentUser$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(user => {
+                this.isLoggedIn = !!user && this.authService.hasActiveSession();
+            });
+
         this.router.events
             .pipe(
                 filter(e => e instanceof NavigationEnd),
@@ -160,14 +167,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     logout() {
         this.authService.logout();
-        this.isLoggedIn = false;
+        this.isLoggedIn       = false;
+        this.isMobileMenuOpen = false;
+        this.moreDropdownOpen = false;
         this.router.navigate(['/']);
     }
 
     private syncExpertLink(): void {
         const isExpert = this.authService.hasRole('EXPERT_AGRICOLE');
-        const route = '/expert/assistance-requests';
-        const hasLink = this.dropdownLinks.some((link) => link.route === route);
+        const route    = '/expert/assistance-requests';
+        const hasLink  = this.dropdownLinks.some((link) => link.route === route);
 
         if (isExpert && !hasLink) {
             this.dropdownLinks = [

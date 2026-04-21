@@ -35,7 +35,7 @@ export class RegisterExtraComponent implements OnInit {
     },
     Transporter: {
     label: 'Transporter',
-    fields: ['region', 'vehicleType', 'capacityKg', 'licensePlate']
+    fields: ['vehicleType', 'capacityKg', 'licensePlate']
     },
     AgriculturalExpert: {
       label: 'Agricultural Expert',
@@ -51,7 +51,8 @@ export class RegisterExtraComponent implements OnInit {
     },
     EventOrganizer: {
       label: 'Event Organizer',
-      fields: ['organizationName', 'organizationLogo','description','cin']
+      fields: ['organizationName', 'organizationLogo',
+               'description','cin']
     }
   };
 

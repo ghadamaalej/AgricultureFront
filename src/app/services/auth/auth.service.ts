@@ -93,10 +93,10 @@ export class AuthService {
             map(response => {
                 if (response.token && response.userId !== null && response.role) {
                     const user: AuthUser = {
-                        userId: response.userId,
-                        username: response.username || response.email,
-                        email: response.email,
-                        role: response.role as BackendRole,
+                        userId:       response.userId,
+                        username:     response.username || response.email,
+                        email:        response.email,
+                        role:         response.role as BackendRole,
                         statutCompte: response.statutCompte || undefined
                     };
                     this.storeToken(response.token);
@@ -184,7 +184,7 @@ export class AuthService {
             case 'ADMIN':
                 return '/dashboard';
             case 'ACHETEUR':
-                return '/buyer/home';
+                return '/marketplace';
             case 'AGRICULTEUR':
                 return '/inventory';
             case 'EXPERT_AGRICOLE':
