@@ -1,0 +1,156 @@
+<app-navbar></app-navbar>
+
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+
+    <h1 class="hero-title">
+      Microcredit <br>
+      <span class="hero-accent">Institutions</span>
+    </h1>
+
+    <p class="hero-sub">
+      Explore loan options and apply in just a few clicks
+    </p>
+  </div>
+
+  <div class="hero-scroll-hint">
+    <span>↓</span>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<div class="page-wrapper">
+
+  <!-- INSTITUTIONS SECTION -->
+  <section class="section">
+
+    <div class="section-label">
+      <span class="section-line"></span>
+      <span class="section-tag">INSTITUTIONS LIST</span>
+      <span class="section-line"></span>
+    </div>
+
+    <h2 class="section-title">🏦 Microcredit Institutions</h2>
+
+    <p class="section-desc">
+      Select an institution to view its available loan offers
+    </p>
+
+    <div class="inst-grid">
+
+      <div
+        class="inst-card"
+        *ngFor="let inst of institutions"
+        [class.active]="selectedId === inst.id"
+        (click)="selectInstitution(inst)">
+
+        <div class="inst-card-top">
+
+          <div class="inst-logo-wrap">
+            <img [src]="inst.logo_organisation" alt="logo" class="inst-logo" />
+          </div>
+
+          <div class="inst-info">
+            <h3 class="inst-name">{{ inst.agence }}</h3>
+            <p class="inst-desc">{{ inst.description }}</p>
+          </div>
+
+          <div class="inst-arrow" [class.open]="selectedId === inst.id">
+            ▲
+          </div>
+
+        </div>
+
+        <div class="inst-badges"
+             *ngIf="selectedId === inst.id && services.length > 0">
+
+          <span class="badge">
+            {{ services.length }} loan offers
+          </span>
+
+          <span class="badge badge-max">
+            up to {{ getMaxMontant() | number }} DT
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SERVICES SECTION -->
+  <section class="section services-section" *ngIf="services.length > 0">
+
+    <div class="services-header">
+      <div class="services-dot"></div>
+
+      <h2 class="services-title">
+        Available Offers — {{ selectedInstitutionName }}
+      </h2>
+
+      <span class="services-count">
+        {{ services.length }} loan offers
+      </span>
+    </div>
+
+    <div class="services-grid">
+
+      <div class="service-card" *ngFor="let s of services">
+
+        <div class="service-card-inner">
+
+          <div class="service-select-circle"></div>
+
+          <div class="service-body">
+
+            <h4 class="service-name">{{ s.nom }}</h4>
+
+            <div class="service-tags">
+
+            <span class="tag">
+              Max <strong>{{ s.montantMax | number }} DT</strong>
+            </span>
+
+            <span class="tag">
+              Min <strong>{{ s.montantMin | number }} DT</strong>
+            </span>
+
+            <span class="tag" *ngIf="s.dureeMaxMois">
+              Duration <strong>{{ s.dureeMaxMois }} months</strong>
+            </span>
+
+            <span class="tag" *ngIf="s.tauxInteret">
+              Interest <strong>{{ s.tauxInteret }}% /year</strong>
+            </span>
+
+            <span class="tag tag-penalty" *ngIf="s.tauxPenalite">
+              Penalty <strong>{{ s.tauxPenalite }}% /month</strong>
+            </span>
+
+          </div>
+
+            <p class="service-desc">
+              {{ s.description }}
+            </p>
+
+          </div>
+
+          <button class="btn-demander" (click)="demanderPret(s)">
+            Apply →
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+<app-footer></app-footer>
