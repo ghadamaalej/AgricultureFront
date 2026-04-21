@@ -1,0 +1,40 @@
+<div class="signature-wrapper">
+  <div class="signature-header">
+    <div class="signature-icon">
+      <i class="fas fa-pen-nib"></i>
+    </div>
+    <div class="signature-title-block">
+      <h3>Digital Signature Required</h3>
+      <p>Your delivery has arrived. Please sign below to confirm receipt.</p>
+    </div>
+  </div>
+
+  <div class="canvas-container">
+    <canvas
+      #signatureCanvas
+      width="560"
+      height="180"
+      [class.active]="!isEmpty"
+      (mousedown)="onMouseDown($event)"
+      (mousemove)="onMouseMove($event)"
+      (mouseup)="onMouseUp()"
+      (mouseleave)="onMouseUp()"
+      (touchstart)="onTouchStart($event)"
+      (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd()">
+    </canvas>
+    <span class="canvas-hint" *ngIf="isEmpty">
+      <i class="fas fa-signature"></i> Draw your signature here
+    </span>
+  </div>
+
+  <div class="signature-actions">
+    <button class="btn-clear" type="button" (click)="clearCanvas()" [disabled]="isEmpty || isSaving">
+      <i class="fas fa-eraser"></i> Clear
+    </button>
+    <button class="btn-confirm" type="button" (click)="confirmSignature()" [disabled]="isEmpty || isSaving">
+      <i class="fas fa-check-circle"></i>
+      {{ isSaving ? 'Saving...' : 'Confirm Signature' }}
+    </button>
+  </div>
+</div>

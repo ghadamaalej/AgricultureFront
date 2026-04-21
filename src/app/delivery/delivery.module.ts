@@ -34,6 +34,8 @@ import { TransporterStatsPageComponent } from './components/transporter-stats-pa
 import { GroupsManagementPageComponent } from './components/groups-management-page/groups-management-page.component';
 import { DeliveryWithNegotiationComponent } from './components/delivery-with-negotiation/delivery-with-negotiation.component';
 import { DeliveryGuidePageComponent } from './components/delivery-guide-page/delivery-guide-page.component';
+import { DeliverySignatureComponent } from './components/delivery-signature/delivery-signature.component';
+import { DeliveryReceiptComponent } from './components/delivery-receipt/delivery-receipt.component';
 
 
 @NgModule({
@@ -63,7 +65,9 @@ import { DeliveryGuidePageComponent } from './components/delivery-guide-page/del
     TransporterStatsPageComponent,
     GroupsManagementPageComponent,
     DeliveryWithNegotiationComponent,
-    DeliveryGuidePageComponent
+    DeliveryGuidePageComponent,
+    DeliverySignatureComponent,
+    DeliveryReceiptComponent
   ],
   imports: [
     CommonModule,

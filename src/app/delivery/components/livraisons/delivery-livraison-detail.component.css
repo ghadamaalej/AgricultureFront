@@ -235,3 +235,23 @@
     min-height: 400px;
   }
 }
+
+/* Signature confirmation badge */
+.signature-done {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #e8f5e9;
+  border: 1.5px solid #a5d6a7;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 18px;
+  color: #1b5e20;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.signature-done i {
+  font-size: 20px;
+  color: #2e7d32;
+}

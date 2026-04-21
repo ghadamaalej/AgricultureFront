@@ -67,7 +67,12 @@
               <div class="ref">{{ req.reference }}</div>
               <div class="meta">{{ req.product }} • {{ req.weightKg }} kg</div>
             </div>
-            <span class="status-pill">{{ getStatusLabel(req.status) }}</span>
+            <div class="card-top-right">
+              <span class="signature-badge" *ngIf="needsSignature(req)">
+                <i class="fas fa-pen-nib"></i> Signature required
+              </span>
+              <span class="status-pill">{{ getStatusLabel(req.status) }}</span>
+            </div>
           </div>
 
           <div class="route-line">
@@ -109,6 +114,10 @@
           </div>
 
           <div class="card-actions">
+            <button class="btn btn-sign small" type="button" *ngIf="needsSignature(req)" (click)="openDetail(req.id)">
+              <i class="fas fa-pen-nib"></i>
+              Sign delivery
+            </button>
             <button class="btn btn-secondary small" type="button" (click)="openDetail(req.id)">
               <i class="fas fa-eye"></i>
               View detail

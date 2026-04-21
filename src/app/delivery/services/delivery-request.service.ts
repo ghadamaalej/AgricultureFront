@@ -35,6 +35,7 @@ export type DeliveryRequest = {
   ratingStatus?: 'PENDING' | 'RATED' | 'IGNORED';
   currentLat?: number;
   currentLng?: number;
+  signatureStatus?: string;
 };
 
 export type DeliveryRequestInput = {
@@ -105,12 +106,27 @@ export type LivraisonApi = {
   ratingStatus?: string;
   grouped?: boolean;
   groupReference?: string;
+  signatureStatus?: string;
+  signatureData?: string;
+  signedAt?: string;
 };
 
 export type AcceptTransporterResult = {
   success: boolean;
   delivery?: LivraisonApi | null;
   errorMessage?: string;
+};
+
+export type DeliveryAdminKpis = {
+  total: number;
+  enAttente: number;
+  acceptees: number;
+  enCours: number;
+  livre: number;
+  annulees: number;
+  revenue: number;
+  avgPrice: number;
+  tauxLivraison: number;
 };
 
 @Injectable()
@@ -129,6 +145,16 @@ export class DeliveryRequestService {
 
   getCurrentUserId(): number {
     return getDeliveryUserId() ?? 0;
+  }
+
+  getAdminKpis(): Observable<DeliveryAdminKpis> {
+    return this.http.get<Record<string, unknown>>(`${this.apiBase}/admin/kpis`).pipe(
+      map((payload) => this.normalizeAdminKpis(payload)),
+      catchError((err) => {
+        console.warn('Load admin KPIs failed, using computed fallback.', err);
+        return of(this.emptyAdminKpis());
+      })
+    );
   }
 
   refreshFromBackend(): Observable<DeliveryRequest[]> {
@@ -273,6 +299,26 @@ export class DeliveryRequestService {
       tap((updated) => this.upsertFromApi(updated)),
       catchError((err) => {
         console.warn('Ignore rating failed.', err);
+        return of(null);
+      })
+    );
+  }
+
+  saveSignature(requestId: string | number, signatureData: string, agriculteurId?: number): Observable<LivraisonApi | null> {
+    const numericId = typeof requestId === 'number' ? requestId : this.toNumericId(requestId);
+    const ownerId = agriculteurId || this.getCurrentUserId();
+    if (!numericId || !ownerId) {
+      return of(null);
+    }
+
+    return this.http.post<LivraisonApi>(
+      `${this.apiBase}/${numericId}/signature`,
+      { signatureData },
+      { params: new HttpParams().set('agriculteurId', String(ownerId)) }
+    ).pipe(
+      tap((updated) => this.upsertFromApi(updated)),
+      catchError((err) => {
+        console.warn('Save signature failed.', err);
         return of(null);
       })
     );
@@ -601,6 +647,40 @@ export class DeliveryRequestService {
     return weightKg >= 250 ? 'LONGUE_DISTANCE' : 'LOCALE';
   }
 
+  private normalizeAdminKpis(payload: Record<string, unknown> | null | undefined): DeliveryAdminKpis {
+    const source = payload || {};
+    return {
+      total: this.toNumber(source['total']),
+      enAttente: this.toNumber(source['enAttente']),
+      acceptees: this.toNumber(source['acceptees']),
+      enCours: this.toNumber(source['enCours']),
+      livre: this.toNumber(source['livre']),
+      annulees: this.toNumber(source['annulees']),
+      revenue: this.toNumber(source['revenue']),
+      avgPrice: this.toNumber(source['avgPrice']),
+      tauxLivraison: this.toNumber(source['tauxLivraison'])
+    };
+  }
+
+  private emptyAdminKpis(): DeliveryAdminKpis {
+    return {
+      total: 0,
+      enAttente: 0,
+      acceptees: 0,
+      enCours: 0,
+      livre: 0,
+      annulees: 0,
+      revenue: 0,
+      avgPrice: 0,
+      tauxLivraison: 0
+    };
+  }
+
+  private toNumber(value: unknown): number {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
   private toBackendStatus(status: DeliveryRequestStatus): string {
     const mapStatus: Record<DeliveryRequestStatus, string> = {
       'En attente': 'EN_ATTENTE',
@@ -708,7 +788,8 @@ export class DeliveryRequestService {
       rating: Number(api.note || 0) || undefined,
       ratingStatus: (api.ratingStatus as DeliveryRequest['ratingStatus']) || undefined,
       currentLat: Number(api.latActuelle || 0) || undefined,
-      currentLng: Number(api.lngActuelle || 0) || undefined
+      currentLng: Number(api.lngActuelle || 0) || undefined,
+      signatureStatus: api.signatureStatus || undefined
     };
   }
 

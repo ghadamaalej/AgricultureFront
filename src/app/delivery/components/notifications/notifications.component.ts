@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Router } from '@angular/router';
 import { DeliveryExtendedService, DeliveryNotification, NotificationCount } from '../../services/delivery-extended.service';
 import { DeliveryRequestService } from '../../services/delivery-request.service';
 import { getDeliveryUserRole } from '../../services/delivery-auth.helper';
@@ -35,7 +36,8 @@ export class NotificationsComponent implements OnInit {
 
   constructor(
     private deliveryService: DeliveryExtendedService,
-    private requestService: DeliveryRequestService
+    private requestService: DeliveryRequestService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -313,10 +315,14 @@ export class NotificationsComponent implements OnInit {
     return Math.min(high, Math.max(low, safe));
   }
 
-  viewDelivery(livraisonId: number, event?: Event): void {
+  viewDelivery(livraisonId: number, event?: Event, notification?: DeliveryNotification): void {
     event?.stopPropagation();
-    this.deliverySelected.emit(livraisonId);
     this.showNotificationsPanel = false;
+    if (notification?.type === 'DELIVERY_SIGNATURE_REQUIRED') {
+      this.router.navigate(['/delivery/livraisons', livraisonId]);
+      return;
+    }
+    this.deliverySelected.emit(livraisonId);
   }
 
   deleteNotification(notificationId: number, event?: Event): void {
@@ -413,6 +419,7 @@ export class NotificationsComponent implements OnInit {
       'DELIVERY_TARGETED_REQUEST': 'user-check',
       'DELIVERY_REMINDER': 'clock',
       'DELIVERY_COMPLETED': 'check-double',
+      'DELIVERY_SIGNATURE_REQUIRED': 'pen-nib',
       'DELIVERY_CANCELLED': 'times-circle',
       'PAYMENT_PROCESSED': 'credit-card',
       'SYSTEM_NOTIFICATION': 'bell'
@@ -429,6 +436,7 @@ export class NotificationsComponent implements OnInit {
       'DELIVERY_TARGETED_REQUEST': '#14b8a6',
       'DELIVERY_REMINDER': '#f59e0b',
       'DELIVERY_COMPLETED': '#10b981',
+      'DELIVERY_SIGNATURE_REQUIRED': '#7c3aed',
       'DELIVERY_CANCELLED': '#ef4444',
       'PAYMENT_PROCESSED': '#8b5cf6',
       'SYSTEM_NOTIFICATION': '#6b7280'

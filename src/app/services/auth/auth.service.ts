@@ -186,7 +186,7 @@ export class AuthService {
             case 'ACHETEUR':
                 return '/marketplace';
             case 'AGRICULTEUR':
-                return '/inventory';
+                return '/delivery';
             case 'EXPERT_AGRICOLE':
                 return '/expert/home';
             case 'TRANSPORTEUR':

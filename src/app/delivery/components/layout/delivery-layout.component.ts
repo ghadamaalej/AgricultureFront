@@ -40,15 +40,15 @@ export class DeliveryLayoutComponent implements OnInit {
     route: string;
     icon: string;
   }> = [
-    { key: 'home', label: 'Accueil', route: '/delivery', icon: 'fas fa-home' },
-    { key: 'create', label: 'Créer', route: '/delivery/create', icon: 'fas fa-map-marker-alt' },
-    { key: 'createPreferred', label: 'Livreur préféré', route: '/delivery/create-with-transporter', icon: 'fas fa-user-check' },
-    { key: 'tracking', label: 'Suivi', route: '/delivery/tracking', icon: 'fas fa-route' },
-    { key: 'history', label: 'Historique', route: '/delivery/history', icon: 'fas fa-clock-rotate-left' },
-    { key: 'demandes', label: 'Demandes', route: '/delivery/demandes', icon: 'fas fa-handshake' },
-    { key: 'dashboard', label: 'Statistiques', route: '/delivery/dashboard', icon: 'fas fa-chart-line' },
-    { key: 'groups', label: 'Groupes', route: '/delivery/groups', icon: 'fas fa-layer-group' },
-    { key: 'admin', label: 'Admin global', route: '/delivery/admin', icon: 'fas fa-user-shield' }
+    { key: 'home', label: 'Home', route: '/delivery', icon: 'fas fa-home' },
+    { key: 'create', label: 'Create', route: '/delivery/create', icon: 'fas fa-map-marker-alt' },
+    { key: 'createPreferred', label: 'Preferred carrier', route: '/delivery/create-with-transporter', icon: 'fas fa-user-check' },
+    { key: 'tracking', label: 'Tracking', route: '/delivery/tracking', icon: 'fas fa-route' },
+    { key: 'history', label: 'History', route: '/delivery/history', icon: 'fas fa-clock-rotate-left' },
+    { key: 'demandes', label: 'Requests', route: '/delivery/demandes', icon: 'fas fa-handshake' },
+    { key: 'dashboard', label: 'Statistics', route: '/delivery/dashboard', icon: 'fas fa-chart-line' },
+    { key: 'groups', label: 'Groups', route: '/delivery/groups', icon: 'fas fa-layer-group' },
+    { key: 'admin', label: 'Admin', route: '/delivery/admin', icon: 'fas fa-user-shield' }
   ];
 
   menuItems: Array<{
@@ -63,12 +63,12 @@ export class DeliveryLayoutComponent implements OnInit {
   ngOnInit(): void {
     if (this.isTransporter) {
       this.menuItems = [
-        { key: 'home', label: 'Demandes', route: '/delivery', icon: 'fas fa-inbox' },
-        { key: 'active', label: 'En cours', route: '/delivery/active', icon: 'fas fa-truck-fast' },
-        { key: 'calendar', label: 'Calendrier', route: '/delivery/calendar', icon: 'fas fa-calendar-days' },
-        { key: 'stats', label: 'Statistiques', route: '/delivery/stats', icon: 'fas fa-chart-line' },
-        { key: 'history', label: 'Historique', route: '/delivery/history', icon: 'fas fa-clock-rotate-left' },
-        { key: 'groups', label: 'Groupes', route: '/delivery/groups', icon: 'fas fa-layer-group' }
+        { key: 'home', label: 'Requests', route: '/delivery', icon: 'fas fa-inbox' },
+        { key: 'active', label: 'In progress', route: '/delivery/active', icon: 'fas fa-truck-fast' },
+        { key: 'calendar', label: 'Calendar', route: '/delivery/calendar', icon: 'fas fa-calendar-days' },
+        { key: 'stats', label: 'Statistics', route: '/delivery/stats', icon: 'fas fa-chart-line' },
+        { key: 'history', label: 'History', route: '/delivery/history', icon: 'fas fa-clock-rotate-left' },
+        { key: 'groups', label: 'Groups', route: '/delivery/groups', icon: 'fas fa-layer-group' }
       ];
     } else if (this.isAdmin) {
       this.menuItems = this.allMenuItems;

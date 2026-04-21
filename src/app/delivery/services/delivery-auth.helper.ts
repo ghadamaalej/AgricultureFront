@@ -12,7 +12,8 @@ interface StoredAuthUser {
   userId: number;
   username: string;
   email: string;
-  role: string;
+  role?: string;
+  roles?: string[];
 }
 
 function readAuthUser(): StoredAuthUser | null {
@@ -27,7 +28,19 @@ function readAuthUser(): StoredAuthUser | null {
 
 /** Returns the current user's role as a lowercase string (e.g. 'agriculteur', 'transporteur', 'admin'). */
 export function getDeliveryUserRole(): string {
-  return readAuthUser()?.role?.toLowerCase() ?? 'client';
+  const authUser = readAuthUser();
+  const authRole = authUser?.role;
+  if (authRole && typeof authRole === 'string') {
+    return authRole.trim().toLowerCase();
+  }
+
+  const authRoles = authUser?.roles;
+  if (Array.isArray(authRoles) && authRoles.length > 0) {
+    return String(authRoles[0]).trim().toLowerCase();
+  }
+
+  const roleFallback = localStorage.getItem('userRole') || localStorage.getItem('role');
+  return roleFallback?.trim().toLowerCase() || 'client';
 }
 
 /** Returns the current user's numeric id, or null if not logged in. */

@@ -57,6 +57,18 @@
 
       <div class="notification" *ngIf="notification">{{ notification }}</div>
 
+      <!-- Signature pad: shown when delivery is marked as delivered and farmer hasn't signed yet -->
+      <app-delivery-signature
+        *ngIf="shouldShowSignaturePad"
+        (signatureConfirmed)="onSignatureConfirmed($event)">
+      </app-delivery-signature>
+
+      <!-- Delivery receipt (shown after signing) -->
+      <app-delivery-receipt
+        *ngIf="isAlreadySigned && receiptData"
+        [data]="receiptData">
+      </app-delivery-receipt>
+
       <div class="actions-bottom">
         <button class="btn btn-secondary" type="button" (click)="goTracking()">
           <i class="fas fa-map"></i> View tracking

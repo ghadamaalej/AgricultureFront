@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/co
 import { ActivatedRoute, Router } from '@angular/router';
 import { DeliveryMapService } from '../../services/delivery-map.service';
 import { DeliveryRequestService, LivraisonApi, FarmerKnownTransporter } from '../../services/delivery-request.service';
-import { getDeliveryUserRole } from '../../services/delivery-auth.helper';
+import { getDeliveryUserRole, getDeliveryUserId, getDeliveryUserEmail } from '../../services/delivery-auth.helper';
+import { DeliveryReceiptData } from '../delivery-receipt/delivery-receipt.component';
 
 type DeliveryStatus = 'En attente' | 'Acceptée' | 'En cours' | 'Livrée' | 'Refusée';
 
@@ -52,6 +53,14 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
   evaluationNote = '';
   private apiDelivery: LivraisonApi | null = null;
 
+  // Signature & receipt
+  signatureStatus = '';
+  signatureSaved = false;
+  receiptData: DeliveryReceiptData | null = null;
+  private currentUserId = getDeliveryUserId() ?? 0;
+  private apiFarmerId = 0;
+  private farmerName = this.resolveFarmerName();
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -76,10 +85,21 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
 
     this.requestService.refreshFromBackend().subscribe(() => {
       this.loadRequestData();
+      // Load signature status from local cache immediately
+      const cached = this.requestService.getById(this.id);
+      if (cached?.signatureStatus) {
+        this.signatureStatus = cached.signatureStatus;
+      }
+      if (cached?.createdById) {
+        this.apiFarmerId = cached.createdById;
+      }
       this.requestService.getApiById(this.id).subscribe((api) => {
         if (api) {
           this.apiDelivery = api;
           this.applyApiData(api);
+          if (api.signatureStatus === 'SIGNED' && api.signatureData && !this.receiptData) {
+            this.receiptData = this.buildReceipt(api.signatureData, api.signedAt);
+          }
         }
       });
       this.renderRoute();
@@ -257,6 +277,66 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/delivery/livraisons']);
   }
 
+  get shouldShowSignaturePad(): boolean {
+    return (
+      this.status === 'Livrée' &&
+      this.isClient() &&
+      this.signatureStatus !== 'SIGNED' &&
+      !this.signatureSaved
+    );
+  }
+
+  get isAlreadySigned(): boolean {
+    return this.signatureStatus === 'SIGNED' || this.signatureSaved;
+  }
+
+  onSignatureConfirmed(signatureData: string): void {
+    const numericId = Number(this.id);
+    if (!numericId) return;
+
+    this.requestService.saveSignature(numericId, signatureData, this.currentUserId).subscribe((updated) => {
+      if (!updated) {
+        this.setActionNotification('Signature could not be saved. Please try again.');
+        return;
+      }
+      this.apiDelivery = updated;
+      this.signatureStatus = 'SIGNED';
+      this.signatureSaved = true;
+      this.receiptData = this.buildReceipt(signatureData, updated.signedAt);
+    });
+  }
+
+  private buildReceipt(signatureData: string, signedAt?: string): DeliveryReceiptData {
+    return {
+      reference: this.reference,
+      product: this.product,
+      weightKg: this.weightKg,
+      pickupAddress: this.pickupAddress,
+      dropoffAddress: this.dropoffAddress,
+      distanceKm: this.distanceKm,
+      departureDate: this.departureDate,
+      expectedDeliveryDate: this.expectedDeliveryDate,
+      priceTnd: this.priceTnd,
+      farmerName: this.farmerName,
+      transporterName: this.transporterName !== 'Not assigned' ? this.transporterName : `Transporter #${this.transporterId}`,
+      signatureData,
+      signedAt: signedAt || new Date().toISOString()
+    };
+  }
+
+  private resolveFarmerName(): string {
+    try {
+      const raw = localStorage.getItem('authUser');
+      if (raw) {
+        const user = JSON.parse(raw);
+        if (user?.username) return user.username;
+        if (user?.email) return user.email.split('@')[0];
+      }
+    } catch { /* ignore */ }
+    const email = getDeliveryUserEmail();
+    return email !== 'unknown@local' ? email.split('@')[0] : 'Farmer';
+  }
+
   private haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
     const R = 6371;
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -300,6 +380,8 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
     this.assignTransporterId = api.transporteurId ? String(api.transporteurId) : '';
     this.gpsLat = String(this.currentLat);
     this.gpsLng = String(this.currentLng);
+    this.signatureStatus = api.signatureStatus || '';
+    this.apiFarmerId = api.agriculteurId || 0;
   }
 
   private fromBackendStatus(status?: string): DeliveryStatus {

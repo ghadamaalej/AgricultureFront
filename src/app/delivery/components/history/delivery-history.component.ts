@@ -67,6 +67,10 @@ export class DeliveryHistoryComponent implements OnInit {
     this.router.navigate(['/delivery/livraisons', id]);
   }
 
+  needsSignature(req: DeliveryRequest): boolean {
+    return req.status === 'Livrée' && req.signatureStatus === 'PENDING_SIGNATURE' && this.isFarmer;
+  }
+
   goTo(route: string): void {
     this.router.navigate([route]);
   }
