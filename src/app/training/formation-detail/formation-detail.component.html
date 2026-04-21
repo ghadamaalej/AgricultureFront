@@ -1,0 +1,515 @@
+<app-navbar></app-navbar>
+
+<main class="detail-page">
+  <div *ngIf="isLoading" class="state-panel">
+    <div class="spinner"></div>
+    <p>Chargement de la formation...</p>
+  </div>
+
+  <div *ngIf="error && !isLoading" class="state-panel error-state">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error }}</p>
+    <button (click)="goBack()" class="btn-secondary">Retour</button>
+  </div>
+
+  <ng-container *ngIf="formation && !isLoading && !error">
+    <button (click)="goBack()" class="btn-back">
+      <i class="fas fa-arrow-left"></i>
+      Retour aux formations
+    </button>
+
+    <section class="detail-hero">
+      <div class="hero-media">
+        <img [src]="formation.imageUrl || 'assets/images/formation-default.jpg'" [alt]="formation.titre" />
+      </div>
+
+      <div class="hero-content">
+        <div class="hero-kicker">Formation</div>
+        <h1>{{ formation.titre }}</h1>
+
+        <div class="badges-group">
+          <span class="badge badge-niveau" [ngClass]="'niveau-' + ((formation.niveau || 'debutant').toLowerCase())">
+            {{ formation.niveau || 'Débutant' }}
+          </span>
+          <span class="badge badge-type" [ngClass]="'type-' + ((formation.type || 'theorique').toLowerCase())">
+            {{ formation.type || 'Théorique' }}
+          </span>
+          <span class="badge badge-status">{{ formation.statut || 'Disponible' }}</span>
+        </div>
+
+        <p class="formation-description">{{ formation.description }}</p>
+
+        <div class="hero-actions">
+          <button *ngIf="!isInscribed && !canManage()" (click)="inscribeFormation()" class="btn-primary">
+            <i class="fas fa-check-circle"></i>
+            S'inscrire
+          </button>
+          <span *ngIf="isInscribed && !canManage()" class="inscribed-label">
+            <i class="fas fa-check-double"></i>
+            Inscrit
+          </span>
+          <button *ngIf="canManage()" (click)="activeTab = 'modules'; toggleModuleForm()" class="btn-primary">
+            <i class="fas fa-layer-group"></i>
+            Ajouter un module
+          </button>
+          <button *ngIf="canManage()" (click)="activeTab = 'modules'" class="btn-secondary">
+            <i class="fas fa-paperclip"></i>
+            Gérer les ressources
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <article class="summary-item">
+        <span class="summary-value">{{ formation.modules?.length || 0 }}</span>
+        <span class="summary-label">Modules</span>
+      </article>
+      <article class="summary-item">
+        <span class="summary-value">{{ getTotalLecons() }}</span>
+        <span class="summary-label">Leçons vidéo</span>
+      </article>
+      <article class="summary-item">
+        <span class="summary-value">{{ getTotalModuleRessources() }}</span>
+        <span class="summary-label">Ressources</span>
+      </article>
+      <article class="summary-item">
+        <span class="summary-value">{{ formation.langue || '-' }}</span>
+        <span class="summary-label">Langue</span>
+      </article>
+    </section>
+
+    <section class="detail-panel">
+      <nav class="tabs" aria-label="Sections de la formation">
+        <button [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'" class="tab-button">
+          <i class="fas fa-info-circle"></i>
+          Aperçu
+        </button>
+        <button [class.active]="activeTab === 'modules'" (click)="activeTab = 'modules'" class="tab-button">
+          <i class="fas fa-layer-group"></i>
+          Modules
+        </button>
+        <button [class.active]="activeTab === 'resources'" (click)="activeTab = 'resources'" class="tab-button">
+          <i class="fas fa-folder-open"></i>
+          Ressources
+        </button>
+      </nav>
+
+      <div *ngIf="activeTab === 'overview'" class="tab-content">
+        <div class="overview-layout">
+          <div>
+            <span class="section-kicker">Détails</span>
+            <h2>Informations de la formation</h2>
+            <p>{{ formation.description }}</p>
+          </div>
+
+          <div class="info-list">
+            <div class="info-row">
+              <i class="fas fa-tag"></i>
+              <div>
+                <span>Thématique</span>
+                <strong>{{ formation.thematique || '-' }}</strong>
+              </div>
+            </div>
+            <div class="info-row">
+              <i class="fas fa-globe"></i>
+              <div>
+                <span>Langue</span>
+                <strong>{{ formation.langue || '-' }}</strong>
+              </div>
+            </div>
+            <div class="info-row">
+              <i class="fas fa-coins"></i>
+              <div>
+                <span>Prix</span>
+                <strong>{{ formation.estPayante ? (formation.prix + ' DT') : 'Gratuite' }}</strong>
+              </div>
+            </div>
+            <div class="info-row">
+              <i class="fas fa-calendar"></i>
+              <div>
+                <span>Création</span>
+                <strong>{{ formation.dateCreation || '-' }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'modules'" class="tab-content">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">Programme</span>
+            <h2>Modules et leçons vidéo</h2>
+          </div>
+          <button *ngIf="canManage()" (click)="toggleModuleForm()" class="btn-action">
+            <i class="fas fa-plus"></i>
+            {{ showModuleForm ? 'Fermer' : 'Ajouter un module' }}
+          </button>
+        </div>
+
+        <form *ngIf="showModuleForm && canManage()" class="edit-form" (ngSubmit)="saveModule()">
+          <h3>{{ editingModuleId ? 'Modifier le module' : 'Nouveau module' }}</h3>
+          <div class="form-grid">
+            <label>
+              Titre du module
+              <input [(ngModel)]="newModule.titre" name="moduleTitre" type="text" placeholder="Ex: Préparer le sol" required />
+            </label>
+            <label>
+              Ordre
+              <input [(ngModel)]="newModule.ordre" name="moduleOrdre" type="number" placeholder="1" />
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-save">
+              <i class="fas fa-save"></i>
+              Enregistrer
+            </button>
+            <button type="button" (click)="toggleModuleForm()" class="btn-cancel">
+              Annuler
+            </button>
+          </div>
+        </form>
+
+        <div *ngIf="!formation.modules || formation.modules.length === 0" class="empty-message">
+          <i class="fas fa-layer-group"></i>
+          <p>Aucun module pour le moment.</p>
+        </div>
+
+        <div class="modules-list">
+          <article *ngFor="let module of getModulesSorted(); let moduleIndex = index" class="module-card">
+            <header class="module-header">
+              <div class="module-title">
+                <span class="module-number">{{ moduleIndex + 1 }}</span>
+                <div>
+                  <h3>{{ module.titre }}</h3>
+                  <p>{{ module.lecons?.length || 0 }} leçon(s)</p>
+                </div>
+              </div>
+              <div *ngIf="canManage()" class="inline-actions">
+                <button type="button" (click)="toggleLeconForm(module.idModule)" class="btn-small">
+                  <i class="fas fa-video"></i>
+                  Ajouter une leçon
+                </button>
+                <button type="button" (click)="toggleRessourceForm(module.idModule)" class="btn-small btn-resource">
+                  <i class="fas fa-paperclip"></i>
+                  Ajouter une ressource
+                </button>
+                <button type="button" (click)="editModule(module)" class="btn-icon" aria-label="Modifier le module">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" (click)="deleteModule(module.idModule)" class="btn-icon btn-delete" aria-label="Supprimer le module">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </header>
+
+            <form *ngIf="showLeconForm && activeLeconModuleId === module.idModule && canManage()" class="edit-form nested-form" (ngSubmit)="saveLecon(module)">
+              <h4>{{ editingLeconId ? 'Modifier la leçon' : 'Nouvelle leçon vidéo' }}</h4>
+              <div class="lesson-mode-selector">
+                <button type="button" [class.active]="leconMode === 'recorded'" (click)="leconMode = 'recorded'">
+                  <i class="fas fa-play-circle"></i>
+                  Vidéo enregistrée
+                </button>
+                <button type="button" [class.active]="leconMode === 'stream'" (click)="leconMode = 'stream'">
+                  <i class="fas fa-broadcast-tower"></i>
+                  Live streaming
+                </button>
+              </div>
+              <div class="form-grid">
+                <label>
+                  Titre
+                  <input [(ngModel)]="newLecon.titre" name="leconTitre{{ module.idModule }}" type="text" placeholder="Titre de la leçon" required />
+                </label>
+                <label *ngIf="leconMode === 'recorded'">
+                  URL vidéo
+                  <input [(ngModel)]="newLecon.urlVideo" name="leconUrl{{ module.idModule }}" type="url" placeholder="https://..." />
+                </label>
+                <div *ngIf="leconMode === 'recorded'" class="upload-group">
+                  <span class="upload-title">Upload vidéo</span>
+                  <label class="upload-field">
+                    <input class="upload-input" (change)="onVideoSelected($event, module)" name="leconFile{{ module.idModule }}" type="file" accept="video/*" />
+                    <span class="upload-icon"><i class="fas fa-cloud-arrow-up-alt"></i></span>
+                    <span>
+                      <strong>Choisir une vidéo</strong>
+                      <small>MP4, WebM, MOV</small>
+                    </span>
+                  </label>
+                  <span *ngIf="isUploadingVideo" class="upload-status">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Upload en cours...
+                  </span>
+                  <span *ngIf="newLecon.urlVideo && !isUploadingVideo" class="upload-status success">
+                    <i class="fas fa-check-circle"></i>
+                    Vidéo prête
+                  </span>
+                </div>
+                <label *ngIf="leconMode === 'recorded'">
+                  Durée en secondes
+                  <input [(ngModel)]="newLecon.dureeSecondes" name="leconDuree{{ module.idModule }}" type="number" placeholder="600" />
+                </label>
+                <label>
+                  Ordre
+                  <input [(ngModel)]="newLecon.ordre" name="leconOrdre{{ module.idModule }}" type="number" placeholder="1" />
+                </label>
+                <label *ngIf="leconMode === 'stream'">
+                  Date du live
+                  <input [(ngModel)]="newLecon.liveAt" name="leconLiveAt{{ module.idModule }}" type="datetime-local" />
+                </label>
+                <label *ngIf="leconMode === 'stream'">
+                  Room streaming
+                  <input [(ngModel)]="newLecon.streamingRoom" name="leconStreamingRoom{{ module.idModule }}" type="text" placeholder="Généré automatiquement" />
+                </label>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-save" [disabled]="isUploadingVideo">
+                  <i class="fas fa-save"></i>
+                  {{ isUploadingVideo ? 'Upload en cours...' : 'Enregistrer' }}
+                </button>
+                <button type="button" (click)="toggleLeconForm(module.idModule)" class="btn-cancel">
+                  Annuler
+                </button>
+              </div>
+            </form>
+
+            <form *ngIf="showRessourceForm && activeRessourceModuleId === module.idModule && canManage()" class="edit-form nested-form" (ngSubmit)="saveRessource(module)">
+              <h4>{{ editingRessourceId ? 'Modifier la ressource' : 'Nouvelle ressource du module' }}</h4>
+              <div class="form-grid">
+                <label>
+                  Titre
+                  <input [(ngModel)]="newRessource.titre" name="moduleRessourceTitre{{ module.idModule }}" type="text" placeholder="Titre" required />
+                </label>
+                <label>
+                  Type
+                  <select [(ngModel)]="newRessource.type" name="moduleRessourceType{{ module.idModule }}">
+                    <option *ngFor="let type of resourceTypes" [value]="type">{{ type }}</option>
+                  </select>
+                </label>
+                <label>
+                  URL
+                  <input [(ngModel)]="newRessource.url" name="moduleRessourceUrl{{ module.idModule }}" type="url" placeholder="https://..." />
+                </label>
+                <div class="upload-group">
+                  <span class="upload-title">Upload PDF</span>
+                  <label class="upload-field pdf-upload">
+                    <input class="upload-input" (change)="onRessourceSelected($event, module)" name="moduleRessourceFile{{ module.idModule }}" type="file" accept="application/pdf,.pdf" />
+                    <span class="upload-icon"><i class="fas fa-file-pdf"></i></span>
+                    <span>
+                      <strong>Choisir un PDF</strong>
+                      <small>Document PDF uniquement</small>
+                    </span>
+                  </label>
+                  <span *ngIf="isUploadingRessource" class="upload-status">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Upload en cours...
+                  </span>
+                  <span *ngIf="newRessource.url && !isUploadingRessource" class="upload-status success">
+                    <i class="fas fa-check-circle"></i>
+                    PDF prêt
+                  </span>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-save" [disabled]="isUploadingRessource">
+                  <i class="fas fa-save"></i>
+                  {{ isUploadingRessource ? 'Upload en cours...' : 'Enregistrer' }}
+                </button>
+                <button type="button" (click)="toggleRessourceForm(module.idModule)" class="btn-cancel">
+                  Annuler
+                </button>
+              </div>
+            </form>
+
+            <div *ngIf="!module.lecons || module.lecons.length === 0" class="empty-inline">
+              Aucune leçon dans ce module.
+            </div>
+
+            <div class="lecons-list">
+              <div *ngFor="let lecon of getLeconsSorted(module); let leconIndex = index" class="lecon-item">
+                <div class="lecon-info">
+                  <span class="lecon-index">{{ leconIndex + 1 }}</span>
+                  <div>
+                    <h4>{{ lecon.titre }}</h4>
+                    <p>
+                      <i class="fas fa-clock"></i>
+                      {{ getDurationDisplay(lecon.dureeSecondes) }}
+                    </p>
+                  </div>
+                </div>
+                <div class="inline-actions">
+                  <button *ngIf="canJoinLive(lecon)" type="button" (click)="toggleLive(lecon)" class="btn-small btn-live">
+                    <i class="fas fa-video"></i>
+                    {{ activeLiveLeconId === lecon.idLecon ? 'Fermer le live' : 'Rejoindre le live' }}
+                  </button>
+                  <a *ngIf="lecon.urlVideo" [href]="lecon.urlVideo" target="_blank" rel="noopener" class="btn-icon btn-view" aria-label="Ouvrir la vidéo">
+                    <i class="fas fa-play"></i>
+                  </a>
+                  <button *ngIf="canManage()" type="button" (click)="editLecon(module, lecon)" class="btn-icon" aria-label="Modifier la leçon">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button *ngIf="canManage()" type="button" (click)="deleteLecon(module, lecon.idLecon)" class="btn-icon btn-delete" aria-label="Supprimer la leçon">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                <div *ngIf="lecon.liveAt || lecon.streamingRoom" class="live-details">
+                  <span *ngIf="lecon.liveAt">
+                    <i class="fas fa-calendar"></i>
+                    {{ lecon.liveAt | date:'short' }}
+                  </span>
+                  <span *ngIf="lecon.streamingRoom">
+                    <i class="fas fa-signal"></i>
+                    Live room prête
+                  </span>
+                </div>
+                <div *ngIf="activeLiveLeconId === lecon.idLecon && getJitsiUrl(lecon)" class="live-player">
+                  <iframe
+                    [src]="getJitsiUrl(lecon)"
+                    title="Live streaming de la leçon"
+                    allow="camera; microphone; fullscreen; display-capture; autoplay"
+                    allowfullscreen>
+                  </iframe>
+                </div>
+                <div *ngIf="lecon.urlVideo" class="lecon-player">
+                  <video *ngIf="isDirectVideoUrl(lecon.urlVideo)" [src]="lecon.urlVideo" controls preload="metadata"></video>
+                  <iframe
+                    *ngIf="isYoutubeUrl(lecon.urlVideo)"
+                    [src]="getYoutubeEmbedUrl(lecon.urlVideo)"
+                    title="Vidéo de la leçon"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                  </iframe>
+                </div>
+                <div class="comments-panel">
+                  <h5><i class="fas fa-comments"></i> Commentaires</h5>
+                  <div *ngIf="!lecon.commentaires || lecon.commentaires.length === 0" class="empty-inline">
+                    Aucun commentaire pour cette leçon.
+                  </div>
+                  <div *ngFor="let commentaire of lecon.commentaires" class="comment-item">
+                    <div>
+                      <strong>{{ commentaire.auteurNom || 'Participant' }}</strong>
+                      <span>{{ commentaire.dateCreation | date:'short' }}</span>
+                    </div>
+                    <p>{{ commentaire.contenu }}</p>
+                  </div>
+                  <div class="comment-form">
+                    <textarea [(ngModel)]="commentDrafts[lecon.idLecon!]" name="comment{{ lecon.idLecon }}" placeholder="Ajouter un commentaire"></textarea>
+                    <button type="button" (click)="addComment(module, lecon)" class="btn-save">
+                      <i class="fas fa-paper-plane"></i>
+                      Commenter
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="module-resources">
+              <h4><i class="fas fa-folder-open"></i> Ressources du module ({{ module.ressources?.length || 0 }})</h4>
+              <div *ngIf="!module.ressources || module.ressources.length === 0" class="empty-inline">
+                Aucune ressource dans ce module.
+              </div>
+
+              <div class="resources-list compact-resources">
+                <article *ngFor="let ressource of getModuleRessourcesSorted(module)" class="resource-card">
+                  <div class="resource-icon">
+                    <i *ngIf="ressource.type === 'PDF'" class="fas fa-file-pdf"></i>
+                    <i *ngIf="ressource.type === 'LIEN'" class="fas fa-link"></i>
+                    <i *ngIf="ressource.type === 'DOC'" class="fas fa-file-word"></i>
+                    <i *ngIf="ressource.type === 'IMAGE'" class="fas fa-image"></i>
+                  </div>
+                  <div class="resource-info">
+                    <h3>{{ ressource.titre }}</h3>
+                    <span>{{ ressource.type }}</span>
+                  </div>
+                  <div class="inline-actions">
+                    <a *ngIf="ressource.url" [href]="ressource.url" target="_blank" rel="noopener" class="btn-icon btn-view" aria-label="Ouvrir la ressource">
+                      <i class="fas fa-arrow-up-right-from-square"></i>
+                    </a>
+                    <button *ngIf="canManage()" type="button" (click)="editRessource(ressource, module)" class="btn-icon" aria-label="Modifier la ressource">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button *ngIf="canManage()" type="button" (click)="deleteRessource(ressource.idRessource, module)" class="btn-icon btn-delete" aria-label="Supprimer la ressource">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'resources'" class="tab-content">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">Bibliothèque</span>
+            <h2>Ressources de la formation</h2>
+          </div>
+          <button *ngIf="canManage()" (click)="activeTab = 'modules'" class="btn-action">
+            <i class="fas fa-plus"></i>
+            Ajouter une ressource dans un module
+          </button>
+        </div>
+
+        <form *ngIf="false && showRessourceForm && !activeRessourceModuleId && canManage()" class="edit-form" (ngSubmit)="saveRessource()">
+          <h3>{{ editingRessourceId ? 'Modifier la ressource' : 'Nouvelle ressource' }}</h3>
+          <div class="form-grid">
+            <label>
+              Titre
+              <input [(ngModel)]="newRessource.titre" name="ressourceTitre" type="text" placeholder="Titre" required />
+            </label>
+            <label>
+              Type
+              <select [(ngModel)]="newRessource.type" name="ressourceType">
+                <option *ngFor="let type of resourceTypes" [value]="type">{{ type }}</option>
+              </select>
+            </label>
+            <label>
+              URL
+              <input [(ngModel)]="newRessource.url" name="ressourceUrl" type="url" placeholder="https://..." required />
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-save">
+              <i class="fas fa-save"></i>
+              Enregistrer
+            </button>
+            <button type="button" (click)="toggleRessourceForm()" class="btn-cancel">
+              Annuler
+            </button>
+          </div>
+        </form>
+
+        <div *ngIf="!formation.ressources || formation.ressources.length === 0" class="empty-message">
+          <i class="fas fa-folder-open"></i>
+          <p>Aucune ressource pour le moment.</p>
+        </div>
+
+        <div class="resources-list">
+          <article *ngFor="let ressource of formation.ressources" class="resource-card">
+            <div class="resource-icon">
+              <i *ngIf="ressource.type === 'PDF'" class="fas fa-file-pdf"></i>
+              <i *ngIf="ressource.type === 'LIEN'" class="fas fa-link"></i>
+              <i *ngIf="ressource.type === 'DOC'" class="fas fa-file-word"></i>
+              <i *ngIf="ressource.type === 'IMAGE'" class="fas fa-image"></i>
+            </div>
+            <div class="resource-info">
+              <h3>{{ ressource.titre }}</h3>
+              <span>{{ ressource.type }}</span>
+            </div>
+            <div class="inline-actions">
+              <a *ngIf="ressource.url" [href]="ressource.url" target="_blank" rel="noopener" class="btn-icon btn-view" aria-label="Ouvrir la ressource">
+                <i class="fas fa-arrow-up-right-from-square"></i>
+              </a>
+              <button *ngIf="canManage()" type="button" (click)="editRessource(ressource)" class="btn-icon" aria-label="Modifier la ressource">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button *ngIf="canManage()" type="button" (click)="deleteRessource(ressource.idRessource)" class="btn-icon btn-delete" aria-label="Supprimer la ressource">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </ng-container>
+</main>

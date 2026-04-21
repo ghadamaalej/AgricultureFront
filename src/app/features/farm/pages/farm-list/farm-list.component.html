@@ -1,0 +1,117 @@
+<app-navbar></app-navbar>
+
+<div class="farm-list-page">
+  <section class="page-hero">
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <div class="section-label">
+          <i class="fas fa-list"></i>
+          Mes terrains
+        </div>
+        <h1>Vos terrains, prets pour la gestion 3D</h1>
+        <p>
+          Ouvrez un terrain, visualisez ses parcelles en 3D et organisez les cultures depuis un espace clair.
+        </p>
+      </div>
+
+      <div class="hero-panel" *ngIf="!loading">
+        <div class="hero-stat">
+          <span class="stat-value">{{ terrains.length }}</span>
+          <span class="stat-label">Terrains</span>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-value">{{ terrains.length > 0 ? '3D' : '--' }}</span>
+          <span class="stat-label">Vue active</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container content-shell">
+    <div class="toolbar">
+      <div>
+        <h2>Catalogue des terrains</h2>
+        <p>Selectionnez un terrain pour entrer dans la scene agricole.</p>
+      </div>
+      <button class="btn-add-terrain" (click)="onAddNewTerrain()">
+        <i class="fas fa-plus"></i>
+        Ajouter un terrain
+      </button>
+    </div>
+
+    <div *ngIf="error" class="alert alert-error">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ error }}
+    </div>
+
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement de vos terrains...</p>
+    </div>
+
+    <div *ngIf="!loading && terrains.length === 0 && !error" class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-seedling"></i>
+      </div>
+      <h3>Aucun terrain enregistre</h3>
+      <p>Ajoutez votre premier terrain agricole pour commencer la gestion des parcelles.</p>
+      <button class="btn-add-terrain" (click)="onAddNewTerrain()">
+        <i class="fas fa-plus"></i>
+        Ajouter mon premier terrain
+      </button>
+    </div>
+
+    <div class="terrains-grid" *ngIf="!loading && terrains.length > 0">
+      <article
+        *ngFor="let terrain of terrains"
+        class="terrain-card"
+        (click)="onTerrainClick(terrain)"
+      >
+        <div class="terrain-visual">
+          <div class="field field-a"></div>
+          <div class="field field-b"></div>
+          <div class="field field-c"></div>
+          <span class="terrain-area">
+            <i class="fas fa-ruler-combined"></i>
+            {{ terrain.superficieHa }} ha
+          </span>
+        </div>
+
+        <div class="card-content">
+          <div class="card-title-row">
+            <div class="terrain-name">
+              <i class="fas fa-map-marked-alt"></i>
+              <h3>{{ terrain.nom }}</h3>
+            </div>
+            <span class="open-indicator">
+              <i class="fas fa-arrow-right"></i>
+            </span>
+          </div>
+
+          <div class="terrain-info">
+            <div class="info-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>{{ terrain.localisation }}</span>
+            </div>
+            <div class="info-item">
+              <i [class]="getSoilTypeIcon(terrain.typeSol)"></i>
+              <span>{{ terrain.typeSol }}</span>
+            </div>
+            <div class="info-item">
+              <i [class]="getIrrigationIcon(terrain.irrigation)"></i>
+              <span>{{ terrain.irrigation }}</span>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <small>{{ terrain.latitude.toFixed(4) }}, {{ terrain.longitude.toFixed(4) }}</small>
+            <span>
+              <i class="fas fa-cube"></i>
+              Voir en 3D
+            </span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+</div>

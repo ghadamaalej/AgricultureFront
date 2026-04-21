@@ -1,0 +1,106 @@
+<div class="terrain-list-container">
+  <div class="list-header">
+    <h3 class="list-title">
+      <i class="fas fa-list"></i>
+      Mes terrains
+    </h3>
+    <span class="terrain-count">{{ terrains.length }} terrain{{ terrains.length !== 1 ? 's' : '' }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des terrains...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && terrains.length === 0" class="empty-state">
+    <i class="fas fa-seedling"></i>
+    <p>Aucun terrain enregistré</p>
+    <span class="empty-subtitle">Ajoutez votre premier terrain pour commencer</span>
+  </div>
+
+  <!-- Terrain Cards -->
+  <div *ngIf="!loading && terrains.length > 0" class="terrain-grid">
+    <div
+      *ngFor="let terrain of terrains"
+      class="terrain-card"
+      [class.selected]="isSelected(terrain)"
+      (click)="onTerrainClick(terrain)"
+    >
+      <div class="card-header">
+        <div class="terrain-name">
+          <i class="fas fa-map-marked-alt"></i>
+          <h4>{{ terrain.nom }}</h4>
+        </div>
+        <div class="card-actions">
+          <button
+            class="btn-action btn-edit"
+            (click)="onEditClick(terrain, $event)"
+            title="Modifier ce terrain"
+          >
+            <i class="fas fa-edit"></i>
+          </button>
+          <button
+            class="btn-action btn-delete"
+            (click)="onDeleteClick(terrain, $event)"
+            title="Supprimer ce terrain"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="terrain-info">
+          <div class="info-item">
+            <i class="fas fa-ruler-combined"></i>
+            <span>{{ terrain.superficieHa }} ha</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>{{ terrain.localisation }}</span>
+          </div>
+        </div>
+
+        <div class="terrain-details">
+          <div class="detail-row">
+            <div class="detail-item">
+              <i [class]="getSoilTypeIcon(terrain.typeSol)"></i>
+              <span class="detail-label">Sol:</span>
+              <span class="detail-value">{{ terrain.typeSol }}</span>
+            </div>
+            <div class="detail-item">
+              <i [class]="getIrrigationIcon(terrain.irrigation)"></i>
+              <span class="detail-label">Irrigation:</span>
+              <span class="detail-value">{{ terrain.irrigation }}</span>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-item">
+              <i class="fas fa-water"></i>
+              <span class="detail-label">Eau:</span>
+              <span class="detail-value">{{ terrain.sourceEau }}</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-globe"></i>
+              <span class="detail-label">Coords:</span>
+              <span class="detail-value">{{ terrain.latitude.toFixed(4) }}, {{ terrain.longitude.toFixed(4) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="terrain-remarque" *ngIf="terrain.remarque">
+          <i class="fas fa-sticky-note"></i>
+          <span>{{ terrain.remarque }}</span>
+        </div>
+      </div>
+
+      <div class="selection-indicator" *ngIf="isSelected(terrain)">
+        <i class="fas fa-check-circle"></i>
+        <span>Sélectionné</span>
+      </div>
+    </div>
+  </div>
+</div>

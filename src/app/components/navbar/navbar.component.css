@@ -106,6 +106,18 @@
   gap: 5px;
   cursor: pointer;
   user-select: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-trigger:hover {
+  background: rgba(76, 175, 80, 0.08);
+  color: #2e7d32;
+}
+
+.dropdown-trigger.active {
+  color: #2e7d32;
 }
 
 .dropdown-arrow {
@@ -147,9 +159,20 @@
   font-weight: 500;
   color: #2c3e2d;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
   text-decoration: none;
   white-space: nowrap;
+}
+
+.dropdown-item:hover {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+  transform: translateX(4px);
+}
+
+.dropdown-item.active {
+  background: rgba(76, 175, 80, 0.2);
+  color: #2e7d32;
 }
 
 .dropdown-item i {
@@ -158,8 +181,8 @@
   color: #4caf50;
   font-size: 13px;
   flex-shrink: 0;
-  
 }
+
 .dropdown-item span {
   color: #2c3e2d;
   font-size: 13px;
@@ -170,8 +193,64 @@
   margin-left: 10px;
 }
 
-.dropdown-item:hover span  { color: #2e7d32; }
-.dropdown-item.active span { color: #2e7d32; }
+.dropdown-item:hover span {
+  color: #2e7d32;
+}
+
+.dropdown-item.active span {
+  color: #2e7d32;
+}
+
+/* Submenu styles */
+.dropdown-item.has-submenu {
+  position: relative;
+}
+
+.submenu-arrow {
+  margin-left: auto;
+  font-size: 10px;
+  color: #4caf50;
+}
+
+.submenu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.submenu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2c3e2d;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.submenu-item i {
+  width: 14px;
+  text-align: center;
+  color: #4caf50;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.submenu-item:hover {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+  transform: translateX(3px);
+}
+
+.submenu-item.active {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+}
 
 /* ===== AUTH BUTTONS ===== */
 .nav-actions {

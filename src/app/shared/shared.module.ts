@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-// Exemple composants partagés
 import { NavbarComponent } from '../components/navbar/navbar.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+
 
 @NgModule({
   declarations: [
@@ -13,13 +13,14 @@ import { FormsModule } from '@angular/forms';
   ],
   imports: [
     CommonModule,
-    FormsModule   
+    FormsModule,
+    RouterModule
   ],
   exports: [
     NavbarComponent,
     FooterComponent,
     CommonModule,
-    FormsModule  
+    FormsModule
   ]
 })
-export class SharedModule { }
+export class SharedModule {}

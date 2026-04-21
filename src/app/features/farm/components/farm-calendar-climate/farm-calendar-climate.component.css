@@ -1,0 +1,45 @@
+h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.muted {
+  color: #6b7280;
+}
+
+.small {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.table-wrap {
+  margin-top: 12px;
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: top;
+}
+
+.data-table th {
+  background: #f9fafb;
+  font-weight: 700;
+  color: #374151;
+}
+
+.data-table tbody tr:hover {
+  background: #fafafa;
+}

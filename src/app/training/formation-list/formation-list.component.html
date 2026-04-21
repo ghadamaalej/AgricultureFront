@@ -1,0 +1,192 @@
+<app-navbar></app-navbar>
+
+<main class="training-page">
+  <section class="training-hero">
+    <div class="hero-media" aria-hidden="true">
+      <img src="assets/images/nature.jpg" alt="">
+    </div>
+
+    <div class="hero-content">
+      <div class="eyebrow">
+        <i class="fas fa-graduation-cap"></i>
+        Formations agricoles
+      </div>
+      <h1 *ngIf="!canManageFormations()">Apprendre les gestes qui changent une saison.</h1>
+      <h1 *ngIf="canManageFormations()">Piloter vos formations avec precision.</h1>
+      <p *ngIf="!canManageFormations()">
+        Trouvez des parcours pratiques, suivez les modules adaptes a votre niveau et passez plus vite de la theorie au terrain.
+      </p>
+      <p *ngIf="canManageFormations()">
+        Creez, organisez et suivez vos contenus de formation depuis un espace plus clair.
+      </p>
+
+      <div class="hero-actions">
+        <button *ngIf="canManageFormations()" (click)="addFormation()" class="btn-primary">
+          <i class="fas fa-plus"></i>
+          Nouvelle Formation
+        </button>
+        <a class="btn-secondary" href="#training-catalog">
+          <i class="fas fa-arrow-down"></i>
+          Voir le catalogue
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="training-overview" aria-label="Resume des formations">
+    <div class="overview-item">
+      <span class="overview-value">{{ formations.length }}</span>
+      <span class="overview-label">Formations</span>
+    </div>
+    <div class="overview-item">
+      <span class="overview-value">{{ filteredFormations.length }}</span>
+      <span class="overview-label">Resultats</span>
+    </div>
+    <div class="overview-item">
+      <span class="overview-value">{{ canManageFormations() ? 'Expert' : 'Libre' }}</span>
+      <span class="overview-label">Acces</span>
+    </div>
+  </section>
+
+  <section id="training-catalog" class="catalog-section">
+    <div class="catalog-heading">
+      <div>
+        <span class="section-kicker">Catalogue</span>
+        <h2>Choisir une formation</h2>
+      </div>
+      <p>Filtrez par niveau, type ou thematique pour trouver le bon parcours.</p>
+    </div>
+
+    <div class="search-filter-section">
+      <label class="search-box">
+        <i class="fas fa-search"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (keyup)="onSearch()"
+          placeholder="Rechercher une formation..."
+          class="search-input"
+        />
+      </label>
+
+      <div class="filter-group">
+        <select [(ngModel)]="filterNiveau" (change)="onFilterChange()" class="filter-select" aria-label="Filtrer par niveau">
+          <option value="">Tous les niveaux</option>
+          <option value="DEBUTANT">Debutant</option>
+          <option value="INTERMEDIAIRE">Intermediaire</option>
+          <option value="AVANCE">Avance</option>
+          <option value="EXPERT">Expert</option>
+        </select>
+
+        <select [(ngModel)]="filterType" (change)="onFilterChange()" class="filter-select" aria-label="Filtrer par type">
+          <option value="">Tous les types</option>
+          <option value="THEORIQUE">Theorique</option>
+          <option value="PRATIQUE">Pratique</option>
+          <option value="HYBRIDE">Hybride</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement des formations...</p>
+    </div>
+
+    <div *ngIf="error && !isLoading" class="error-state">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error }}</p>
+    </div>
+
+    <div *ngIf="!isLoading && !error && filteredFormations.length === 0" class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <h2>Aucune formation trouvee</h2>
+      <p *ngIf="!searchQuery && !filterNiveau && !filterType">Aucune formation disponible pour le moment.</p>
+      <p *ngIf="searchQuery || filterNiveau || filterType">Essayez de modifier vos criteres de recherche.</p>
+      <button *ngIf="canManageFormations()" (click)="addFormation()" class="btn-primary">
+        <i class="fas fa-plus"></i>
+        Creer la premiere formation
+      </button>
+    </div>
+
+    <div *ngIf="!isLoading && !error && filteredFormations.length > 0" class="formations-grid">
+      <article *ngFor="let formation of filteredFormations" class="formation-card">
+        <div class="formation-image-container">
+          <img
+            [src]="getFormationImage(formation.imageUrl)"
+            [alt]="formation.titre"
+            class="formation-image"
+          />
+          <div class="formation-badge" [ngClass]="'badge-' + (formation.type.toLowerCase() || 'theorique')">
+            {{ formation.type }}
+          </div>
+          <div *ngIf="formation.estPayante" class="price-badge">
+            {{ formation.prix }} EUR
+          </div>
+        </div>
+
+        <div class="formation-card-content">
+          <div class="formation-header-info">
+            <h3 class="formation-title">{{ formation.titre }}</h3>
+            <span class="niveau-badge" [ngClass]="'niveau-' + (formation.niveau.toLowerCase() || 'debutant')">
+              {{ formation.niveau }}
+            </span>
+          </div>
+
+          <p class="formation-description">{{ formation.description }}</p>
+
+          <div class="formation-meta">
+            <div class="meta-item">
+              <i class="fas fa-tag"></i>
+              <span>{{ formation.thematique }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-globe"></i>
+              <span>{{ formation.langue }}</span>
+            </div>
+            <div class="meta-item" *ngIf="formation.dateCreation">
+              <i class="fas fa-calendar"></i>
+              <span>{{ formation.dateCreation | date: 'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+
+          <div class="modules-count">
+            <i class="fas fa-cubes"></i>
+            <span>{{ formation.modules?.length || 0 }} module(s)</span>
+          </div>
+
+          <div class="formation-actions">
+            <button (click)="viewFormation(formation.idFormation!)" class="btn-view">
+              <i class="fas fa-eye"></i>
+              Details
+            </button>
+
+            <button
+              *ngIf="!isAlreadyInscribed(formation.idFormation) && !canManageFormations()"
+              (click)="inscribeFormation(formation)"
+              class="btn-subscribe"
+            >
+              <i class="fas fa-check-circle"></i>
+              S'inscrire
+            </button>
+
+            <span *ngIf="isAlreadyInscribed(formation.idFormation) && !canManageFormations()" class="inscribed-badge">
+              <i class="fas fa-check-double"></i>
+              Inscrit
+            </span>
+
+            <div *ngIf="canManageFormations()" class="admin-actions">
+              <button (click)="editFormation(formation.idFormation!)" class="btn-edit" title="Modifier">
+                <i class="fas fa-edit"></i>
+                Modifier
+              </button>
+              <button (click)="deleteFormation(formation.idFormation!)" class="btn-delete" title="Supprimer">
+                <i class="fas fa-trash"></i>
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>

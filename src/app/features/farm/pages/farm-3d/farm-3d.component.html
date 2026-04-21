@@ -1,0 +1,379 @@
+<div
+  class="farm-3d-page"
+  [class.farm-3d-page--drawing-parcelle]="isDrawingParcelle && showParcelleForm"
+>
+  <!-- ========== LOADING STATE ========== -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-spinner">
+      <i class="fas fa-seedling"></i>
+      <p>Chargement de la ferme 3D...</p>
+    </div>
+  </div>
+
+  <!-- ========== ERROR STATE ========== -->
+  <div *ngIf="error" class="error-banner">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>{{ error }}</span>
+    <button (click)="error = null" class="btn-close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- ========== PAGE HEADER ========== -->
+  <header class="page-header" *ngIf="!isLoading">
+    <div class="header-content">
+      <button (click)="onBackToList()" class="btn-back">
+        <i class="fas fa-arrow-left"></i>
+        Retour à la liste
+      </button>
+      <div class="terrain-info">
+        <h1>{{ terrain?.nom }}</h1>
+        <div class="terrain-meta">
+          <span class="area-badge">
+            <i class="fas fa-ruler-combined"></i>
+            {{ terrain?.superficie }} ha
+          </span>
+          <span class="location-badge">
+            <i class="fas fa-map-marker-alt"></i>
+            {{ terrain?.coordonnees }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <main class="main-content" *ngIf="!isLoading">
+    <!-- ========== 3D VIEWPORT ========== -->
+    <div
+      class="viewport-container"
+      [class.viewport-container--drop-active]="canvasDropHighlight"
+    >
+      <canvas #canvas class="three-canvas"></canvas>
+
+      <div class="plant-palette">
+        <div class="plant-palette__title">
+          <i class="fas fa-hand-pointer"></i>
+          <ng-container *ngIf="parcelles.length > 0; else noParcelHint">
+            Glisser une culture sur une parcelle du terrain
+          </ng-container>
+          <ng-template #noParcelHint> Créez une parcelle, puis glissez une culture dessus </ng-template>
+        </div>
+        <div class="plant-palette__chips">
+          <button
+            type="button"
+            *ngFor="let item of plantPalette"
+            class="plant-palette__chip"
+            draggable="true"
+            (dragstart)="onPaletteDragStart($event, item)"
+          >
+            <i [ngClass]="['fas', item.icon]"></i>
+            <span>{{ item.label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Viewport Controls -->
+      <div class="viewport-controls">
+        <button type="button" class="control-btn" (click)="setTopView()" title="Vue de dessus">
+          <i class="fas fa-eye"></i>
+        </button>
+        <button type="button" class="control-btn" (click)="resetCameraView()" title="Reset caméra">
+          <i class="fas fa-home"></i>
+        </button>
+        <button type="button" class="control-btn" (click)="toggleViewportFullscreen()" title="Plein écran">
+          <i class="fas fa-expand"></i>
+        </button>
+      </div>
+
+      <!-- Instructions -->
+      <div class="viewport-instructions">
+        <i class="fas fa-mouse-pointer"></i>
+        <span
+          >Cliquez et faites glisser pour naviguer • Molette pour zoomer • Déposez une culture depuis la barre
+          ci-dessus</span
+        >
+      </div>
+    </div>
+
+    <!-- ========== SIDE PANEL ========== -->
+    <aside class="side-panel">
+      <!-- ========== ACTIONS ========== -->
+      <div class="panel-section">
+        <h3 class="panel-title">
+          <i class="fas fa-tools"></i>
+          Actions
+        </h3>
+        <div class="action-buttons">
+          <button (click)="onAddParcelle()" class="btn-action btn-primary">
+            <i class="fas fa-plus"></i>
+            Ajouter Parcelle
+          </button>
+          <button (click)="onAddCulture()" class="btn-action btn-secondary">
+            <i class="fas fa-seedling"></i>
+            Planter Culture
+          </button>
+        </div>
+      </div>
+
+      <!-- ========== PARCELLES ========== -->
+      <div class="panel-section">
+        <h3 class="panel-title">
+          <i class="fas fa-th-large"></i>
+          Parcelles ({{ parcelles.length }})
+        </h3>
+        <div class="parcelles-list">
+          <div
+            *ngFor="let parcelle of parcelles"
+            class="parcelle-item"
+            [class.parcelle-item--focused]="highlightedParcelleId === parcelle.id"
+            (click)="onSelectParcelleInTerrain(parcelle)"
+            role="button"
+            tabindex="0"
+            (keydown.enter)="onSelectParcelleInTerrain(parcelle)"
+          >
+            <div class="parcelle-header">
+              <span class="parcelle-name">{{ parcelle.nom }}</span>
+              <div class="parcelle-actions">
+                <button (click)="onEditParcelle(parcelle); $event.stopPropagation()" class="btn-icon" title="Modifier">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button (click)="onDeleteParcelle(parcelle); $event.stopPropagation()" class="btn-icon btn-danger" title="Supprimer">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="parcelle-details">
+              <span class="surface">{{ parcelle.surface }} m²</span>
+              <span class="cultures-count">
+                {{ getCultureCountForParcelle(parcelle.id!) }} cultures
+              </span>
+            </div>
+          </div>
+          <div *ngIf="parcelles.length === 0" class="empty-state">
+            <i class="fas fa-th-large"></i>
+            <p>Aucune parcelle créée</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== CULTURES ========== -->
+      <div class="panel-section">
+        <h3 class="panel-title">
+          <i class="fas fa-seedling"></i>
+          Cultures ({{ cultures.length }})
+        </h3>
+        <div class="cultures-list">
+          <div *ngFor="let culture of cultures" class="culture-item">
+            <div class="culture-header">
+              <div class="culture-color" [style.background-color]="getCultureColor(culture)"></div>
+              <span class="culture-name">{{ culture.nom }}</span>
+              <span class="culture-stade" [class]="'stade-' + culture.stade.toLowerCase()">
+                {{ culture.stade }}
+              </span>
+            </div>
+            <div class="culture-details">
+              <span class="culture-dates">
+                Semis: {{ culture.dateSemis | date:'dd/MM/yyyy' }}
+              </span>
+              <span class="culture-dates">
+                Récolte: {{ culture.dateRecolte | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+          </div>
+          <div *ngIf="cultures.length === 0" class="empty-state">
+            <i class="fas fa-seedling"></i>
+            <p>Aucune culture plantée</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ========== PARCELLE FORM MODAL ========== -->
+  <div *ngIf="showParcelleForm" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>{{ selectedParcelle ? 'Modifier' : 'Ajouter' }} une Parcelle</h3>
+        <button type="button" (click)="closeParcelleForm()" class="btn-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="parcelleForm" (ngSubmit)="onSubmitParcelle()" class="modal-form">
+        <div class="form-group">
+          <label for="parcelle-nom">Nom de la parcelle</label>
+          <input
+            id="parcelle-nom"
+            type="text"
+            formControlName="nom"
+            placeholder="Ex: Parcelle Nord"
+            class="form-input"
+            [class.error]="parcelleFormControls['nom'].invalid && parcelleFormControls['nom'].touched"
+          >
+          <div *ngIf="parcelleFormControls['nom'].invalid && parcelleFormControls['nom'].touched" class="error-message">
+            Le nom est requis (minimum 2 caractères)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="parcelle-surface">Surface (m²)</label>
+          <input
+            id="parcelle-surface"
+            type="number"
+            formControlName="surface"
+            placeholder="100"
+            min="0.01"
+            step="0.01"
+            class="form-input"
+            [class.error]="parcelleFormControls['surface'].invalid && parcelleFormControls['surface'].touched"
+          >
+          <div *ngIf="parcelleFormControls['surface'].invalid && parcelleFormControls['surface'].touched" class="error-message">
+            La surface doit être supérieure à 0
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Géométrie</label>
+          <div class="geom-placeholder">
+            <i class="fas fa-draw-polygon"></i>
+            <p>Cliquez sur la carte pour dessiner la parcelle</p>
+            <small>La géométrie sera automatiquement générée</small>
+          </div>
+          <div class="geom-buttons">
+            <button type="button" class="btn-tertiary" (click)="toggleDrawingMode()">
+              {{ isDrawingParcelle ? 'Arrêter le dessin' : 'Commencer le dessin' }}
+            </button>
+            <button type="button" class="btn-secondary" (click)="finishDrawing()" [disabled]="parcellePoints.length < 3">
+              Terminer
+            </button>
+            <button type="button" class="btn-secondary" (click)="undoPoint()" [disabled]="!canUndo">
+              Annuler dernier point
+            </button>
+            <button type="button" class="btn-secondary" (click)="redoPoint()" [disabled]="!canRedo">
+              Rétablir
+            </button>
+            <button type="button" class="btn-secondary" (click)="clearDrawing()" [disabled]="parcellePoints.length === 0">
+              Réinitialiser
+            </button>
+          </div>
+          <textarea formControlName="geom" rows="2" placeholder="GeoJSON du polygone" readonly></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" (click)="closeParcelleForm()" class="btn-secondary">
+            Annuler
+          </button>
+          <button type="submit" [disabled]="parcelleForm.invalid" class="btn-primary">
+            {{ selectedParcelle ? 'Modifier' : 'Ajouter' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== CULTURE FORM MODAL ========== -->
+  <div *ngIf="showCultureForm" class="modal-overlay" (click)="showCultureForm = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Planter une Culture</h3>
+        <button (click)="showCultureForm = false" class="btn-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="cultureForm" (ngSubmit)="onSubmitCulture()" class="modal-form">
+        <div class="form-group">
+          <label for="culture-nom">Nom de la culture</label>
+          <input
+            id="culture-nom"
+            type="text"
+            formControlName="nom"
+            placeholder="Ex: Blé, Maïs, Tomate..."
+            class="form-input"
+            [class.error]="cultureFormControls['nom'].invalid && cultureFormControls['nom'].touched"
+          >
+          <div *ngIf="cultureFormControls['nom'].invalid && cultureFormControls['nom'].touched" class="error-message">
+            Le nom est requis (minimum 2 caractères)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="culture-type">Type de culture</label>
+          <select
+            id="culture-type"
+            formControlName="type"
+            class="form-input"
+            [class.error]="cultureFormControls['type'].invalid && cultureFormControls['type'].touched"
+          >
+            <option value="">Sélectionner un type</option>
+            <option value="cereal">Céréale</option>
+            <option value="legume">Légume</option>
+            <option value="fruit">Fruit</option>
+            <option value="oleagineux">Oléagineux</option>
+          </select>
+          <div *ngIf="cultureFormControls['type'].invalid && cultureFormControls['type'].touched" class="error-message">
+            Le type est requis
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="culture-semis">Date de semis</label>
+            <input
+              id="culture-semis"
+              type="date"
+              formControlName="dateSemis"
+              class="form-input"
+              [class.error]="cultureFormControls['dateSemis'].invalid && cultureFormControls['dateSemis'].touched"
+            >
+            <div *ngIf="cultureFormControls['dateSemis'].invalid && cultureFormControls['dateSemis'].touched" class="error-message">
+              Date requise
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="culture-recolte">Date de récolte</label>
+            <input
+              id="culture-recolte"
+              type="date"
+              formControlName="dateRecolte"
+              class="form-input"
+              [class.error]="cultureFormControls['dateRecolte'].invalid && cultureFormControls['dateRecolte'].touched"
+            >
+            <div *ngIf="cultureFormControls['dateRecolte'].invalid && cultureFormControls['dateRecolte'].touched" class="error-message">
+              Date requise
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="culture-parcelle">Parcelle</label>
+          <select
+            id="culture-parcelle"
+            formControlName="parcelleId"
+            class="form-input"
+            [class.error]="cultureFormControls['parcelleId'].invalid && cultureFormControls['parcelleId'].touched"
+          >
+            <option [ngValue]="null">Sélectionner une parcelle</option>
+            <option *ngFor="let parcelle of parcelles" [ngValue]="parcelle.id ?? parcelle.idParcelle">
+              {{ parcelle.nom }} ({{ parcelle.surface }} m²)
+            </option>
+          </select>
+          <div *ngIf="cultureFormControls['parcelleId'].invalid && cultureFormControls['parcelleId'].touched" class="error-message">
+            Une parcelle doit être sélectionnée
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" (click)="showCultureForm = false" class="btn-secondary">
+            Annuler
+          </button>
+          <button type="submit" [disabled]="cultureForm.invalid" class="btn-primary">
+            Planter
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

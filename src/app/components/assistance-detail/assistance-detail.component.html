@@ -1,0 +1,121 @@
+<main class="assistance-page">
+  <section class="assistance-header">
+    <p class="eyebrow">Assistance request</p>
+    <h1>AI agricultural support</h1>
+  </section>
+
+  <div *ngIf="isLoading" class="state-message">Loading request...</div>
+  <div *ngIf="errorMessage" class="alert">{{ errorMessage }}</div>
+
+  <section *ngIf="demande" class="details-grid">
+    <article class="panel">
+      <div class="panel-title-row">
+        <h2>Request details</h2>
+        <span class="status">{{ demande.statut || 'OUVERTE' }}</span>
+      </div>
+
+      <dl class="details-list">
+        <div>
+          <dt>Problem type</dt>
+          <dd>{{ demande.typeProbleme }}</dd>
+        </div>
+        <div>
+          <dt>Channel</dt>
+          <dd>{{ demande.canal }}</dd>
+        </div>
+        <div>
+          <dt>Location</dt>
+          <dd>{{ demande.localisation || 'Not provided' }}</dd>
+        </div>
+        <div>
+          <dt>Created</dt>
+          <dd>{{ demande.dateCreation | date:'medium' }}</dd>
+        </div>
+      </dl>
+
+      <div class="description-block">
+        <h3>Description</h3>
+        <p>{{ demande.description }}</p>
+      </div>
+
+      <a *ngIf="demande.mediaUrl" [href]="demande.mediaUrl" target="_blank" rel="noopener" class="media-link">
+        Open attached media
+      </a>
+    </article>
+
+    <article class="panel ai-panel">
+      <div class="panel-title-row">
+        <h2>AI response</h2>
+        <button
+          *ngIf="canGenerateAI()"
+          type="button"
+          class="primary-button"
+          (click)="generateAIResponse()"
+          [disabled]="isGenerating"
+        >
+          {{ isGenerating ? 'Generating...' : 'Generate AI Response' }}
+        </button>
+      </div>
+
+      <ng-container *ngIf="demande.reponseIA; else noAiResponse">
+        <div class="confidence">
+          <span>{{ confidencePercent(demande.reponseIA.probabilite) }}%</span>
+          <div class="confidence-track">
+            <div class="confidence-fill" [style.width.%]="confidencePercent(demande.reponseIA.probabilite)"></div>
+          </div>
+        </div>
+
+        <div class="ai-section">
+          <h3>Probable diagnosis</h3>
+          <p>{{ demande.reponseIA.diagnostic }}</p>
+        </div>
+
+        <div class="ai-section">
+          <h3>Recommendations</h3>
+          <p>{{ demande.reponseIA.recommandations }}</p>
+        </div>
+
+        <p class="model-line" *ngIf="demande.reponseIA.modele">
+          Model: {{ demande.reponseIA.modele }}
+        </p>
+      </ng-container>
+
+      <ng-template #noAiResponse>
+        <p class="empty-state" *ngIf="demande.canal !== 'INGENIEUR'">
+          No AI response has been generated yet.
+        </p>
+        <p class="empty-state" *ngIf="demande.canal === 'INGENIEUR'">
+          This request is assigned to engineer review.
+        </p>
+      </ng-template>
+    </article>
+
+    <article class="panel expert-panel">
+      <div class="panel-title-row">
+        <h2>Expert response</h2>
+        <span *ngIf="demande.affectationDemande?.statut" class="status">
+          {{ demande.affectationDemande?.statut }}
+        </span>
+      </div>
+
+      <ng-container *ngIf="hasEngineerResponses(); else noExpertResponse">
+        <div *ngFor="let response of getEngineerResponses()" class="expert-section">
+          <div class="response-meta">
+            <strong>{{ response.statut || 'PROPOSEE' }}</strong>
+            <span *ngIf="response.dateReponse">{{ response.dateReponse | date:'medium' }}</span>
+          </div>
+          <p>{{ response.contenu }}</p>
+        </div>
+      </ng-container>
+
+      <ng-template #noExpertResponse>
+        <p class="empty-state" *ngIf="demande.canal === 'INGENIEUR' || demande.canal === 'MIXTE'">
+          The request was created. AI response is not available yet, or this request is routed to an expert.
+        </p>
+        <p class="empty-state" *ngIf="demande.canal === 'IA'">
+          This request was sent to AI only.
+        </p>
+      </ng-template>
+    </article>
+  </section>
+</main>

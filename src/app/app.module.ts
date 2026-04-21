@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AppComponent }          from './app.component';
 import { AppRoutingModule }      from './app-routing.module';
+import { NavbarComponent }       from './components/navbar/navbar.component';
 import { HeroComponent }         from './components/hero/hero.component';
 import { AboutComponent }        from './components/about/about.component';
 import { ServicesComponent }     from './components/services/services.component';
@@ -22,6 +23,11 @@ import { RoleHomePlaceholderComponent } from './components/role-home-placeholder
 import { AuthTokenInterceptor } from './services/auth/auth-token.interceptor';
 import { SharedModule } from './shared/shared.module';
 import { ExplorerHostComponent } from './components/explorer-host/explorer-host.component';
+import { DiseasePredictorComponent } from './components/disease-predictor/disease-predictor.component';
+import { AssistanceDetailComponent } from './components/assistance-detail/assistance-detail.component';
+import { HelpRequestComponent } from './components/help-request/help-request.component';
+import { ExpertAssistanceRequestsComponent } from './components/expert-assistance-requests/expert-assistance-requests.component';
+import { provideHttpClient } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -39,8 +45,12 @@ import { ExplorerHostComponent } from './components/explorer-host/explorer-host.
     HomeComponent,
     NotFoundComponent,
     RegisterExtraComponent,
-    RoleHomePlaceholderComponent,
-    ExplorerHostComponent
+      RoleHomePlaceholderComponent,
+      ExplorerHostComponent,
+      DiseasePredictorComponent,
+      AssistanceDetailComponent,
+      HelpRequestComponent,
+      ExpertAssistanceRequestsComponent
   ],
   imports: [
     BrowserModule,
@@ -48,16 +58,18 @@ import { ExplorerHostComponent } from './components/explorer-host/explorer-host.
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    SharedModule,
-    AppRoutingModule  
+    AppRoutingModule  ,
+      SharedModule,
+
   ],
-  providers: [
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthTokenInterceptor,
-      multi: true
-    }
-  ],
+    providers: [
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: AuthTokenInterceptor,
+            multi: true
+        },
+        provideHttpClient()
+    ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
