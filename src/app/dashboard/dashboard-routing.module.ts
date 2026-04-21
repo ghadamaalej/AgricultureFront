@@ -4,11 +4,18 @@ import { DashboardLayoutComponent } from './dashboard-layout/dashboard-layout.co
 import { DashboardComponent }       from './dashboard/dashboard.component';
 import { UsersComponent } from './users/users.component';
 
+
 const routes: Routes = [
   {
     path: '',component: DashboardLayoutComponent,
     children: [
       { path: '',            component: DashboardComponent, pathMatch: 'full' },
+        {
+        path: 'claims',
+        loadChildren: () =>
+          import('../claims/claims-admin.module').then(m => m.ClaimsAdminModule)
+      },
+     
       // ↓ Décommente au fur et à mesure que tu crées les modules
        {
           path: 'users',component: UsersComponent

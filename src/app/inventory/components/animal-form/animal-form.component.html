@@ -1,0 +1,56 @@
+<div class="modal-overlay" (click)="cancelled.emit()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>
+        <i class="fas fa-horse" style="color:#2d6a2d;margin-right:8px;"></i>
+        {{ isEdit ? 'Modifier l\'animal' : 'Ajouter un animal' }}
+      </h2>
+      <button class="close-btn" (click)="cancelled.emit()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="modal-body">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Espèce *</label>
+          <input formControlName="espece" placeholder="ex: Vache, Mouton, Chèvre…"
+                 [class.err]="invalid('espece')">
+          <span class="err-msg" *ngIf="invalid('espece')">Champ requis</span>
+        </div>
+        <div class="form-group">
+          <label>Référence *</label>
+          <input formControlName="reference" placeholder="ex: VCH-001"
+                 [class.err]="invalid('reference')">
+          <span class="err-msg" *ngIf="invalid('reference')">Champ requis</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Poids (kg) *</label>
+          <input type="number" formControlName="poids" min="0.01" step="0.1"
+                 placeholder="ex: 350" [class.err]="invalid('poids')">
+          <span class="err-msg" *ngIf="invalid('poids')">Poids > 0 requis</span>
+        </div>
+        <div class="form-group">
+          <label>Date de naissance *</label>
+          <input type="date" formControlName="dateNaissance"
+                 [class.err]="invalid('dateNaissance')">
+          <span class="err-msg" *ngIf="invalid('dateNaissance')">Date requise</span>
+        </div>
+      </div>
+
+      <div class="err-msg global" *ngIf="error">{{ error }}</div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="cancelled.emit()">Annuler</button>
+        <button type="submit" class="btn btn-save" [disabled]="loading">
+          <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+          {{ isEdit ? 'Enregistrer' : 'Créer' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

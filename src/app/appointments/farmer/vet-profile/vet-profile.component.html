@@ -1,0 +1,247 @@
+<div class="vp-wrap">
+
+  <button class="back-btn" (click)="back.emit()">
+    <i class="fas fa-arrow-left"></i> Retour à la liste
+  </button>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- VET PROFILE CARD                               -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="vet-hero">
+    <!-- Avatar -->
+    <div class="vet-av-wrap">
+      <img *ngIf="vet.photo" [src]="vet.photo" class="vet-av-img" alt="">
+      <div *ngIf="!vet.photo" class="vet-av-ph">{{ vetInitials }}</div>
+    </div>
+
+    <!-- Info -->
+    <div class="vet-hero-body">
+      <div class="vet-hero-top">
+        <div>
+          <h1 class="vet-hero-name">Dr. {{ vet.prenom }} {{ vet.nom }}</h1>
+          <span class="vet-role-badge"><i class="fas fa-stethoscope"></i> Médecin vétérinaire</span>
+        </div>
+        <span class="region-tag" *ngIf="vet.region">
+          <i class="fas fa-map-marker-alt"></i> {{ vet.region }}
+        </span>
+      </div>
+
+      <!-- Contact grid -->
+      <div class="contact-grid">
+        <a *ngIf="vet.email" [href]="'mailto:'+vet.email" class="contact-item">
+          <div class="ci-icon email-icon"><i class="fas fa-envelope"></i></div>
+          <div><span class="ci-lbl">Email</span><span class="ci-val">{{ vet.email }}</span></div>
+        </a>
+        <div *ngIf="vet.telephoneCabinet" class="contact-item">
+          <div class="ci-icon phone-icon"><i class="fas fa-phone-alt"></i></div>
+          <div><span class="ci-lbl">Cabinet</span><span class="ci-val">{{ vet.telephoneCabinet }}</span></div>
+        </div>
+        <div *ngIf="vet.adresseCabinet" class="contact-item">
+          <div class="ci-icon addr-icon"><i class="fas fa-clinic-medical"></i></div>
+          <div><span class="ci-lbl">Adresse</span><span class="ci-val">{{ vet.adresseCabinet }}</span></div>
+        </div>
+        <div *ngIf="vet.telephone" class="contact-item">
+          <div class="ci-icon phone-icon"><i class="fas fa-mobile-alt"></i></div>
+          <div><span class="ci-lbl">Mobile</span><span class="ci-val">{{ vet.telephone }}</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+        <button type="button" class="btn-confirm" (click)="openConversation()">
+          <i class="fas fa-comments"></i> Envoyer un message
+        </button>
+      </div>
+
+      <!-- Bio -->
+      <div class="vet-bio" *ngIf="vet.presentationCarriere">
+        <i class="fas fa-quote-left bio-quote"></i>
+        <p>{{ vet.presentationCarriere }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="loader"></div>
+    <span>Chargement des disponibilités…</span>
+  </div>
+
+  <!-- No availabilities -->
+  <div *ngIf="!loading && availabilities.length === 0 && step === 'calendar'" class="no-avail-box">
+    <i class="fas fa-calendar-times"></i>
+    <p>Ce vétérinaire n'a pas encore de disponibilités.</p>
+  </div>
+
+  <!-- ── STEP: Calendar ── -->
+  <div class="cal-section" *ngIf="!loading && step==='calendar' && availabilities.length > 0">
+    <div class="cal-nav">
+      <button class="cal-btn" (click)="prevMonth()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <span class="cal-month-title">{{ monthLabel }}</span>
+      <button class="cal-btn" (click)="nextMonth()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="cal-wd-row">
+      <div class="cal-wd" *ngFor="let d of weekDays">{{ d }}</div>
+    </div>
+
+    <div class="cal-days-grid">
+      <div *ngFor="let day of calDays"
+        class="cal-day-cell"
+        [class.cal-empty]="!day.date.getTime()"
+        [class.cal-avail]="day.valid && day.date.getTime()"
+        [class.cal-today]="day.date.getTime() && isToday(day.date)"
+        (click)="selectDay(day)">
+        <span class="cal-day-num" *ngIf="day.date.getTime()">{{ day.date.getDate() }}</span>
+        <span class="cal-dot" *ngIf="day.valid"></span>
+      </div>
+    </div>
+
+    <div class="cal-legend">
+      <div class="leg-item">
+        <span class="leg-swatch avail-sw"></span>
+        <span>Disponible</span>
+      </div>
+      <div class="leg-item">
+        <span class="leg-swatch none-sw"></span>
+        <span>Indisponible</span>
+      </div>
+      <div class="leg-item">
+        <span class="leg-swatch today-sw"></span>
+        <span>Aujourd'hui</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- STEP: Slots                                     -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="booking-card" *ngIf="step === 'slots'">
+    <div class="booking-card-header">
+      <button class="hdr-back" (click)="backToCalendar()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <i class="fas fa-clock"></i>
+      <h2>Créneaux disponibles</h2>
+      <span class="date-chip">{{ selectedDateDisplay }}</span>
+    </div>
+
+    <div class="no-slots" *ngIf="slotsForDate.length === 0">
+      <i class="fas fa-calendar-times"></i>
+      <p>Aucun créneau disponible pour cette date.</p>
+    </div>
+
+    <div class="slots-grid" *ngIf="slotsForDate.length > 0">
+      <button class="slot-chip" *ngFor="let s of slotsForDate" (click)="pickSlot(s)">
+        <i class="fas fa-clock"></i>
+        {{ s.startTime | slice:0:5 }} – {{ s.endTime | slice:0:5 }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- STEP: Booking Form                              -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="booking-card" *ngIf="step === 'form'">
+    <div class="booking-card-header">
+      <button class="hdr-back" (click)="backToSlots()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <i class="fas fa-calendar-plus"></i>
+      <h2>Confirmer le rendez-vous</h2>
+    </div>
+
+    <div class="selected-slot-banner">
+      <div class="ssb-icon"><i class="fas fa-check-circle"></i></div>
+      <div class="ssb-text">
+        <strong>{{ selectedDateFormatted }}</strong>
+        <span>{{ selectedSlotTime }}</span>
+      </div>
+      <div class="ssb-vet">
+        <span>avec</span>
+        <strong>Dr. {{ vet.prenom }} {{ vet.nom }}</strong>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="rdv-form" autocomplete="off">
+
+      <div class="field-wrap">
+        <label class="field-label">
+          <i class="fas fa-tag"></i> Référence de l'animal *
+        </label>
+        <input
+          [formControl]="animalReferenceCtrl"
+          placeholder="Entrez la référence ex: VCH-001"
+          class="field-input"
+          [class.has-err]="animalReferenceCtrl.invalid && animalReferenceCtrl.touched"
+          autocomplete="off">
+        <div class="animals-hint" *ngIf="animals.length > 0">
+          <i class="fas fa-paw"></i>
+          <span>Mes animaux : </span>
+          <button type="button" class="ref-tag"
+            *ngFor="let a of animals"
+            (click)="animalReferenceCtrl.setValue(a.reference)">
+            {{ a.reference }}
+          </button>
+        </div>
+        <span class="field-err" *ngIf="animalReferenceCtrl.invalid && animalReferenceCtrl.touched">
+          La référence est requise
+        </span>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label">
+          <i class="fas fa-stethoscope"></i> Motif de la consultation *
+        </label>
+        <textarea
+          [formControl]="motifCtrl"
+          rows="4"
+          placeholder="Décrivez le motif du rendez-vous (symptômes, contrôle annuel…)"
+          class="field-input field-ta"
+          [class.has-err]="motifCtrl.invalid && motifCtrl.touched">
+        </textarea>
+        <span class="field-err" *ngIf="motifCtrl.invalid && motifCtrl.touched">
+          Le motif est requis
+        </span>
+      </div>
+
+      <div class="booking-err" *ngIf="bookingError">
+        <i class="fas fa-exclamation-circle"></i> {{ bookingError }}
+      </div>
+
+      <button type="submit" class="btn-confirm" [disabled]="bookingLoading">
+        <i class="fas fa-spinner fa-spin" *ngIf="bookingLoading"></i>
+        <i class="fas fa-calendar-check" *ngIf="!bookingLoading"></i>
+        Confirmer le rendez-vous
+      </button>
+
+    </form>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- STEP: Done                                      -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="done-card" *ngIf="step === 'done'">
+    <div class="done-anim">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    <h3>Rendez-vous demandé avec succès !</h3>
+    <p>
+      Votre demande a été envoyée à <strong>Dr. {{ vet.prenom }} {{ vet.nom }}</strong>.<br>
+      Vous recevrez une notification dès qu'elle sera acceptée.
+    </p>
+    <button class="btn-confirm" (click)="finish()">
+      <i class="fas fa-list-alt"></i> Voir mes rendez-vous
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- AVIS & ÉVALUATIONS                             -->
+  <!-- Affiché sur la page profil pour l'agriculteur  -->
+  <!-- ══════════════════════════════════════════════ -->
+  <app-farmer-avis [vetId]="vet.id"></app-farmer-avis>
+
+</div>

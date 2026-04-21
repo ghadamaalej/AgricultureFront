@@ -1,0 +1,48 @@
+<app-vet-profile
+  *ngIf="selectedVet"
+  [vet]="selectedVet"
+  (back)="backToList()"
+  (booked)="onBooked()"
+  (openChat)="onOpenChat($event)">
+</app-vet-profile>
+
+<ng-container *ngIf="!selectedVet">
+  <div class="ph">
+    <div>
+      <h1 class="pt">Vétérinaires</h1>
+      <p class="ps">Choisissez un vétérinaire pour prendre rendez-vous</p>
+    </div>
+  </div>
+
+  <div class="sb">
+    <i class="fas fa-search si"></i>
+    <input [(ngModel)]="searchTerm" (ngModelChange)="search()"
+      placeholder="Rechercher par nom, prénom ou région…" class="si-input">
+    <button *ngIf="searchTerm" class="sc" (click)="searchTerm='';search()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="sm"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>
+
+  <div class="empty" *ngIf="!loading && filtered.length===0">
+    <i class="fas fa-user-md"></i>
+    <p>Aucun vétérinaire trouvé.</p>
+  </div>
+
+  <div class="vlist" *ngIf="!loading && filtered.length>0">
+    <div class="vcard" *ngFor="let v of filtered" (click)="selectVet(v)">
+      <div class="vav-wrap">
+        <img *ngIf="v.photo" [src]="v.photo" class="vav-img" alt="">
+        <div *ngIf="!v.photo" class="vav-ph">{{ initials(v) }}</div>
+      </div>
+      <div class="vinfo">
+        <h3 class="vname">Dr. {{ v.prenom }} {{ v.nom }}</h3>
+        <div class="vmeta" *ngIf="v.region"><i class="fas fa-map-marker-alt"></i> {{ v.region }}</div>
+        <div class="vmeta" *ngIf="v.telephoneCabinet"><i class="fas fa-phone"></i> {{ v.telephoneCabinet }}</div>
+        <div class="vmeta" *ngIf="v.adresseCabinet"><i class="fas fa-clinic-medical"></i> {{ v.adresseCabinet }}</div>
+      </div>
+      <i class="fas fa-chevron-right varrow"></i>
+    </div>
+  </div>
+</ng-container>

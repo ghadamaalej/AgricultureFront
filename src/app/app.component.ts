@@ -3,9 +3,9 @@ import { NavigationEnd, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
-  selector: 'app-root',
-  standalone: false,
-  template: `
+    selector: 'app-root',
+    standalone: false,
+    template: `
     <!-- Preloader -->
     <div class="preloader" [class.hidden]="preloaderHidden">
       <div class="preloader-inner">
@@ -33,6 +33,9 @@ import { DomSanitizer } from '@angular/platform-browser';
         <i class="fas fa-arrow-up"></i>
       </span>
     </button>
+
+    <app-toast></app-toast>
+
     <!-- Router outlet — gère tout -->
     <router-outlet></router-outlet>
 
@@ -49,7 +52,7 @@ import { DomSanitizer } from '@angular/platform-browser';
       </iframe>
     </div>
   `,
-  styles: [`
+    styles: [`
     .preloader {
       position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
@@ -156,165 +159,164 @@ import { DomSanitizer } from '@angular/platform-browser';
   `]
 })
 export class AppComponent implements OnInit, AfterViewInit {
-  preloaderHidden  = false;
-  showBackTop      = false;
-  fabMode: 'jump-reply' | 'scroll-top' = 'scroll-top';
-  isForumsPostPage = false;
-  isExplorerRoute  = false;
+    preloaderHidden  = false;
+    showBackTop      = false;
+    fabMode: 'jump-reply' | 'scroll-top' = 'scroll-top';
+    isForumsPostPage = false;
+    isExplorerRoute  = false;
 
-  @ViewChild('explorerFrame') private explorerFrame?: ElementRef<HTMLIFrameElement>;
-  private explorerLoaded = false;
+    @ViewChild('explorerFrame') private explorerFrame?: ElementRef<HTMLIFrameElement>;
+    private explorerLoaded = false;
 
-  private readonly explorerOrigins = new Set([
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:8089',
-    'http://127.0.0.1:8089',
-  ]);
+    private readonly explorerOrigins = new Set([
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:8089',
+        'http://127.0.0.1:8089',
+    ]);
 
-  /** Maps folio routes → Angular routes. Add entries as modules go live. */
-  private readonly folioRouteMap: Record<string, string> = {
-    '/delivery':     '/delivery',
-    '/forum':        '/forums',
-    '/forums':       '/forums',
-    '/inventory':    '/inventory',
-    '/marketplace':  '/marketplace',
-    '/loans':        '/loans',
-    '/events':       '/events',
-    '/training':     '/training',
-    '/formations':   '/training',
-    '/appointments': '/',
-    '/animals':      '/',
-    '/help-request': '/',
-  };
+    /** Maps folio routes → Angular routes. Add entries as modules go live. */
+    private readonly folioRouteMap: Record<string, string> = {
+        '/delivery':     '/delivery',
+        '/forum':        '/forums',
+        '/forums':       '/forums',
+        '/inventory':    '/inventory',
+        '/marketplace':  '/marketplace',
+        '/loans':        '/loans',
+        '/events':       '/events',
+        '/training':     '/training',
+        '/formations':   '/training',
+        '/appointments': '/',
+        '/animals':      '/',
+        '/help-request': '/',
+    };
 
-  constructor(private router: Router, private sanitizer: DomSanitizer) {}
+    constructor(private router: Router, private sanitizer: DomSanitizer) {}
 
-  ngOnInit() {
-    setTimeout(() => {
-      this.preloaderHidden = true;
-      this.initScrollAnimations();
-    }, 3000);
+    ngOnInit() {
+        setTimeout(() => {
+            this.preloaderHidden = true;
+            this.initScrollAnimations();
+        }, 3000);
 
-    this.isForumsPostPage = this.router.url.startsWith('/forums/post/');
-    this.isExplorerRoute  = this.router.url.startsWith('/explorer');
+        this.isForumsPostPage = this.router.url.startsWith('/forums/post/');
+        this.isExplorerRoute  = this.router.url.startsWith('/explorer');
 
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this.isForumsPostPage = event.urlAfterRedirects.startsWith('/forums/post/');
-        this.isExplorerRoute  = event.urlAfterRedirects.startsWith('/explorer');
+        this.router.events.subscribe((event) => {
+            if (event instanceof NavigationEnd) {
+                this.isForumsPostPage = event.urlAfterRedirects.startsWith('/forums/post/');
+                this.isExplorerRoute  = event.urlAfterRedirects.startsWith('/explorer');
+                this.updateFabState();
+                window.setTimeout(() => this.updateFabState(), 120);
+            }
+        });
+
         this.updateFabState();
-        window.setTimeout(() => this.updateFabState(), 120);
-      }
-    });
-
-    this.updateFabState();
-  }
-
-  ngAfterViewInit(): void {
-    // Set iframe src exactly once — never touch it again so the 3D state is never reset.
-    if (this.explorerFrame && !this.explorerLoaded) {
-      const token = localStorage.getItem('authToken');
-      const base  = 'http://localhost:5173/explorer/';
-      this.explorerFrame.nativeElement.src = token
-        ? `${base}?token=${encodeURIComponent(token)}`
-        : base;
-      this.explorerLoaded = true;
-    }
-  }
-
-  closeExplorer(): void {
-    this.router.navigate(['/']);
-  }
-
-  @HostListener('window:message', ['$event'])
-  onExplorerMessage(event: MessageEvent): void {
-    if (!this.explorerOrigins.has(event.origin)) return;
-
-    const payload = event.data as { type?: string; route?: string; path?: string; href?: string } | null;
-    const isNav   = payload?.type === 'greenroots:navigate' || payload?.type === 'navigate';
-    const target  = payload?.route || payload?.path || payload?.href;
-    if (!payload || !isNav || typeof target !== 'string') return;
-
-    const angular = this.resolveAngularRoute(target);
-    this.router.navigateByUrl(angular);
-  }
-
-  private resolveAngularRoute(raw: string): string {
-    let path = raw.trim();
-    if (/^https?:\/\//i.test(path)) {
-      try { path = new URL(path).pathname; } catch { path = '/'; }
-    }
-    path = path.split('#')[0].split('?')[0] || '/';
-    if (!path.startsWith('/')) path = `/${path}`;
-    return this.folioRouteMap[path] ?? '/';
-  }
-
-  @HostListener('window:scroll', [])
-  onScroll() {
-    this.updateFabState();
-    this.checkReveal();
-  }
-
-  onFabClick() {
-    if (this.fabMode === 'jump-reply') {
-      this.scrollToReplyComposer();
-      return;
     }
 
-    this.scrollTop();
-  }
-
-  scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-  initScrollAnimations() { setTimeout(() => this.checkReveal(), 100); }
-
-  updateFabState() {
-    const hasReplies = this.hasVisibleReplies();
-
-    if (this.isForumsPostPage && hasReplies) {
-      this.showBackTop = true;
-    } else {
-      this.showBackTop = window.scrollY > 400;
+    ngAfterViewInit(): void {
+        // Set iframe src exactly once — never touch it again so the 3D state is never reset.
+        if (this.explorerFrame && !this.explorerLoaded) {
+            const token = localStorage.getItem('authToken');
+            const base  = 'http://localhost:5173/explorer/';
+            this.explorerFrame.nativeElement.src = token
+                ? `${base}?token=${encodeURIComponent(token)}`
+                : base;
+            this.explorerLoaded = true;
+        }
     }
 
-    if (!this.isForumsPostPage) {
-      this.fabMode = 'scroll-top';
-      return;
+    closeExplorer(): void {
+        this.router.navigate(['/']);
     }
 
-    const composer = document.getElementById('reply-composer');
-    if (!composer) {
-      this.fabMode = 'scroll-top';
-      return;
+    @HostListener('window:message', ['$event'])
+    onExplorerMessage(event: MessageEvent): void {
+        if (!this.explorerOrigins.has(event.origin)) return;
+
+        const payload = event.data as { type?: string; route?: string; path?: string; href?: string } | null;
+        const isNav   = payload?.type === 'greenroots:navigate' || payload?.type === 'navigate';
+        const target  = payload?.route || payload?.path || payload?.href;
+        if (!payload || !isNav || typeof target !== 'string') return;
+
+        const angular = this.resolveAngularRoute(target);
+        this.router.navigateByUrl(angular);
     }
 
-    const composerTop = window.scrollY + composer.getBoundingClientRect().top;
-    const viewportBottom = window.scrollY + window.innerHeight;
-    this.fabMode = viewportBottom < composerTop ? 'jump-reply' : 'scroll-top';
-  }
-
-  hasVisibleReplies(): boolean {
-    return document.querySelectorAll('.replies-tree .reply-branch').length > 0;
-  }
-
-  scrollToReplyComposer() {
-    const composer = document.getElementById('reply-composer');
-    if (!composer) {
-      this.scrollTop();
-      return;
+    private resolveAngularRoute(raw: string): string {
+        let path = raw.trim();
+        if (/^https?:\/\//i.test(path)) {
+            try { path = new URL(path).pathname; } catch { path = '/'; }
+        }
+        path = path.split('#')[0].split('?')[0] || '/';
+        if (!path.startsWith('/')) path = `/${path}`;
+        return this.folioRouteMap[path] ?? '/';
     }
 
-    composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    const textarea = composer.querySelector('textarea');
-    if (textarea instanceof HTMLTextAreaElement) {
-      window.setTimeout(() => textarea.focus(), 280);
+    @HostListener('window:scroll', [])
+    onScroll() {
+        this.updateFabState();
+        this.checkReveal();
     }
-  }
 
-  checkReveal() {
-    document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => {
-      if (el.getBoundingClientRect().top < window.innerHeight - 80)
-        el.classList.add('visible');
-    });
-  }
+    onFabClick() {
+        if (this.fabMode === 'jump-reply') {
+            this.scrollToReplyComposer();
+            return;
+        }
+        this.scrollTop();
+    }
+
+    scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    initScrollAnimations() { setTimeout(() => this.checkReveal(), 100); }
+
+    updateFabState() {
+        const hasReplies = this.hasVisibleReplies();
+
+        if (this.isForumsPostPage && hasReplies) {
+            this.showBackTop = true;
+        } else {
+            this.showBackTop = window.scrollY > 400;
+        }
+
+        if (!this.isForumsPostPage) {
+            this.fabMode = 'scroll-top';
+            return;
+        }
+
+        const composer = document.getElementById('reply-composer');
+        if (!composer) {
+            this.fabMode = 'scroll-top';
+            return;
+        }
+
+        const composerTop    = window.scrollY + composer.getBoundingClientRect().top;
+        const viewportBottom = window.scrollY + window.innerHeight;
+        this.fabMode = viewportBottom < composerTop ? 'jump-reply' : 'scroll-top';
+    }
+
+    hasVisibleReplies(): boolean {
+        return document.querySelectorAll('.replies-tree .reply-branch').length > 0;
+    }
+
+    scrollToReplyComposer() {
+        const composer = document.getElementById('reply-composer');
+        if (!composer) {
+            this.scrollTop();
+            return;
+        }
+
+        composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const textarea = composer.querySelector('textarea');
+        if (textarea instanceof HTMLTextAreaElement) {
+            window.setTimeout(() => textarea.focus(), 280);
+        }
+    }
+
+    checkReveal() {
+        document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => {
+            if (el.getBoundingClientRect().top < window.innerHeight - 80)
+                el.classList.add('visible');
+        });
+    }
 }

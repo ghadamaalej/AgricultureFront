@@ -1,0 +1,266 @@
+<div class="avis-section">
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- HEADER + SUMMARY                                       -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="avis-header">
+    <div class="avis-title-row">
+      <h2 class="avis-title">
+        <i class="fas fa-star"></i> Avis & Évaluations
+      </h2>
+      <button
+        *ngIf="isAgriculteur && !hasAlreadyReviewed && !showAvisForm"
+        class="btn-give-avis"
+        (click)="openAvisForm()">
+        <i class="fas fa-pen"></i> Donner mon avis
+      </button>
+      <span class="already-reviewed" *ngIf="isAgriculteur && hasAlreadyReviewed">
+        <i class="fas fa-check-circle"></i> Vous avez déjà évalué ce vétérinaire
+      </span>
+    </div>
+
+    <!-- Résumé des notes -->
+    <div class="rating-summary" *ngIf="summary && summary.totalAvis > 0">
+      <div class="rating-big">
+        <span class="rating-number">{{ averageDisplay }}</span>
+        <div class="rating-stars-big">
+          <i *ngFor="let filled of starsArray(summary.moyenneNote)"
+             [class]="filled ? 'fas fa-star star-gold' : 'fas fa-star star-empty'"></i>
+        </div>
+        <span class="rating-total">{{ summary.totalAvis }} avis</span>
+      </div>
+
+      <div class="rating-distribution">
+        <div class="dist-row" *ngFor="let s of [5,4,3,2,1]">
+          <span class="dist-label">
+            <i class="fas fa-star star-gold-sm"></i> {{ s }}
+          </span>
+          <div class="dist-bar-wrap">
+            <div class="dist-bar-fill" [style.width.%]="distributionWidth(s)"></div>
+          </div>
+          <span class="dist-count">{{ distributionCount(s) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-summary" *ngIf="!summary || summary.totalAvis === 0">
+      <i class="fas fa-star-half-alt"></i>
+      <span>Aucun avis pour l'instant. Soyez le premier à évaluer ce vétérinaire !</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- FORMULAIRE NOUVEAU AVIS                                -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="avis-form-card" *ngIf="showAvisForm">
+    <h3 class="form-title"><i class="fas fa-edit"></i> Votre évaluation</h3>
+
+    <!-- ★ SÉLECTEUR D'ÉTOILES INTERACTIF ★ -->
+    <div class="star-selector">
+      <span class="star-hint">Votre note :</span>
+      <div class="stars-row">
+        <!-- Étoile 1 -->
+        <span class="star-wrap"
+              (mouseenter)="setHover(1)" (mouseleave)="clearHover()" (click)="setNote(1)">
+          <i class="fas fa-star"
+             [class.star-active]="1 <= (hoverNote || newNote)"
+             [class.star-inactive]="!(1 <= (hoverNote || newNote))"></i>
+        </span>
+        <!-- Étoile 2 -->
+        <span class="star-wrap"
+              (mouseenter)="setHover(2)" (mouseleave)="clearHover()" (click)="setNote(2)">
+          <i class="fas fa-star"
+             [class.star-active]="2 <= (hoverNote || newNote)"
+             [class.star-inactive]="!(2 <= (hoverNote || newNote))"></i>
+        </span>
+        <!-- Étoile 3 -->
+        <span class="star-wrap"
+              (mouseenter)="setHover(3)" (mouseleave)="clearHover()" (click)="setNote(3)">
+          <i class="fas fa-star"
+             [class.star-active]="3 <= (hoverNote || newNote)"
+             [class.star-inactive]="!(3 <= (hoverNote || newNote))"></i>
+        </span>
+        <!-- Étoile 4 -->
+        <span class="star-wrap"
+              (mouseenter)="setHover(4)" (mouseleave)="clearHover()" (click)="setNote(4)">
+          <i class="fas fa-star"
+             [class.star-active]="4 <= (hoverNote || newNote)"
+             [class.star-inactive]="!(4 <= (hoverNote || newNote))"></i>
+        </span>
+        <!-- Étoile 5 -->
+        <span class="star-wrap"
+              (mouseenter)="setHover(5)" (mouseleave)="clearHover()" (click)="setNote(5)">
+          <i class="fas fa-star"
+             [class.star-active]="5 <= (hoverNote || newNote)"
+             [class.star-inactive]="!(5 <= (hoverNote || newNote))"></i>
+        </span>
+      </div>
+      <span class="note-label" *ngIf="newNote > 0">{{ noteLabel(newNote) }}</span>
+    </div>
+
+    <!-- Commentaire -->
+    <div class="field-wrap">
+      <label class="field-label">
+        <i class="fas fa-comment-dots"></i> Votre commentaire *
+      </label>
+      <textarea
+        [(ngModel)]="newCommentaire"
+        rows="4"
+        placeholder="Décrivez votre expérience avec ce vétérinaire…"
+        class="field-ta"
+        maxlength="1000">
+      </textarea>
+      <span class="char-count">{{ newCommentaire.length }}/1000</span>
+    </div>
+
+    <div class="avis-err" *ngIf="avisError">
+      <i class="fas fa-exclamation-circle"></i> {{ avisError }}
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" (click)="cancelAvisForm()" [disabled]="submittingAvis">
+        Annuler
+      </button>
+      <button class="btn-submit" (click)="submitAvis()" [disabled]="submittingAvis">
+        <i class="fas fa-spinner fa-spin" *ngIf="submittingAvis"></i>
+        <i class="fas fa-paper-plane"    *ngIf="!submittingAvis"></i>
+        Publier mon avis
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- LOADING / ERROR                                        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="loading-box" *ngIf="loading">
+    <div class="loader"></div>
+    <span>Chargement des avis…</span>
+  </div>
+
+  <div class="err-box" *ngIf="error && !loading">
+    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- LISTE DES AVIS                                         -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="avis-list" *ngIf="!loading && avis.length > 0">
+    <div class="avis-card" *ngFor="let a of avis">
+
+      <!-- En-tête de l'avis -->
+      <div class="avis-card-header">
+        <div class="author-info">
+          <div class="author-av">
+            <img *ngIf="a.agriculteurPhoto" [src]="a.agriculteurPhoto" alt="">
+            <div *ngIf="!a.agriculteurPhoto" class="author-av-ph">
+              {{ initials(a.agriculteurNom, a.agriculteurPrenom) }}
+            </div>
+          </div>
+          <div class="author-meta">
+            <span class="author-name">{{ a.agriculteurPrenom }} {{ a.agriculteurNom }}</span>
+            <span class="avis-date">{{ formatDate(a.createdAt) }}</span>
+          </div>
+        </div>
+
+        <!-- Étoiles de la note affichée -->
+        <div class="avis-stars">
+          <span *ngFor="let filled of starsArray(a.note)">
+            <i [class]="filled ? 'fas fa-star star-gold-sm' : 'fas fa-star star-empty-sm'"></i>
+          </span>
+          <span class="note-val">{{ a.note }}/5</span>
+        </div>
+      </div>
+
+      <!-- Commentaire principal -->
+      <p class="avis-text">{{ a.commentaire }}</p>
+
+      <!-- Actions : Like + Répondre -->
+      <div class="avis-actions" *ngIf="isAgriculteur">
+        <button
+          class="action-btn like-btn"
+          [class.liked]="a.likedByMe"
+          [disabled]="likingId === a.id || a.agriculteurId === currentUserId"
+          (click)="toggleLike(a)">
+          <i class="fas fa-thumbs-up"></i>
+          <span>{{ a.nbLikes }}</span>
+          <span class="action-lbl">{{ a.likedByMe ? 'Aimé' : "J'aime" }}</span>
+        </button>
+
+        <button
+          class="action-btn reply-btn"
+          (click)="toggleCommentInput(a.id)"
+          *ngIf="a.agriculteurId !== currentUserId">
+          <i class="fas fa-reply"></i>
+          <span class="action-lbl">Répondre</span>
+        </button>
+      </div>
+
+      <!-- Affichage des commentaires d'agriculteurs -->
+      <div class="sub-comments" *ngIf="a.commentaires && a.commentaires.length > 0">
+        <div class="sub-comment" *ngFor="let c of a.commentaires">
+          <div class="sub-av">
+            <img *ngIf="c.agriculteurPhoto" [src]="c.agriculteurPhoto" alt="">
+            <div *ngIf="!c.agriculteurPhoto" class="sub-av-ph">
+              {{ initials(c.agriculteurNom, c.agriculteurPrenom) }}
+            </div>
+          </div>
+          <div class="sub-body">
+            <div class="sub-header">
+              <span class="sub-author">{{ c.agriculteurPrenom }} {{ c.agriculteurNom }}</span>
+              <span class="sub-date">{{ formatDate(c.createdAt) }}</span>
+            </div>
+            <p class="sub-text">{{ c.contenu }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input pour répondre (agriculteur) -->
+      <div class="comment-input-wrap" *ngIf="showCommentInput[a.id] && isAgriculteur">
+        <div class="comment-input-row">
+          <input
+            type="text"
+            [(ngModel)]="commentInputs[a.id]"
+            placeholder="Votre réponse…"
+            class="comment-input"
+            (keyup.enter)="submitCommentaire(a)">
+          <button
+            class="btn-send-comment"
+            (click)="submitCommentaire(a)"
+            [disabled]="submittingComment[a.id] || !commentInputs[a.id]?.trim()">
+            <i class="fas fa-spinner fa-spin" *ngIf="submittingComment[a.id]"></i>
+            <i class="fas fa-paper-plane"    *ngIf="!submittingComment[a.id]"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Réponse du vétérinaire -->
+      <div class="vet-reply" *ngIf="a.reponseVet">
+        <div class="vet-reply-header">
+          <div class="vet-reply-av">
+            <img *ngIf="a.reponseVet.vetPhoto" [src]="a.reponseVet.vetPhoto" alt="">
+            <div *ngIf="!a.reponseVet.vetPhoto" class="vet-reply-av-ph">
+              {{ initials(a.reponseVet.vetNom, a.reponseVet.vetPrenom) }}
+            </div>
+          </div>
+          <div class="vet-reply-meta">
+            <span class="vet-reply-name">
+              <i class="fas fa-stethoscope"></i>
+              Dr. {{ a.reponseVet.vetPrenom }} {{ a.reponseVet.vetNom }}
+              <span class="vet-badge">Vétérinaire</span>
+            </span>
+            <span class="vet-reply-date">{{ formatDate(a.reponseVet.createdAt) }}</span>
+          </div>
+        </div>
+        <p class="vet-reply-text">{{ a.reponseVet.contenu }}</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Aucun avis -->
+  <div class="empty-avis" *ngIf="!loading && avis.length === 0 && !error">
+    <i class="fas fa-comment-slash"></i>
+    <p>Aucun avis pour l'instant.</p>
+  </div>
+
+</div>

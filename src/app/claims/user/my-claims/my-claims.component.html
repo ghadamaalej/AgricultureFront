@@ -1,0 +1,81 @@
+<div class="page-wrap">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-list-alt"></i></div>
+      <div>
+        <h1 class="page-title">Mes Réclamations</h1>
+        <p class="page-subtitle">Suivez l'état de toutes vos demandes</p>
+      </div>
+    </div>
+    <button class="btn-primary" (click)="newClaim()">
+      <i class="fas fa-plus"></i>
+      Nouvelle réclamation
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="state-box" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement en cours...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="state-box error" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Empty -->
+  <div class="state-box empty" *ngIf="!loading && !error && claims.length === 0">
+    <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+    <h3>Aucune réclamation</h3>
+    <p>Vous n'avez pas encore soumis de réclamation.</p>
+    <button class="btn-primary" (click)="newClaim()">
+      <i class="fas fa-plus"></i> Créer ma première réclamation
+    </button>
+  </div>
+
+  <!-- Claims list -->
+  <div class="claims-grid" *ngIf="!loading && !error && claims.length > 0">
+    <div class="claim-card" *ngFor="let c of claims" (click)="openDetail(c.id)">
+
+      <div class="card-top">
+        <div class="ticket-id">#{{ c.id }}</div>
+        <span class="badge" [class]="statusClass(c.status)">
+          <i class="fas fa-circle"></i>
+          {{ STATUS_LABELS[c.status] }}
+        </span>
+      </div>
+
+      <h3 class="card-subject">{{ c.subject }}</h3>
+      <p class="card-desc">{{ c.description }}</p>
+
+      <div class="card-meta">
+        <span class="meta-tag">
+          <i class="fas fa-tag"></i>
+          {{ CATEGORY_LABELS[c.category] }}
+        </span>
+        <span class="meta-tag" [class]="priorityClass(c.priority)">
+          <i class="fas fa-flag"></i>
+          {{ PRIORITY_LABELS[c.priority] }}
+        </span>
+        <span class="meta-tag">
+          <i class="fas fa-comment-dots"></i>
+          {{ c.messages.length }} message{{ c.messages.length > 1 ? 's' : '' }}
+        </span>
+      </div>
+
+      <div class="card-footer">
+        <span class="card-date">
+          <i class="far fa-calendar-alt"></i>
+          {{ c.createdAt | date:'dd MMM yyyy, HH:mm' }}
+        </span>
+        <span class="card-arrow"><i class="fas fa-chevron-right"></i></span>
+      </div>
+
+    </div>
+  </div>
+
+</div>

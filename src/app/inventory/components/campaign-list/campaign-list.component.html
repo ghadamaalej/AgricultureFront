@@ -1,0 +1,68 @@
+<div class="page-header">
+  <div class="back-row">
+    <button class="back-btn" (click)="back.emit()">
+      <i class="fas fa-arrow-left"></i> Retour
+    </button>
+    <div>
+      <h1 class="page-title">Campagnes de vaccination</h1>
+      <p class="page-sub">Toutes vos campagnes planifiées</p>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="state-msg">
+  <i class="fas fa-spinner fa-spin"></i> Chargement…
+</div>
+
+<div *ngIf="error" class="state-msg error">
+  {{ error }}
+</div>
+
+<div class="empty-state" *ngIf="!loading && campaigns.length === 0 && !error">
+  <i class="fas fa-syringe"></i>
+  <p>Aucune campagne enregistrée. Planifiez votre première campagne !</p>
+</div>
+
+<div class="campaigns-grid" *ngIf="!loading && campaigns.length > 0">
+  <div class="campaign-card" *ngFor="let c of campaigns">
+
+    <div class="card-top">
+      <span class="espece-badge">{{ c.espece }}</span>
+      <span class="status-badge" [ngClass]="statusClass(c.status)">
+        {{ statusLabel(c.status) }}
+      </span>
+    </div>
+
+    <div class="card-info-grid">
+      <div class="ci">
+        <span class="ci-lbl">Date planifiée</span>
+        <span class="ci-val">{{ c.plannedDate | date:'dd/MM/yyyy' }}</span>
+      </div>
+
+      <div class="ci">
+        <span class="ci-lbl">Âge cible</span>
+        <span class="ci-val">{{ c.ageMin }} – {{ c.ageMax }} ans</span>
+      </div>
+
+      <div class="ci">
+        <span class="ci-lbl">Produit vaccin</span>
+        <span class="ci-val">{{ c.productName || ('ID #' + c.productId) }}</span>
+      </div>
+
+      <div class="ci">
+        <span class="ci-lbl">Dose</span>
+        <span class="ci-val">{{ c.dose }} unités</span>
+      </div>
+    </div>
+
+    <div class="card-actions">
+      <button
+        class="btn btn-success"
+        *ngIf="c.status !== 'COMPLETED'"
+        (click)="markDone(c.id)">
+        <i class="fas fa-check"></i> Vaccination done
+      </button>
+    </div>
+
+  </div>
+</div>

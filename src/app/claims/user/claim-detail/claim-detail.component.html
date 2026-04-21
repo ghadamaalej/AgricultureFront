@@ -1,0 +1,181 @@
+<div class="page-wrap">
+
+  <!-- Loading -->
+  <div class="state-box" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement du ticket...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="state-box error" *ngIf="error">
+    <i class="fas fa-exclamation-triangle fa-2x"></i>
+    <p>{{ error }}</p>
+    <button class="btn-back-inline" (click)="back()">Retour</button>
+  </div>
+
+  <ng-container *ngIf="!loading && !error && claim">
+
+    <!-- Header -->
+    <div class="page-header">
+      <button class="btn-back" (click)="back()"><i class="fas fa-arrow-left"></i></button>
+      <div class="header-info">
+        <div class="ticket-badge">Ticket #{{ claim.id }}</div>
+        <h1 class="page-title">{{ claim.subject }}</h1>
+      </div>
+      <span class="status-badge" [class]="statusClass(claim.status)">
+        <i class="fas fa-circle"></i> {{ STATUS_LABELS[claim.status] }}
+      </span>
+    </div>
+
+    <div class="detail-layout">
+
+      <!-- LEFT: Ticket info + messages -->
+      <div class="main-col">
+
+        <!-- Ticket info card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="fas fa-file-alt"></i>
+            <span>Détails de la réclamation</span>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-tag"></i> Catégorie</span>
+              <span class="info-value">{{ CATEGORY_LABELS[claim.category] }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-flag"></i> Priorité</span>
+              <span class="info-value priority-val" [class]="priorityClass(claim.priority)">{{ PRIORITY_LABELS[claim.priority] }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-user"></i> Utilisateur</span>
+              <span class="info-value">{{ claim.userFullName || claim.userEmail }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"><i class="far fa-calendar-alt"></i> Créé le</span>
+              <span class="info-value">{{ claim.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="info-item" *ngIf="claim.closedAt">
+              <span class="info-label"><i class="fas fa-check-circle"></i> Clôturé le</span>
+              <span class="info-value">{{ claim.closedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+
+          <div class="desc-block">
+            <div class="desc-label">Description initiale</div>
+            <p class="desc-text">{{ claim.description }}</p>
+          </div>
+        </div>
+
+        <!-- Messages thread -->
+        <div class="thread-card">
+          <div class="thread-header">
+            <i class="fas fa-comments"></i>
+            <span>Échanges</span>
+            <span class="msg-count">{{ claim.messages.length }}</span>
+          </div>
+
+          <!-- Messages list -->
+          <div class="messages-list" [class.closed]="isClosed()">
+            <div *ngIf="claim.messages.length === 0" class="no-messages">
+              <i class="fas fa-comment-slash"></i>
+              <p>Aucun échange pour l'instant.</p>
+            </div>
+
+            <div
+              *ngFor="let msg of claim.messages"
+              class="msg-bubble"
+              [class.msg-admin]="msg.senderRole === 'ADMIN'"
+              [class.msg-user]="msg.senderRole === 'USER'">
+
+              <div class="msg-avatar" [class.admin-avatar]="msg.senderRole === 'ADMIN'">
+                <i class="fas" [class.fa-user-shield]="msg.senderRole === 'ADMIN'" [class.fa-user]="msg.senderRole === 'USER'"></i>
+              </div>
+
+              <div class="msg-content">
+                <div class="msg-meta">
+                  <strong>{{ msg.senderName }}</strong>
+                  <span class="msg-role-tag" [class.admin-tag]="msg.senderRole === 'ADMIN'">
+                    {{ msg.senderRole === 'ADMIN' ? 'Admin' : 'Vous' }}
+                  </span>
+                  <span class="msg-time">{{ msg.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <p class="msg-text">{{ msg.message }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reply box -->
+          <div class="reply-box" *ngIf="!isClosed()">
+            <textarea
+              class="reply-input"
+              [(ngModel)]="newMessage"
+              placeholder="Écrivez votre message…"
+              rows="3"
+              (keydown.control.enter)="sendMessage()"></textarea>
+            <div class="reply-actions">
+              <span class="reply-hint"><i class="fas fa-keyboard"></i> Ctrl+Entrée pour envoyer</span>
+              <button class="btn-send" (click)="sendMessage()" [disabled]="!newMessage.trim() || sendingMessage">
+                <i class="fas" [class.fa-paper-plane]="!sendingMessage" [class.fa-spinner]="sendingMessage" [class.fa-spin]="sendingMessage"></i>
+                {{ sendingMessage ? 'Envoi...' : 'Envoyer' }}
+              </button>
+            </div>
+            <div class="msg-error" *ngIf="messageError">
+              <i class="fas fa-exclamation-triangle"></i> {{ messageError }}
+            </div>
+          </div>
+
+          <!-- Closed notice -->
+          <div class="closed-notice" *ngIf="isClosed()">
+            <i class="fas fa-lock"></i>
+            <span>Ce ticket est clôturé. Aucune réponse ne peut être ajoutée.</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: Admin panel -->
+      <div class="side-col" *ngIf="isAdmin">
+        <div class="admin-panel">
+          <div class="admin-panel-title">
+            <i class="fas fa-cog"></i> Actions admin
+          </div>
+
+          <div class="admin-field">
+            <label>Changer le statut</label>
+            <div class="select-wrap">
+              <select class="field-select" [(ngModel)]="selectedStatus">
+                <option *ngFor="let s of statuses" [value]="s">{{ STATUS_LABELS[s] }}</option>
+              </select>
+              <i class="fas fa-chevron-down select-arrow"></i>
+            </div>
+            <button class="btn-update-status" (click)="updateStatus()" [disabled]="updatingStatus || selectedStatus === claim.status">
+              <i class="fas" [class.fa-check]="!updatingStatus" [class.fa-spinner]="updatingStatus" [class.fa-spin]="updatingStatus"></i>
+              {{ updatingStatus ? 'Mise à jour...' : 'Appliquer' }}
+            </button>
+          </div>
+
+          <div class="admin-info-block">
+            <div class="ainfo-row">
+              <span class="ainfo-label">ID ticket</span>
+              <span class="ainfo-value">#{{ claim.id }}</span>
+            </div>
+            <div class="ainfo-row">
+              <span class="ainfo-label">Utilisateur</span>
+              <span class="ainfo-value">{{ claim.userFullName }}</span>
+            </div>
+            <div class="ainfo-row">
+              <span class="ainfo-label">Email</span>
+              <span class="ainfo-value small">{{ claim.userEmail }}</span>
+            </div>
+            <div class="ainfo-row">
+              <span class="ainfo-label">Messages</span>
+              <span class="ainfo-value">{{ claim.messages.length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+</div>

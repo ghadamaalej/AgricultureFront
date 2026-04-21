@@ -1,0 +1,100 @@
+<!-- ── Campaigns view ─────────────────────────────────────────── -->
+<ng-container *ngIf="view === 'campaigns'">
+  <app-campaign-list (back)="backToList()"></app-campaign-list>
+</ng-container>
+
+<!-- ── Animals List view ──────────────────────────────────────── -->
+<ng-container *ngIf="view === 'list'">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Animaux</h1>
+      <p class="page-sub">Gérez votre cheptel</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-appt" (click)="goToAppointments()">
+        <i class="fas fa-calendar-check"></i> Mes rendez-vous
+      </button>
+      <button class="btn btn-appt-book" (click)="goToBookRdv()">
+        <i class="fas fa-user-md"></i> Prendre RDV
+      </button>
+      <button class="btn btn-outline" (click)="openCampaigns()">
+        <i class="fas fa-syringe"></i> Campagnes vaccination
+      </button>
+      <button class="btn btn-primary" (click)="openAdd()">
+        <i class="fas fa-plus"></i> Ajouter un animal
+      </button>
+      <button class="btn btn-secondary" (click)="showCampaignForm = true">
+        <i class="fas fa-calendar-plus"></i> Planifier campagne
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="state-msg"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>
+  <div *ngIf="error"   class="state-msg error">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && animals.length === 0 && !error">
+    <i class="fas fa-horse"></i>
+    <p>Aucun animal enregistré. Ajoutez votre premier animal !</p>
+  </div>
+
+  <table class="data-table" *ngIf="!loading && animals.length > 0">
+    <thead>
+      <tr>
+        <th>Référence</th>
+        <th>Espèce</th>
+        <th>Poids (kg)</th>
+        <th>Âge</th>
+        <th>Né le</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let a of animals">
+        <td><span class="ref-badge">{{ a.reference }}</span></td>
+        <td>{{ a.espece }}</td>
+        <td>{{ a.poids }}</td>
+        <td>{{ age(a.dateNaissance) }} ans</td>
+        <td>{{ a.dateNaissance | date:'dd/MM/yyyy' }}</td>
+        <td>
+          <div class="row-actions">
+            <button class="ra-btn ra-detail"  (click)="openDetail(a)"  title="Détail"><i class="fas fa-eye"></i></button>
+            <button class="ra-btn ra-vaccine" (click)="openVaccine(a)" title="Vaccination individuelle"><i class="fas fa-syringe"></i></button>
+            <button class="ra-btn ra-edit"    (click)="openEdit(a)"    title="Modifier"><i class="fas fa-pen"></i></button>
+            <button class="ra-btn ra-delete"  (click)="delete(a)"      title="Supprimer"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</ng-container>
+
+<!-- ── Modals ───────────────────────────────────────────────────── -->
+<app-animal-form
+  *ngIf="showAnimalForm"
+  [animal]="editingAnimal"
+  (saved)="onSaved()"
+  (cancelled)="showAnimalForm = false">
+</app-animal-form>
+
+<app-animal-detail
+  *ngIf="showAnimalDetail && selectedAnimal"
+  [animalId]="selectedAnimal.id"
+  (closed)="showAnimalDetail = false">
+</app-animal-detail>
+
+<app-campaign-form
+  *ngIf="showCampaignForm"
+  (saved)="showCampaignForm = false"
+  (cancelled)="showCampaignForm = false">
+</app-campaign-form>
+
+<app-vaccination-modal
+  *ngIf="showVaccModal && selectedAnimal"
+  [animal]="selectedAnimal"
+  (saved)="showVaccModal = false"
+  (cancelled)="showVaccModal = false">
+</app-vaccination-modal>

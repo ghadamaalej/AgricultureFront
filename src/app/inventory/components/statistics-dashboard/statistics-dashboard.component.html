@@ -1,0 +1,114 @@
+<section class="stats-page">
+  <div class="stats-header">
+    <div>
+      <h1>Statistiques agricoles</h1>
+      <p>Vision globale du stock, des ventes et des coûts d'achat.</p>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="state-msg">
+    <i class="fas fa-spinner fa-spin"></i> Chargement des statistiques...
+  </div>
+
+  <div *ngIf="error" class="state-msg error">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && products.length === 0" class="empty-state">
+    <i class="fas fa-chart-pie"></i>
+    <p>Aucune donnée inventaire pour afficher les statistiques.</p>
+  </div>
+
+  <ng-container *ngIf="hasData">
+    <div class="kpi-grid">
+      <article class="kpi-card">
+        <span class="kpi-label">Produits suivis</span>
+        <strong class="kpi-value">{{ kpis.totalProducts }}</strong>
+      </article>
+
+      <article class="kpi-card">
+        <span class="kpi-label">Stock total</span>
+        <strong class="kpi-value">{{ kpis.totalUnits }}</strong>
+      </article>
+
+      <article class="kpi-card warning">
+        <span class="kpi-label">Stock faible</span>
+        <strong class="kpi-value">{{ kpis.lowStockCount }}</strong>
+      </article>
+
+      <article class="kpi-card">
+        <span class="kpi-label">Valeur stock (estimée)</span>
+        <strong class="kpi-value">{{ formatCurrency(kpis.stockValue) }}</strong>
+      </article>
+
+      <article class="kpi-card">
+        <span class="kpi-label">Coût achats</span>
+        <strong class="kpi-value">{{ formatCurrency(kpis.purchaseCost) }}</strong>
+      </article>
+
+      <article class="kpi-card">
+        <span class="kpi-label">Revenus ventes (estimés)</span>
+        <strong class="kpi-value">{{ formatCurrency(kpis.salesRevenue) }}</strong>
+      </article>
+
+      <article class="kpi-card" [class.loss]="kpis.netMargin < 0">
+        <span class="kpi-label">Marge nette estimée</span>
+        <strong class="kpi-value">{{ formatCurrency(kpis.netMargin) }}</strong>
+      </article>
+    </div>
+
+    <div class="charts-grid">
+      <article class="chart-card">
+        <h3>Répartition du stock par catégorie</h3>
+        <div class="chart-wrap">
+          <canvas #stockPieChart></canvas>
+        </div>
+      </article>
+
+      <article class="chart-card">
+        <h3>Produits en stock faible (déficit)</h3>
+        <div class="chart-wrap">
+          <canvas #lowStockBarChart></canvas>
+        </div>
+      </article>
+
+      <article class="chart-card full-width">
+        <h3>Évolution mensuelle: revenus vs coûts</h3>
+        <div class="chart-wrap line">
+          <canvas #cashFlowLineChart></canvas>
+        </div>
+      </article>
+    </div>
+
+    <article class="table-card" *ngIf="lowStockProducts.length > 0">
+      <div class="table-title">
+        <h3>Top produits à réapprovisionner</h3>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Stock actuel</th>
+              <th>Seuil minimum</th>
+              <th>Déficit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of lowStockProducts | slice:0:8">
+              <td>{{ item.name }}</td>
+              <td>{{ item.current }}</td>
+              <td>{{ item.threshold }}</td>
+              <td class="deficit">{{ item.deficit }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <p class="disclaimer">
+      Les revenus sont estimés depuis les mouvements de type vente. Si aucun prix n'est indiqué dans la note, un coût unitaire moyen est utilisé.
+    </p>
+  </ng-container>
+</section>
