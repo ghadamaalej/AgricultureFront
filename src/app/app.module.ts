@@ -21,6 +21,7 @@ import { RegisterExtraComponent } from './components/register-extra/register-ext
 import { RoleHomePlaceholderComponent } from './components/role-home-placeholder/role-home-placeholder.component';
 import { AuthTokenInterceptor } from './services/auth/auth-token.interceptor';
 import { SharedModule } from './shared/shared.module';
+import { ExplorerHostComponent } from './components/explorer-host/explorer-host.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { SharedModule } from './shared/shared.module';
     HomeComponent,
     NotFoundComponent,
     RegisterExtraComponent,
-    RoleHomePlaceholderComponent
+    RoleHomePlaceholderComponent,
+    ExplorerHostComponent
   ],
   imports: [
     BrowserModule,

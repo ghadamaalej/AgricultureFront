@@ -1,0 +1,163 @@
+<div class="delivery-page">
+  <div class="page-title">
+    <h2><i class="fas fa-handshake"></i> Demandes & négociations</h2>
+    <p *ngIf="isTransporter">Négociez la demande sélectionnée ou acceptez-la directement.</p>
+    <p *ngIf="isFarmer">Répondez aux contre-propositions envoyées par les livreurs.</p>
+  </div>
+
+  <div class="notification" *ngIf="notification" [class.success]="notification.type === 'success'" [class.error]="notification.type === 'error'">
+    <div class="notification-title">
+      <i class="fas" [class.fa-check-circle]="notification.type === 'success'" [class.fa-exclamation-circle]="notification.type === 'error'"></i>
+      {{ notification.title }}
+    </div>
+    <div class="notification-message">{{ notification.message }}</div>
+  </div>
+
+  <div class="negotiation-grid single-panel">
+    <section class="side-panel" *ngIf="isTransporter">
+      <div class="panel-head">
+        <h3><i class="fas fa-motorcycle"></i> Côté livreur</h3>
+      </div>
+
+      <div class="focus-banner" *ngIf="isFocusedMode">
+        <i class="fas fa-bullseye"></i>
+        Négociation ciblée: seule la demande choisie est affichée ici.
+      </div>
+
+      <div class="cards">
+        <div class="card" *ngFor="let c of visibleTransporterRequests" [class.card-focus]="isFocusedRequest(c)">
+          <div class="card-title">
+            <span class="ref">{{ c.reference }}</span>
+            <span class="pill">{{ c.product }} • {{ c.weightKg }}kg</span>
+          </div>
+
+          <div class="card-body">
+            <div class="row"><span class="lbl">Trajet</span><span class="val">{{ c.pickup }} → {{ c.dropoff }}</span></div>
+            <div class="row"><span class="lbl">Prix proposé</span><span class="val">{{ c.price }} TND</span></div>
+            <div class="row"><span class="lbl">Créneau favori agriculteur</span><span class="val">{{ formatDateTime(c.preferredDateTime) }}</span></div>
+            <div class="row" *ngIf="c.proposedDateTime"><span class="lbl">Créneau déjà proposé</span><span class="val">{{ formatDateTime(c.proposedDateTime) }}</span></div>
+            <div class="row"><span class="lbl">Distance réelle</span><span class="val">{{ c.distanceKm | number:'1.1-1' }} km</span></div>
+            <div class="row"><span class="lbl">Ratio km</span><span class="val">{{ c.pricePerKm | number:'1.2-2' }} TND/km</span></div>
+            <div class="row"><span class="lbl">Supplément quantité</span><span class="val">{{ c.quantityAmount | number:'1.2-2' }} TND</span></div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary small" type="button" (click)="acceptRequest(c)" [disabled]="isAccepting(c.id)">
+              <i class="fas fa-check"></i> {{ isAccepting(c.id) ? 'Acceptation...' : 'Accepter' }}
+            </button>
+            <button class="btn btn-outline small" type="button" (click)="ignoreRequest(c)">
+              <i class="fas fa-eye-slash"></i> Ignorer
+            </button>
+            <button class="btn btn-outline small" type="button" (click)="refuseRequest(c)">
+              <i class="fas fa-times"></i> Refuser
+            </button>
+          </div>
+
+          <div class="counter">
+            <label class="counter-label">Contre-prix</label>
+            <div class="counter-hint">
+              Plage autorisée: {{ c.minCounterPrice | number:'1.2-2' }} TND à {{ c.maxCounterPrice | number:'1.2-2' }} TND
+            </div>
+            <div class="counter-row" *ngIf="hasValidCounterRange(c); else noCounterRangeTransporter">
+              <input
+                class="counter-slider"
+                type="range"
+                [min]="c.minCounterPrice"
+                [max]="c.maxCounterPrice"
+                step="0.1"
+                [(ngModel)]="c.counterPrice"
+                (input)="onCounterPriceInput(c)"
+              >
+            </div>
+            <div class="slider-value" *ngIf="hasValidCounterRange(c)">
+              <span class="slider-bubble">{{ c.counterPrice | number:'1.2-2' }} TND</span>
+            </div>
+            <label class="counter-label">Créneau proposé par le livreur</label>
+            <div class="counter-row">
+              <input class="counter-input" type="datetime-local" [(ngModel)]="c.counterDateTime">
+              <button class="btn btn-secondary small" type="button" (click)="counterFromTransporter(c)">
+                Envoyer
+              </button>
+            </div>
+            <ng-template #noCounterRangeTransporter>
+              <div class="counter-hint">Plage de négociation indisponible.</div>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="visibleTransporterRequests.length === 0">
+          <i class="fas fa-inbox"></i>
+          <span *ngIf="isFocusedMode">Cette demande n’est plus disponible pour négociation.</span>
+          <span *ngIf="!isFocusedMode">Aucune demande en attente pour le moment.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="side-panel" *ngIf="isFarmer">
+      <div class="panel-head">
+        <h3><i class="fas fa-user-tie"></i> Côté client</h3>
+      </div>
+
+      <div class="cards">
+        <div class="card" *ngFor="let c of clientOffers">
+          <div class="card-title">
+            <span class="ref">{{ c.reference }}</span>
+            <span class="pill">Offre de {{ c.from }}</span>
+          </div>
+
+          <div class="card-body">
+            <div class="row"><span class="lbl">Trajet</span><span class="val">{{ c.pickup }} → {{ c.dropoff }}</span></div>
+            <div class="row"><span class="lbl">Prix proposé</span><span class="val">{{ c.price }} TND</span></div>
+            <div class="row"><span class="lbl">Date favorite envoyée</span><span class="val">{{ formatDateTime(c.preferredDateTime) }}</span></div>
+            <div class="row" *ngIf="c.proposedDateTime"><span class="lbl">Nouvelle heure proposée</span><span class="val">{{ formatDateTime(c.proposedDateTime) }}</span></div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary small" type="button" (click)="acceptOffer(c)">
+              <i class="fas fa-check"></i> Accepter
+            </button>
+            <button class="btn btn-outline small" type="button" (click)="refuseOffer(c)">
+              <i class="fas fa-times"></i> Refuser
+            </button>
+          </div>
+
+          <div class="counter">
+            <label class="counter-label">Contre-proposition</label>
+            <div class="counter-hint" *ngIf="c.minCounterPrice > 0 && c.maxCounterPrice > 0">
+              Plage de réponse: {{ c.minCounterPrice | number:'1.2-2' }} TND à {{ c.maxCounterPrice | number:'1.2-2' }} TND
+            </div>
+            <div class="counter-row" *ngIf="hasValidCounterRange(c); else noCounterRangeClient">
+              <input
+                class="counter-slider"
+                type="range"
+                [min]="c.minCounterPrice"
+                [max]="c.maxCounterPrice"
+                step="0.1"
+                [(ngModel)]="c.counterPrice"
+                (input)="onCounterPriceInput(c)"
+              >
+            </div>
+            <div class="slider-value" *ngIf="hasValidCounterRange(c)">
+              <span class="slider-bubble">{{ c.counterPrice | number:'1.2-2' }} TND</span>
+            </div>
+            <label class="counter-label">Votre contre-créneau</label>
+            <div class="counter-row">
+              <input class="counter-input" type="datetime-local" [(ngModel)]="c.counterDateTime">
+              <button class="btn btn-secondary small" type="button" (click)="proposeCounterFromClient(c)">
+                Soumettre
+              </button>
+            </div>
+            <ng-template #noCounterRangeClient>
+              <div class="counter-hint">Plage de négociation indisponible.</div>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="clientOffers.length === 0">
+          <i class="fas fa-inbox"></i>
+          <span>Aucune contre-proposition en attente.</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,291 @@
+<div class="delivery-page">
+  <div class="page-title">
+    <h2><i class="fas fa-map-marker-alt"></i> {{ isPreferredTransporterFlow ? 'Demande directe vers un livreur' : 'Création sur carte' }}</h2>
+    <p>
+      {{
+        isPreferredTransporterFlow
+          ? 'Choisissez un livreur deja teste, renseignez les details, puis envoyez la demande directement.'
+          : 'Choisissez les points de départ et d arrivée, renseignez le produit et validez.'
+      }}
+    </p>
+  </div>
+
+  <div class="create-grid">
+    <section class="map-panel">
+      <div class="panel-header">
+        <div class="panel-title">Carte (UI)</div>
+        <div class="mode-switch">
+          <button class="chip" [class.active]="selectMode === 'start'" (click)="setMode('start')" type="button">
+            Départ
+          </button>
+          <button class="chip" [class.active]="selectMode === 'end'" (click)="setMode('end')" type="button">
+            Arrivée
+          </button>
+        </div>
+      </div>
+
+      <p class="map-help">
+        <i class="fas fa-mouse-pointer"></i>
+        Cliquez sur la carte pour placer le point sélectionné.
+      </p>
+
+      <div class="search-grid">
+        <label class="search-field">
+          <span>Recherche départ</span>
+          <div class="search-row">
+            <input
+              type="text"
+              class="search-input"
+              [(ngModel)]="startSearchText"
+              (input)="onSearchInput('start')"
+              name="startSearchText"
+              placeholder="Ex: Sidi Bouzid"
+            >
+            <button class="btn btn-secondary search-btn" type="button" (click)="searchStart()" [disabled]="searchingStart">
+              <i class="fas" [class.fa-spinner]="searchingStart" [class.fa-spin]="searchingStart" [class.fa-search]="!searchingStart"></i>
+              {{ searchingStart ? 'Recherche...' : 'Rechercher' }}
+            </button>
+          </div>
+          <div class="suggestions" *ngIf="startSuggestions.length > 0">
+            <button
+              class="suggestion-item"
+              type="button"
+              *ngFor="let s of startSuggestions"
+              (click)="pickSuggestion('start', s)"
+            >
+              <i class="fas fa-location-dot"></i>
+              <span>{{ s.display_name }}</span>
+            </button>
+          </div>
+        </label>
+
+        <label class="search-field">
+          <span>Recherche destination</span>
+          <div class="search-row">
+            <input
+              type="text"
+              class="search-input"
+              [(ngModel)]="endSearchText"
+              (input)="onSearchInput('end')"
+              name="endSearchText"
+              placeholder="Ex: Nabeul"
+            >
+            <button class="btn btn-secondary search-btn" type="button" (click)="searchEnd()" [disabled]="searchingEnd">
+              <i class="fas" [class.fa-spinner]="searchingEnd" [class.fa-spin]="searchingEnd" [class.fa-search]="!searchingEnd"></i>
+              {{ searchingEnd ? 'Recherche...' : 'Rechercher' }}
+            </button>
+          </div>
+          <div class="suggestions" *ngIf="endSuggestions.length > 0">
+            <button
+              class="suggestion-item"
+              type="button"
+              *ngFor="let s of endSuggestions"
+              (click)="pickSuggestion('end', s)"
+            >
+              <i class="fas fa-location-dot"></i>
+              <span>{{ s.display_name }}</span>
+            </button>
+          </div>
+        </label>
+      </div>
+
+      <p class="search-error" *ngIf="searchError">
+        <i class="fas fa-triangle-exclamation"></i> {{ searchError }}
+      </p>
+
+      <div
+        #mapContainer
+        class="delivery-map"
+      ></div>
+
+      <div class="map-readouts">
+        <div class="readout">
+          <div class="readout-label">Départ</div>
+          <div class="readout-value">{{ startPoint.lat | number:'1.4-4' }}, {{ startPoint.lng | number:'1.4-4' }}</div>
+        </div>
+        <div class="readout">
+          <div class="readout-label">Arrivée</div>
+          <div class="readout-value">{{ endPoint.lat | number:'1.4-4' }}, {{ endPoint.lng | number:'1.4-4' }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-panel">
+      <div class="panel-header">
+        <div class="panel-title">Détails de la livraison</div>
+      </div>
+
+      <form class="form" (ngSubmit)="submit()">
+        <label class="field" *ngIf="isPreferredTransporterFlow">
+          <span class="field-label">Livreur prefere</span>
+          <select class="field-input" name="selectedTransporteurId" [(ngModel)]="selectedTransporteurId" [disabled]="loadingTransporters || knownTransporters.length === 0">
+            <option [ngValue]="null">Choisir un livreur</option>
+            <option *ngFor="let transporter of knownTransporters" [ngValue]="transporter.transporteurId">
+              {{ transporter.displayName }} - {{ transporter.completedDeliveries }} livraison(s)
+            </option>
+          </select>
+        </label>
+
+        <p class="search-error" *ngIf="preferredTransporterError">
+          <i class="fas fa-triangle-exclamation"></i> {{ preferredTransporterError }}
+        </p>
+
+        <label class="field">
+          <span class="field-label">Type de produit</span>
+          <select class="field-input" name="productType" [(ngModel)]="productType" (change)="recomputeEstimation()">
+            <option>Tomates</option>
+            <option>Blé</option>
+            <option>Orge</option>
+            <option>Légumes</option>
+            <option>Fruits</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Poids (kg)</span>
+          <input class="field-input" type="number" name="weightKg" [(ngModel)]="weightKg" min="1" (input)="onWeightInput()">
+        </label>
+
+        <label class="field">
+          <span class="field-label">Date et heure favorites de l'agriculteur</span>
+          <input class="field-input" type="datetime-local" name="departureDate" [(ngModel)]="departureDate">
+        </label>
+
+        <label class="field">
+          <span class="field-label">Détails (optionnel)</span>
+          <textarea class="field-input textarea" name="details" [(ngModel)]="details" placeholder="Température, fragile, exigences..."></textarea>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" name="autoGrouping" [(ngModel)]="autoGrouping">
+          <span>Activer le regroupement automatique avant validation</span>
+        </label>
+
+        <div class="estimation">
+          <div class="est-item">
+            <div class="est-label">Distance estimée</div>
+            <div class="est-value">{{ estimatedDistanceKm.toFixed(1) }} km</div>
+          </div>
+          <div class="est-item">
+            <div class="est-label">Durée estimée</div>
+            <div class="est-value">{{ estimatedDurationHours }} h</div>
+          </div>
+          <div class="est-item">
+            <div class="est-label">Prix estimé</div>
+            <div class="est-value">
+              {{ basePrice.toFixed(2) }} TND
+              <span class="price-extra" *ngIf="weatherExtra > 0">
+                +{{ weatherExtra.toFixed(2) }} TND
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="weather-pricing" [class.with-surcharge]="weatherSurchargePercent > 0">
+          <i class="fas" [class.fa-cloud-rain]="weatherSurchargePercent > 0" [class.fa-sun]="weatherSurchargePercent <= 0"></i>
+          <span *ngIf="weatherSurchargePercent > 0">
+            Supplément météo appliqué ({{ weatherCondition }}): +{{ weatherSurchargePercent.toFixed(1) }}%
+          </span>
+          <span *ngIf="weatherSurchargePercent <= 0">
+            Aucune majoration météo (conditions normales)
+          </span>
+        </div>
+
+        <div class="ai-check-row">
+          <button class="btn btn-ai" type="button" (click)="checkWithAi()" [disabled]="checkingAi || isSubmitting">
+            <i class="fas" [class.fa-wand-magic-sparkles]="!checkingAi" [class.fa-spinner]="checkingAi" [class.fa-spin]="checkingAi"></i>
+            {{ checkingAi ? 'Analyse meteo IA...' : 'Optimiser la date avec l IA' }}
+          </button>
+          <small class="ai-hint">
+            L IA verifie la meteo autour de votre date favorite et suggere le meilleur jour pour economiser.
+          </small>
+        </div>
+
+        <div class="ai-error" *ngIf="aiError">
+          <i class="fas fa-triangle-exclamation"></i> {{ aiError }}
+        </div>
+
+        <div class="ai-suggestion" *ngIf="aiSuggestion">
+          <div class="ai-suggestion-header">
+            <i class="fas fa-robot"></i>
+            <span>Recommandation IA</span>
+            <button class="ai-dismiss" type="button" (click)="dismissAiSuggestion()" aria-label="Fermer">
+              <i class="fas fa-xmark"></i>
+            </button>
+          </div>
+          <p class="ai-suggestion-text">{{ aiSuggestion.explanation }}</p>
+
+          <div class="ai-suggestion-grid">
+            <div class="ai-stat">
+              <div class="ai-stat-label">Date favorite</div>
+              <div class="ai-stat-value">
+                {{ departureDate | date:'dd/MM/yyyy HH:mm' }}
+                <span class="badge-pct" *ngIf="aiSuggestion.originalSurchargePercent > 0">
+                  +{{ aiSuggestion.originalSurchargePercent }}%
+                </span>
+              </div>
+              <div class="ai-stat-sub">{{ aiSuggestion.originalPrice.toFixed(2) }} TND</div>
+            </div>
+            <div class="ai-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="ai-stat highlight">
+              <div class="ai-stat-label">Date recommandee</div>
+              <div class="ai-stat-value">
+                {{ aiSuggestion.suggestedDateTime | date:'dd/MM/yyyy HH:mm' }}
+                <span class="badge-pct ok" *ngIf="aiSuggestion.suggestedSurchargePercent === 0">0%</span>
+                <span class="badge-pct" *ngIf="aiSuggestion.suggestedSurchargePercent > 0">
+                  +{{ aiSuggestion.suggestedSurchargePercent }}%
+                </span>
+              </div>
+              <div class="ai-stat-sub">{{ aiSuggestion.suggestedPrice.toFixed(2) }} TND</div>
+            </div>
+          </div>
+
+          <div class="ai-savings" *ngIf="aiSuggestion.savings > 0">
+            <i class="fas fa-piggy-bank"></i>
+            Economie estimee: <strong>{{ aiSuggestion.savings.toFixed(2) }} TND</strong>
+          </div>
+          <div class="ai-savings optimal" *ngIf="aiSuggestion.savings <= 0 || aiSuggestion.isAlreadyOptimal">
+            <i class="fas fa-circle-check"></i>
+            Votre date est deja optimale.
+          </div>
+
+          <div class="ai-actions" *ngIf="!aiSuggestion.isAlreadyOptimal && aiSuggestion.savings > 0">
+            <button class="btn btn-primary" type="button" (click)="acceptAiSuggestion()" [disabled]="isSubmitting">
+              <i class="fas fa-check"></i>
+              Accepter la suggestion et creer la demande
+            </button>
+            <button class="btn btn-secondary" type="button" (click)="dismissAiSuggestion()">
+              Garder ma date
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary submit-btn" type="submit" [disabled]="isSubmitting">
+          <i class="fas" [class.fa-paper-plane]="!isSubmitting" [class.fa-spinner]="isSubmitting" [class.fa-spin]="isSubmitting"></i>
+          {{ isSubmitting ? 'Création en cours...' : 'Soumettre la demande' }}
+        </button>
+      </form>
+
+      <div class="submit-result" *ngIf="submitError">
+        <div class="alert error">
+          <div class="alert-title"><i class="fas fa-circle-exclamation"></i> Création échouée</div>
+          <div class="alert-body">{{ submitError }}</div>
+        </div>
+      </div>
+
+      <div class="submit-result" *ngIf="submitted">
+        <div class="alert success">
+          <div class="alert-title"><i class="fas fa-check-circle"></i> Demande soumise</div>
+          <div class="alert-body">
+            Référence: <strong>{{ reference }}</strong>
+            <div class="muted" *ngIf="autoGrouping">Regroupement: activé</div>
+            <div class="muted" *ngIf="!autoGrouping">Regroupement: désactivé</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary" type="button" (click)="goTracking()">
+          <i class="fas fa-eye"></i> Voir la livraison créée
+        </button>
+      </div>
+    </section>
+  </div>
+</div>

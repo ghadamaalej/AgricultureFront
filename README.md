@@ -218,3 +218,32 @@ this.authService.currentUser$.subscribe((user) => {
 Important rule:
 - Do not read role/userId from random localStorage keys in feature code.
 - Always use `AuthService` helpers so all teams stay consistent.
+
+## 10) Delivery module integration
+
+The `delivery` module has been copied from `AgricultureFront-moduleLivraison` into this project.
+
+Summary:
+- Root route: `/delivery`
+- Loading: lazy-loaded `DeliveryModule`
+- Access: protected with `AuthGuard`
+- API base: `/livraison/api/livraisons`
+- Global map styles: `Leaflet` is imported in `src/styles.css`
+- Dev proxy: `proxy.conf.json` handles `/livraison` and `/osrm`
+
+Added or synchronized files:
+- `src/app/delivery/**`
+- `src/environments/environment.ts`
+- `src/environments/environment.example.ts`
+- `proxy.conf.json`
+- `karma.conf.cjs`
+- `tsconfig.spec.json`
+- `src/test.ts`
+
+Checklist:
+1. Install the new dependencies from `package.json`.
+2. Use `npm start` so the proxy is active during development.
+3. Verify JWT headers are attached to delivery API calls.
+4. Fill `src/environments/environment.ts` with a local Groq key only if the chatbot feature is needed.
+5. Run `npm run test:sim` to execute the delivery simulation specs if required.
+

@@ -1,0 +1,163 @@
+.active-list {
+  display: grid;
+  gap: 14px;
+}
+
+.active-card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+.head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ref {
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.meta {
+  color: #6b7c6e;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  color: #2f3b2f;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.btn-success {
+  background: #2e7d32;
+  color: #fff;
+  border: 1px solid #2e7d32;
+}
+
+.btn-success:hover:not([disabled]) {
+  background: #276c2b;
+  border-color: #276c2b;
+}
+
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 172, 193, 0.28);
+  color: #00acc1;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.notification {
+  margin-bottom: 12px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 600;
+}
+
+.route-panel {
+  margin-top: 16px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.route-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.route-top-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.route-sim-progress {
+  margin-top: 10px;
+  color: #1e40af;
+  font-weight: 700;
+}
+
+.route-kpis {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  color: #2f3b2f;
+}
+
+.route-map {
+  margin-top: 12px;
+  width: 100%;
+  min-height: 360px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.route-loading,
+.route-error {
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.route-error {
+  color: #c62828;
+}
+
+.route-steps {
+  margin-top: 12px;
+}
+
+.route-steps ol {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #334155;
+}
+
+
+.empty-box {
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  color: #6b7c6e;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .route-kpis {
+    grid-template-columns: 1fr;
+  }
+}
+

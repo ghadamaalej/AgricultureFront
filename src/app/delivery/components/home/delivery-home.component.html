@@ -1,0 +1,156 @@
+<div class="delivery-page" *ngIf="!isTransporter; else transporterHome">
+  <div class="delivery-hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="section-label">
+            <i class="fas fa-truck"></i> Transport & Livraison
+          </div>
+          <h1 class="section-title">
+            Des demandes de livraison,<span> optimisées</span>
+          </h1>
+          <p class="section-desc">
+            Créez une livraison, suivez son trajet en temps réel et activez le regroupement automatique pour réduire vos coûts.
+          </p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" (click)="goCreate()">
+              <i class="fas fa-plus"></i> Créer une nouvelle livraison
+            </button>
+            <button class="btn btn-secondary" (click)="goTracking()">
+              <i class="fas fa-location-arrow"></i> Accéder au suivi
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-card">
+            <div class="hero-card-title">
+              <i class="fas fa-route"></i> Aperçu rapide
+            </div>
+            <div class="hero-card-row">
+              <div class="hero-badge">
+                <i class="fas fa-circle-check"></i> Estimation automatique
+              </div>
+              <div class="hero-badge">
+                <i class="fas fa-users"></i> Regroupement possible
+              </div>
+              <div class="hero-badge">
+                <i class="fas fa-map"></i> Trajet complet
+              </div>
+            </div>
+            <div class="hero-card-sub">
+              <span>Dernières livraisons</span>
+            </div>
+            <div class="hero-last-list" *ngIf="lastDeliveries.length > 0; else noLastDeliveries">
+              <div class="hero-last-item" *ngFor="let d of lastDeliveries">
+                <div class="last-left">
+                  <div class="last-ref">{{ d.reference }}</div>
+                  <div class="last-meta">{{ d.product }} • {{ d.weightKg }}kg</div>
+                </div>
+                <div class="last-right">
+                  <span class="status-pill" [class]="statusToClass(d.status)">
+                    {{ d.status }}
+                  </span>
+                  <div class="last-date">{{ d.date }}</div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noLastDeliveries>
+              <div class="hero-last-list">
+                <div class="hero-last-item">
+                  <div class="last-left">
+                    <div class="last-ref">Aucune livraison</div>
+                    <div class="last-meta">Les donnees viendront du backend apres creation.</div>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <section class="delivery-stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let s of stats">
+          <div class="stat-icon" [style.background]="s.accent">
+            <i [class]="s.icon"></i>
+          </div>
+          <div class="stat-body">
+            <div class="stat-value">{{ s.value }}</div>
+            <div class="stat-label">{{ s.label }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<ng-template #transporterHome>
+  <div class="delivery-page transporter-page">
+    <div class="delivery-hero">
+      <div class="container">
+        <div class="transporter-head">
+          <div>
+            <div class="section-label">
+              <i class="fas fa-truck"></i> Espace livreur
+            </div>
+            <h1 class="section-title">Demandes en attente des agriculteurs</h1>
+            <p class="section-desc">
+              Seules les demandes <strong>En attente</strong> sont affichées ici.
+            </p>
+          </div>
+          <div class="section-desc">Consultez les demandes, acceptez-les puis ouvrez le détail pour voir la carte et le trajet.</div>
+        </div>
+
+        <div class="transporter-notification" *ngIf="notification">
+          <i class="fas fa-circle-info"></i> {{ notification }}
+        </div>
+
+        <div class="request-list" *ngIf="pendingRequests.length > 0; else emptyPending">
+          <article class="request-card" *ngFor="let req of pendingRequests">
+            <div class="request-top">
+              <div>
+                <div class="last-ref">{{ req.reference }}</div>
+                <div class="last-meta">{{ req.product }} • {{ req.weightKg }}kg</div>
+              </div>
+              <span class="status-pill status-en-attente">{{ req.status }}</span>
+            </div>
+
+            <div class="request-grid">
+              <div><strong>Départ:</strong> {{ req.pickupLabel }}</div>
+              <div><strong>Arrivée:</strong> {{ req.dropoffLabel }}</div>
+              <div><strong>Prix estimé:</strong> {{ req.estimatedPrice }} TND</div>
+              <div><strong>Détails:</strong> {{ req.details || 'Aucun détail' }}</div>
+            </div>
+
+            <div class="request-actions">
+              <button class="btn btn-secondary" type="button" (click)="goDetail(req.id)">
+                <i class="fas fa-eye"></i> Détail
+              </button>
+              <button class="btn btn-primary" type="button" (click)="acceptRequest(req)" [disabled]="isAccepting(req.id)">
+                <i class="fas fa-check"></i> {{ isAccepting(req.id) ? 'Acceptation...' : 'Accepter' }}
+              </button>
+              <button class="btn btn-outline" type="button" (click)="ignoreRequest(req)">
+                <i class="fas fa-eye-slash"></i> Ignorer
+              </button>
+              <button class="btn btn-outline" type="button" (click)="negotiateRequest(req)">
+                <i class="fas fa-comments-dollar"></i> Négocier
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <ng-template #emptyPending>
+          <div class="empty-box">
+            <i class="fas fa-inbox"></i>
+            <p>Aucune demande en attente pour le moment.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</ng-template>

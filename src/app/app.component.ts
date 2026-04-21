@@ -1,5 +1,6 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -35,6 +36,19 @@ import { NavigationEnd, Router } from '@angular/router';
 
     <!-- Router outlet — gère tout -->
     <router-outlet></router-outlet>
+
+    <!-- Persistent 3D Explorer — never destroyed, CSS-toggled to preserve state -->
+    <div class="explorer-overlay" [class.explorer-active]="isExplorerRoute">
+      <button class="explorer-back-btn" type="button" (click)="closeExplorer()">
+        <i class="fas fa-arrow-left"></i> Back to Site
+      </button>
+      <iframe
+        #explorerFrame
+        class="explorer-frame"
+        title="GreenRoots Explorer 3D"
+        allowfullscreen>
+      </iframe>
+    </div>
   `,
   styles: [`
     .preloader {
@@ -102,15 +116,80 @@ import { NavigationEnd, Router } from '@angular/router';
     .fab-icon i {
       font-size: 16px;
     }
+
+    /* ===== PERSISTENT 3D EXPLORER ===== */
+    .explorer-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      background: #000;
+    }
+    .explorer-overlay.explorer-active {
+      display: flex;
+    }
+    .explorer-back-btn {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: background 0.2s;
+    }
+    .explorer-back-btn:hover { background: rgba(0,0,0,0.8); }
+    .explorer-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
+    }
   `]
 })
-export class AppComponent implements OnInit {
-  preloaderHidden = false;
-  showBackTop     = false;
+export class AppComponent implements OnInit, AfterViewInit {
+  preloaderHidden  = false;
+  showBackTop      = false;
   fabMode: 'jump-reply' | 'scroll-top' = 'scroll-top';
   isForumsPostPage = false;
+  isExplorerRoute  = false;
 
-  constructor(private router: Router) {}
+  @ViewChild('explorerFrame') private explorerFrame?: ElementRef<HTMLIFrameElement>;
+  private explorerLoaded = false;
+
+  private readonly explorerOrigins = new Set([
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:8089',
+    'http://127.0.0.1:8089',
+  ]);
+
+  /** Maps folio routes → Angular routes. Add entries as modules go live. */
+  private readonly folioRouteMap: Record<string, string> = {
+    '/delivery':     '/delivery',
+    '/forum':        '/forums',
+    '/forums':       '/forums',
+    '/inventory':    '/inventory',
+    '/marketplace':  '/marketplace',
+    '/loans':        '/loans',
+    '/events':       '/events',
+    '/training':     '/training',
+    '/formations':   '/training',
+    '/appointments': '/',
+    '/animals':      '/',
+    '/help-request': '/',
+  };
+
+  constructor(private router: Router, private sanitizer: DomSanitizer) {}
 
   ngOnInit() {
     setTimeout(() => {
@@ -119,15 +198,57 @@ export class AppComponent implements OnInit {
     }, 3000);
 
     this.isForumsPostPage = this.router.url.startsWith('/forums/post/');
+    this.isExplorerRoute  = this.router.url.startsWith('/explorer');
+
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.isForumsPostPage = event.urlAfterRedirects.startsWith('/forums/post/');
+        this.isExplorerRoute  = event.urlAfterRedirects.startsWith('/explorer');
         this.updateFabState();
         window.setTimeout(() => this.updateFabState(), 120);
       }
     });
 
     this.updateFabState();
+  }
+
+  ngAfterViewInit(): void {
+    // Set iframe src exactly once — never touch it again so the 3D state is never reset.
+    if (this.explorerFrame && !this.explorerLoaded) {
+      const token = localStorage.getItem('authToken');
+      const base  = 'http://localhost:5173/explorer/';
+      this.explorerFrame.nativeElement.src = token
+        ? `${base}?token=${encodeURIComponent(token)}`
+        : base;
+      this.explorerLoaded = true;
+    }
+  }
+
+  closeExplorer(): void {
+    this.router.navigate(['/']);
+  }
+
+  @HostListener('window:message', ['$event'])
+  onExplorerMessage(event: MessageEvent): void {
+    if (!this.explorerOrigins.has(event.origin)) return;
+
+    const payload = event.data as { type?: string; route?: string; path?: string; href?: string } | null;
+    const isNav   = payload?.type === 'greenroots:navigate' || payload?.type === 'navigate';
+    const target  = payload?.route || payload?.path || payload?.href;
+    if (!payload || !isNav || typeof target !== 'string') return;
+
+    const angular = this.resolveAngularRoute(target);
+    this.router.navigateByUrl(angular);
+  }
+
+  private resolveAngularRoute(raw: string): string {
+    let path = raw.trim();
+    if (/^https?:\/\//i.test(path)) {
+      try { path = new URL(path).pathname; } catch { path = '/'; }
+    }
+    path = path.split('#')[0].split('?')[0] || '/';
+    if (!path.startsWith('/')) path = `/${path}`;
+    return this.folioRouteMap[path] ?? '/';
   }
 
   @HostListener('window:scroll', [])

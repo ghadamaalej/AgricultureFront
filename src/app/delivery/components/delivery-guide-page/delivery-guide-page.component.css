@@ -1,0 +1,44 @@
+.delivery-guide {
+  display: grid;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.delivery-guide-header h2 {
+  margin: 0;
+  color: #1a1a2e;
+}
+
+.delivery-guide-header p {
+  margin: 8px 0 0;
+  color: #6b7c6e;
+}
+
+.delivery-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.guide-card {
+  border: 1px solid #dbe9db;
+  border-radius: 12px;
+  padding: 14px;
+  background: #f8fbf8;
+}
+
+.guide-card h3 {
+  margin: 0 0 6px;
+  color: #2e7d32;
+  font-size: 16px;
+}
+
+.guide-card p {
+  margin: 0;
+  color: #2c3e2d;
+  font-size: 13px;
+  line-height: 1.45;
+}

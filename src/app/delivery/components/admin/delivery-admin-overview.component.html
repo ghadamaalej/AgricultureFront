@@ -1,0 +1,75 @@
+<div class="delivery-page">
+  <div class="page-title">
+    <h2><i class="fas fa-user-shield"></i> Vue administrateur</h2>
+    <p>Toutes les demandes, les informations livreurs, les statistiques globales et l'historique global.</p>
+  </div>
+
+  <div class="notification" *ngIf="isLoading">Chargement des donnees...</div>
+  <div class="notification" *ngIf="loadError">{{ loadError }}</div>
+
+  <section class="stats-grid" *ngIf="!isLoading">
+    <div class="stat-card"><span>Total demandes</span><strong>{{ stats.total }}</strong></div>
+    <div class="stat-card"><span>En attente</span><strong>{{ stats.pending }}</strong></div>
+    <div class="stat-card"><span>Acceptees</span><strong>{{ stats.accepted }}</strong></div>
+    <div class="stat-card"><span>En cours</span><strong>{{ stats.inProgress }}</strong></div>
+    <div class="stat-card"><span>Livrees</span><strong>{{ stats.delivered }}</strong></div>
+    <div class="stat-card"><span>Refusees</span><strong>{{ stats.refused }}</strong></div>
+    <div class="stat-card"><span>Livreurs actifs</span><strong>{{ stats.activeTransporters }}</strong></div>
+    <div class="stat-card"><span>Montant global</span><strong>{{ stats.totalAmount | number:'1.2-2' }} TND</strong></div>
+  </section>
+
+  <section class="panel" *ngIf="!isLoading">
+    <div class="panel-head">
+      <h3>Toutes les demandes</h3>
+      <button class="btn-refresh" type="button" (click)="reload()">Actualiser</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Etat</th>
+            <th>Produit</th>
+            <th>Poids</th>
+            <th>Prix</th>
+            <th>Agriculteur</th>
+            <th>Livreur</th>
+            <th>Creation</th>
+            <th>Livraison</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td>{{ row.reference }}</td>
+            <td>{{ row.status }}</td>
+            <td>{{ row.product }}</td>
+            <td>{{ row.weightKg }} kg</td>
+            <td>{{ row.price | number:'1.2-2' }} TND</td>
+            <td>{{ row.farmer }}</td>
+            <td>{{ row.transporter }}</td>
+            <td>{{ row.createdAt }}</td>
+            <td>{{ row.deliveredAt }}</td>
+          </tr>
+          <tr *ngIf="rows.length === 0">
+            <td colspan="9">Aucune demande disponible.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="!isLoading">
+    <h3>Historique global</h3>
+    <div class="history-list" *ngIf="historyRows.length > 0; else emptyHistory">
+      <div class="history-item" *ngFor="let item of historyRows">
+        <strong>{{ item.reference }}</strong>
+        <span>{{ item.status }}</span>
+        <span>{{ item.createdAt }}</span>
+        <span>{{ item.transporter }}</span>
+      </div>
+    </div>
+    <ng-template #emptyHistory>
+      <div class="notification">Aucun historique global.</div>
+    </ng-template>
+  </section>
+</div>

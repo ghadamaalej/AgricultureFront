@@ -1,0 +1,35 @@
+    <div class="hovered" *ngIf="hoveredModule">Module: <strong>{{ hoveredModule }}</strong></div>
+  </div>
+<section class="agri-nav-card">
+  <div class="agri-nav-header">
+    <div>
+      <h2>AgriWorld 3D</h2>
+      <p>Globe logistique interactif centre sur la Tunisie</p>
+      <h2>Navigation 3D des modules</h2>
+      <p>Cliquez sur un objet pour ouvrir le module correspondant.</p>
+    <h3>Contexte local</h3>
+    <div class="kpi-row">
+      <span>Ville focus</span>
+      <strong>{{ selectedCity }}</strong>
+    </div>
+    <div class="kpi-row">
+      <span>Meteo</span>
+      <strong>{{ weather }}</strong>
+    </div>
+    <p class="hint">Double-clic sur une ville pour zoomer. Cliquez sur un cristal pour ouvrir le module.</p>
+  </aside>
+
+  <div #sceneHost class="scene-host"></div>
+
+  <div class="module-help">
+    <span *ngFor="let m of ['Livraison', 'Dashboard', 'Events', 'Forums', 'Marketplace', 'Training', 'Inventory', 'Loans']">
+      {{ m }}
+    </span>
+  <div class="timeline glass">
+    <h4>Timeline operationnelle</h4>
+    <div class="timeline-items">
+      <span *ngFor="let item of timeline">{{ item }}</span>
+    </div>
+  </div>
+</section>
+

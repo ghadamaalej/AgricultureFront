@@ -1,0 +1,295 @@
+<div class="groups-container">
+  <!-- En-tête -->
+  <div class="groups-header">
+    <h2>Gestion des Groupes</h2>
+    <div class="header-actions">
+      <div class="stats-summary">
+        <span class="stat-item">{{ getTotalGroups() }} groupes</span>
+        <span class="stat-item">{{ getCompletedGroups() }} terminés</span>
+        <span class="stat-item">{{ formatPrice(getTotalSavings()) }} économisés</span>
+      </div>
+      <button class="btn-create-group" (click)="openCreateGroupModal()">
+        <i class="fas fa-plus"></i>
+        Créer un groupe
+      </button>
+    </div>
+  </div>
+
+  <div class="feedback-banner" *ngIf="feedbackMessage" [attr.data-type]="feedbackType">
+    <i class="fas" [class.fa-circle-check]="feedbackType === 'success'" [class.fa-circle-info]="feedbackType === 'info'" [class.fa-circle-exclamation]="feedbackType === 'error'"></i>
+    <span>{{ feedbackMessage }}</span>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="isLoading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Chargement des groupes...</span>
+  </div>
+
+  <!-- Liste des groupes -->
+  <div class="groups-content" *ngIf="!isLoading">
+    <!-- Grille des groupes -->
+    <div class="groups-grid" *ngIf="groups.length > 0">
+      <div class="group-card" 
+           *ngFor="let group of groups"
+           [class.selected]="selectedGroup?.groupReference === group.groupReference"
+           (click)="selectGroup(group)">
+        
+        <!-- En-tête du groupe -->
+        <div class="group-header">
+          <div class="group-title">
+            <i class="fas fa-layer-group"></i>
+            <span>{{ group.groupReference }}</span>
+          </div>
+          <div class="group-status" 
+               [style.background]="getGroupStatusColor(group.status)"
+               [style.color]="'white'">
+            {{ getGroupStatusText(group.status) }}
+          </div>
+        </div>
+
+        <!-- Statistiques du groupe -->
+        <div class="group-stats">
+          <div class="stat-row">
+            <div class="stat-item">
+              <span class="stat-value">{{ group.deliveriesCount }}</span>
+              <span class="stat-label">Livraisons</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ group.delivered }}</span>
+              <span class="stat-label">Livrées</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ group.inProgress }}</span>
+              <span class="stat-label">En cours</span>
+            </div>
+          </div>
+          
+          <div class="progress-bar">
+            <div class="progress-fill" 
+                 [style.width.%]="group.completionRate"
+                 [style.background]="group.completionRate === 100 ? '#10b981' : '#3b82f6'">
+            </div>
+            <span class="progress-text">{{ group.completionRate.toFixed(1) }}%</span>
+          </div>
+        </div>
+
+        <!-- Informations sur les économies -->
+        <div class="savings-info" *ngIf="group.savings > 0">
+          <div class="savings-amount">
+            <i class="fas fa-piggy-bank"></i>
+            <span>{{ formatPrice(group.savings) }}</span>
+          </div>
+          <div class="savings-percentage">{{ group.savingsPercentage.toFixed(1) }}% d'économie</div>
+        </div>
+
+        <div class="savings-info">
+          <div class="savings-amount">
+            <i class="fas fa-wallet"></i>
+            <span>{{ formatPrice(group.priceAfter) }}</span>
+          </div>
+          <div class="savings-percentage">Gain transporteur</div>
+        </div>
+
+        <!-- Informations supplémentaires -->
+        <div class="group-details">
+          <div class="detail-item">
+            <i class="fas fa-weight"></i>
+            <span>{{ formatNumber(group.totalWeightKg) }} kg</span>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-route"></i>
+            <span>{{ formatNumber(group.totalDistanceKm) }} km</span>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-users"></i>
+            <span>{{ group.agriculteurs.length }} agriculteurs</span>
+          </div>
+        </div>
+
+        <!-- Date de création -->
+        <div class="group-date">
+          <i class="fas fa-calendar"></i>
+          <span>Créé le {{ formatDate(group.groupedAt) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message si aucun groupe -->
+    <div class="no-groups" *ngIf="groups.length === 0">
+      <i class="fas fa-layer-group"></i>
+      <h3>Aucun groupe de livraison</h3>
+      <p>Commencez par créer un groupe pour optimiser vos livraisons.</p>
+      <button class="btn-primary" (click)="openCreateGroupModal()">
+        <i class="fas fa-plus"></i>
+        Créer votre premier groupe
+      </button>
+    </div>
+  </div>
+
+  <!-- Détails du groupe sélectionné -->
+  <div class="group-details-panel" *ngIf="selectedGroup && groupDetails">
+    <div class="details-header">
+      <h3>Détails du groupe {{ selectedGroup.groupReference }}</h3>
+      <div class="details-header-actions">
+        <button class="btn-secondary" (click)="openEditGroupModal()">
+          <i class="fas fa-pen"></i>
+          Modifier
+        </button>
+        <button class="btn-danger" (click)="deleteSelectedGroup()">
+          <i class="fas fa-trash"></i>
+          Supprimer
+        </button>
+        <button class="close-btn" (click)="closeSelectedGroup()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="details-content">
+      <!-- Statistiques détaillées -->
+      <div class="detailed-stats">
+        <div class="stat-card">
+          <div class="stat-value">{{ groupDetails.deliveriesCount }}</div>
+          <div class="stat-label">Total livraisons</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ formatNumber(groupDetails.totalWeightKg) }} kg</div>
+          <div class="stat-label">Poids total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ formatNumber(groupDetails.totalVolumeM3) }} m³</div>
+          <div class="stat-label">Volume total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ formatNumber(groupDetails.totalDistanceKm) }} km</div>
+          <div class="stat-label">Distance totale</div>
+        </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ formatPrice(selectedGroup.priceAfter) }}</div>
+            <div class="stat-label">Gain transporteur</div>
+          </div>
+      </div>
+
+      <div class="group-route-panel">
+        <div class="panel-title-row">
+          <h4>Route du groupe</h4>
+          <span class="route-hint">Départ, arrêts et trajet optimisé</span>
+        </div>
+        <div class="group-map" #groupMap></div>
+        <div class="group-map-message" *ngIf="groupMapMessage">
+          <i class="fas fa-circle-info"></i>
+          <span>{{ groupMapMessage }}</span>
+        </div>
+      </div>
+
+      <!-- Répartition des statuts -->
+      <div class="status-breakdown" *ngIf="groupDetails.statusCount">
+        <h4>Répartition des statuts</h4>
+        <div class="status-items">
+          <div class="status-item" 
+               *ngFor="let status of getStatusEntries()"
+               [style.background]="getStatusColor(status[0]) + '20'">
+            <div class="status-info">
+              <div class="status-name">{{ getStatusText(status[0]) }}</div>
+              <div class="status-count">{{ status[1] }} livraison(s)</div>
+            </div>
+            <div class="status-percentage">
+              {{ ((status[1] / groupDetails.deliveriesCount) * 100).toFixed(1) }}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liste des livraisons -->
+      <div class="deliveries-list">
+        <h4>Livraisons du groupe</h4>
+        <div class="delivery-item" 
+             *ngFor="let delivery of groupDetails.deliveries"
+             (click)="selectDelivery(delivery)">
+          
+          <!-- Statut -->
+          <div class="delivery-status">
+            <i class="fas fa-circle" [style.color]="getStatusColor(delivery.status)"></i>
+          </div>
+          
+          <!-- Informations -->
+          <div class="delivery-info">
+            <div class="delivery-ref">{{ delivery.reference }}</div>
+            <div class="delivery-route">
+              {{ delivery.adresseDepart }} → {{ delivery.adresseArrivee }}
+            </div>
+            <div class="delivery-product">{{ delivery.typeProduit }}</div>
+          </div>
+          
+          <!-- Prix et poids -->
+          <div class="delivery-metrics">
+            <div class="metric-item">
+              <span class="metric-label">Prix:</span>
+              <span class="metric-value">{{ formatPrice(delivery.prix) }}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Poids:</span>
+              <span class="metric-value">{{ delivery.poids }} kg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de création de groupe -->
+  <div class="modal-overlay" *ngIf="showCreateGroupModal" (click)="closeCreateGroupModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ getModalTitle() }}</h3>
+        <button class="close-btn" (click)="closeCreateGroupModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Sélectionnez les livraisons à grouper (minimum 2):</label>
+          <div class="deliveries-selection">
+            <div class="delivery-checkbox" 
+                 *ngFor="let delivery of availableDeliveries"
+                 [class.selected]="isDeliverySelected(delivery.id)">
+              <input type="checkbox" 
+                     [id]="'delivery-' + delivery.id"
+                     [checked]="isDeliverySelected(delivery.id)"
+                     (change)="toggleDeliverySelection(delivery.id)">
+              <label [for]="'delivery-' + delivery.id" class="checkbox-label">
+                <div class="delivery-summary">
+                  <div class="delivery-title">{{ delivery.reference }}</div>
+                  <div class="delivery-details">
+                    {{ delivery.typeProduit }} • {{ delivery.poids }}kg • {{ formatPrice(delivery.prix) }}
+                  </div>
+                  <div class="delivery-route">{{ delivery.adresseDepart }} → {{ delivery.adresseArrivee }}</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="selection-summary">
+          <span>{{ selectedDeliveriesForGroup.length }} livraison(s) sélectionnée(s)</span>
+          <span *ngIf="selectedDeliveriesForGroup.length >= 2">
+            Poids total: {{ formatNumber(getSelectedDeliveriesWeight()) }} kg
+          </span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeCreateGroupModal()">Annuler</button>
+        <button class="btn-primary" 
+                (click)="createGroup()" 
+                [disabled]="selectedDeliveriesForGroup.length < 2 || isLoading">
+          <i class="fas fa-layer-group" *ngIf="!isLoading"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+          {{ getModalActionLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,91 @@
+<div class="delivery-page">
+  <div class="page-title">
+    <h2><i class="fas fa-eye"></i> Détail d'une livraison</h2>
+    <p>Fiche complète: produit, statut, adresses, prix et carte du trajet.</p>
+  </div>
+
+  <div class="detail-grid">
+    <section class="info-panel">
+      <div class="info-head">
+        <div>
+          <div class="ref-line">
+            <strong>{{ reference }}</strong>
+          </div>
+          <div class="meta-line">
+            <span class="pill">{{ status }}</span>
+            <span class="meta-sep">•</span>
+            <span>{{ product }} • {{ weightKg }} kg</span>
+          </div>
+        </div>
+
+        <div class="price">
+          <div class="price-label">Prix</div>
+          <div class="price-value">{{ priceTnd }} TND</div>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="field">
+          <div class="label">Départ</div>
+          <div class="value">{{ pickupAddress }}</div>
+        </div>
+        <div class="field">
+          <div class="label">Arrivée</div>
+          <div class="value">{{ dropoffAddress }}</div>
+        </div>
+        <div class="field">
+          <div class="label">Demandeur</div>
+          <div class="value">Agriculteur</div>
+        </div>
+        <div class="field">
+          <div class="label">Livreur</div>
+          <div class="value">{{ transporterName }}</div>
+        </div>
+        <div class="field">
+          <div class="label">Date départ</div>
+          <div class="value">{{ departureDate }}</div>
+        </div>
+        <div class="field">
+          <div class="label">Livraison prévue</div>
+          <div class="value">{{ expectedDeliveryDate }}</div>
+        </div>
+        <div class="field full">
+          <div class="label">Détails libres</div>
+          <div class="value note">{{ details }}</div>
+        </div>
+      </div>
+
+      <div class="notification" *ngIf="notification">{{ notification }}</div>
+
+      <div class="actions-bottom">
+        <button class="btn btn-secondary" type="button" (click)="goTracking()">
+          <i class="fas fa-map"></i> Voir le suivi
+        </button>
+      </div>
+    </section>
+
+    <section class="map-panel">
+      <div class="panel-title">
+        <i class="fas fa-map"></i> Carte du trajet
+      </div>
+      <div class="map-card">
+        <div class="map-metrics">
+          <div class="metric">
+            <div class="metric-label">Distance</div>
+            <div class="metric-value">{{ distanceKm }} km</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Durée</div>
+            <div class="metric-value">{{ durationHours }} h</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">ETA</div>
+            <div class="metric-value">{{ eta }}</div>
+          </div>
+        </div>
+
+        <div #mapContainer class="leaflet-map"></div>
+      </div>
+    </section>
+  </div>
+</div>

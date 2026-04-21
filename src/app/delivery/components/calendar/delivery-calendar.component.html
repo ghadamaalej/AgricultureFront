@@ -1,0 +1,32 @@
+<div class="delivery-page">
+  <div class="page-title">
+    <h2><i class="fas fa-calendar-days"></i> Calendrier des livraisons</h2>
+    <p>Vue jour par jour de vos livraisons acceptees/en cours/livrees.</p>
+  </div>
+
+  <div class="calendar-list" *ngIf="days.length; else emptyState">
+    <section class="calendar-day" *ngFor="let day of days">
+      <div class="day-head">{{ day.date }}</div>
+      <article class="day-item" *ngFor="let item of day.items">
+        <div>
+          <div class="ref">{{ item.reference }}</div>
+          <div class="route">{{ item.pickupLabel }} - {{ item.dropoffLabel }}</div>
+        </div>
+        <div class="right">
+          <span class="status-pill">{{ item.status }}</span>
+          <button class="btn btn-secondary small" type="button" (click)="openDetail(item.id)">
+            <i class="fas fa-eye"></i> Detail
+          </button>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="empty-box">
+      <i class="fas fa-calendar-xmark"></i>
+      <p>Aucune livraison planifiee.</p>
+    </div>
+  </ng-template>
+</div>
+
