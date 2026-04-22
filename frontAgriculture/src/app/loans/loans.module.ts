@@ -8,12 +8,17 @@ import { ReactiveFormsModule } from '@angular/forms';
 import {InstitutionsListComponent} from'../loans/agriculteur/institutions-list/institutions-list.component'
 import { DemandePretFormComponent } from './agriculteur/demande-pret-form/demande-pret-form.component';
 import { ApplicationsListComponent } from './agent/applications-list/applications-list.component';
+import { ContratSignComponent } from '../loans/agent/contrat-sign/contrat-sign.component';
+import { AgriDashboardComponent } from './agriculteur/agri-dashboard/agri-dashboard.component';
+
 @NgModule({
   declarations: [
     ServicesListComponent,
     InstitutionsListComponent,
     DemandePretFormComponent ,
-    ApplicationsListComponent   
+    ApplicationsListComponent ,
+    ContratSignComponent,
+    AgriDashboardComponent,
 
    
   ],

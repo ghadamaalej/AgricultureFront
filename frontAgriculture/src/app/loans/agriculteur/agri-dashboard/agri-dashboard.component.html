@@ -1,0 +1,202 @@
+<app-navbar></app-navbar>
+
+<!-- HERO -->
+<div class="hero-container">
+  <div class="hero-image"></div>
+
+  <div class="dash-hero">
+    <div class="hero-body">
+      <div class="hero-left">
+        <p class="hero-date">{{ today | date:'EEEE d MMMM yyyy' }}</p>
+
+        <h1 class="hero-greeting">
+          Hello, <span class="hero-name">{{ getPrenom() }}</span>
+        </h1>
+
+        <p class="hero-sub">
+          Track and manage your agricultural loans
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="dash-grid">
+
+  <!-- LEFT -->
+  <div class="col-left">
+
+    <!-- ALERT -->
+    <div class="alert-card" *ngIf="getOverdueEcheances().length > 0">
+      <div class="alert-icon">⚠️</div>
+
+      <div class="alert-body">
+        <div class="alert-title">
+          {{ getOverdueEcheances().length }} overdue installment(s)
+        </div>
+        <div class="alert-sub">
+          Please settle payments to avoid penalties
+        </div>
+      </div>
+
+      <button class="alert-btn" (click)="scrollToEcheancier()">
+        View →
+      </button>
+    </div>
+
+    <!-- LOANS -->
+    <div class="section-card">
+      <div class="sc-header">
+        <span class="sc-icon">💰</span>
+        <span class="sc-title">Active Loans</span>
+        <span class="sc-count">{{ getActivePrets().length }}</span>
+
+        <button class="sc-link" (click)="toggleShowAll()">
+          {{ showAllPrets ? 'Show less' : 'View all' }}
+        </button>
+      </div>
+
+      <div class="pret-list">
+
+        <div class="pret-item"
+             *ngFor="let pret of displayedPrets"
+             [class.selected]="selectedPretId === pret.id"
+             (click)="selectPret(pret)">
+
+          <div class="pret-top">
+            <div>
+              <div class="pret-ref">{{ getPretRef(pret) }}</div>
+              <div class="pret-desc">{{ getPretLabel(pret) }}</div>
+            </div>
+
+            <span class="pret-status actif">Active</span>
+          </div>
+
+          <div class="pret-progress-wrap">
+
+            <div class="pret-progress-labels">
+              <span>Repaid</span>
+              <span>
+                {{ getPretProgress(pret) | number:'1.0-0' }}%
+                / {{ pret.montantTotal | number }} DT
+              </span>
+            </div>
+
+            <div class="pret-bar-bg">
+              <div class="pret-bar"
+                   [style.width.%]="getPretProgress(pret)"
+                   [style.background]="getProgressColor(pret)">
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- REQUESTS -->
+    <div class="section-card">
+      <div class="sc-header">
+        <span class="sc-icon">📋</span>
+        <span class="sc-title">Recent Requests</span>
+
+        <button class="sc-link" (click)="toggleShowAllDemandes()">
+          {{ showAllDemandes ? 'Show less' : 'View all' }}
+        </button>
+      </div>
+
+      <div class="demande-list">
+        <div class="demande-item" *ngFor="let d of displayedDemandes">
+
+          <div>
+            <div class="demande-name">{{ d.objet }}</div>
+            <div class="demande-meta">
+              {{ d.dateDemande }} · {{ d.montantDemande | number }} DT · {{ d.dureeMois }} months
+            </div>
+          </div>
+
+          <span class="demande-badge" [ngClass]="getBadgeClass(d.statut)">
+            {{ getBadgeLabel(d.statut) }}
+          </span>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="col-right" id="echeancier-section">
+
+    <div class="section-card full-height">
+
+      <div class="sc-header">
+        <span class="sc-icon">📅</span>
+        <span class="sc-title">Repayment Schedule</span>
+      </div>
+
+      <!-- PAYMENT -->
+      <div class="payment-box" *ngIf="getNextPayableEcheance() as next">
+
+        <div class="payment-info">
+          <strong>Next payment:</strong> {{ next.dateFin }}
+
+          <div class="amount">
+            Amount: <strong>{{ getMontantAPayer(next) | number }} DT</strong>
+          </div>
+        </div>
+
+       <div class="stripe-card" #cardElement></div>
+
+        <button class="btn-pay" (click)="payerEcheance()">
+          Pay Now
+        </button>
+
+      </div>
+
+      <!-- TABLE -->
+      <table class="ech-table" *ngIf="selectedEcheances.length > 0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let e of selectedEcheances; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ e.dateDebut }}</td>
+            <td>{{ e.dateFin }}</td>
+            <td>{{ e.montant }} DT</td>
+            <td>
+              <span [ngClass]="getEchBadgeClass(e.statut)">
+                {{ getEchBadgeLabel(e.statut) }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ACTIONS -->
+<div class="bottom-actions">
+
+  <button class="action-btn primary" (click)="goToInstitutions()">
+  View Institutions
+</button>
+
+
+</div>
+
+<app-footer></app-footer>

@@ -74,9 +74,18 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  // getToken(): string | null {
+  //   return localStorage.getItem('authToken');
+  // }
   getToken(): string | null {
-    return localStorage.getItem('authToken');
+  const token = localStorage.getItem('authToken'); // Utilisez 'authToken' pas 'token'
+  console.log('Token récupéré du localStorage:', token);
+  
+  if (token && token !== 'null' && token !== 'undefined') {
+    return token;
   }
+  return null;
+}
 
   getCurrentUser(): AuthUser | null {
     return this.currentUserSubject.value;
