@@ -23,8 +23,11 @@
         <button class="ni" [class.active]="view==='ai-chatbot'" (click)="setView('ai-chatbot')">
           <i class="fas fa-robot"></i><span>Chatbot vétérinaire</span>
         </button>
-        <button class="ni" [class.active]="view==='ai-farmer'" (click)="setView('ai-farmer')">
+        <button class="ni" [class.active]="view==='ai-chatbot'" (click)="setView('ai-farmer')">
           <i class="fas fa-camera"></i><span>Chatbot Image IA</span>
+           <button class="ni" [class.active]="view==='ai-chatbot'" (click)="setView('poultry-farmer')">
+          <i class="fas fa-feather"></i><span>Chatbot Poultry IA</span>
+        </button>
         </button>
       </ng-container>
 
@@ -44,22 +47,20 @@
         </button>
 
         <!-- Section Inventaire -->
-        <div class="nav-section-label">Inventaire</div>
+       
         <button class="ni" [class.active]="view==='products'" (click)="setView('products')">
           <i class="fas fa-boxes"></i><span>Mes produits</span>
         </button>
-        <button class="ni" [class.active]="view==='animals'" (click)="setView('animals')">
-          <i class="fas fa-paw"></i><span>Mes animaux</span>
-        </button>
+       
 
         <!-- Section Boutique -->
-        <div class="nav-section-label">Boutique</div>
+        
         <button class="ni shop-nav" [class.active]="view==='shop'" (click)="setView('shop')">
           <i class="fas fa-store"></i><span>Ma Boutique</span>
         </button>
 
         <!-- Section Autres -->
-        <div class="nav-section-label">Autres</div>
+        
         <button class="ni" [class.active]="view==='profile'" (click)="setView('profile')">
           <i class="fas fa-user-circle"></i><span>Mon profil</span>
         </button>
@@ -68,6 +69,9 @@
         </button>
         <button class="ni" [class.active]="view==='ai-vet'" (click)="setView('ai-vet')">
           <i class="fas fa-microscope"></i><span>IA Clinique Image</span>
+        </button>
+          <button class="ni" [class.active]="view==='poultry-vet'" (click)="setView('poultry-vet')">
+          <i class="fas fa-disease"></i><span>IA Clinique Poultry</span>
         </button>
         <button class="ni" [class.active]="view==='avis'" (click)="setView('avis')">
           <i class="fas fa-star"></i><span>Mes avis</span>
@@ -102,6 +106,7 @@
       <app-animal-diagnostic    *ngIf="view==='diagnostic'"></app-animal-diagnostic>
       <app-vet-ai-chatbot       *ngIf="view==='ai-chatbot'"></app-vet-ai-chatbot>
       <app-farmer-image-chatbot *ngIf="view==='ai-farmer'"></app-farmer-image-chatbot>
+      <app-farmer-poultry-chatbot *ngIf="view==='poultry-farmer'"></app-farmer-poultry-chatbot>
     </ng-container>
 
     <!-- VET views -->
@@ -120,6 +125,7 @@
       <app-chat                 *ngIf="view==='messages'"></app-chat>
       <app-vet-image-chatbot    *ngIf="view==='ai-vet'"></app-vet-image-chatbot>
       <app-vet-avis             *ngIf="view==='avis'"></app-vet-avis>
+       <app-vet-poultry-chatbot  *ngIf="view==='poultry-vet'"></app-vet-poultry-chatbot>
     </ng-container>
 
   </main>

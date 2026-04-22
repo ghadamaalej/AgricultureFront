@@ -108,10 +108,9 @@
       </textarea>
       <span class="char-count">{{ newCommentaire.length }}/1000</span>
 
-      <!-- ⚠️ Avertissement bad words -->
       <div class="bad-word-warning" *ngIf="hasInappropriateContent">
         <i class="fas fa-exclamation-triangle"></i>
-        Votre commentaire contient des mots inappropriés. Veuillez le reformuler pour pouvoir publier votre avis.
+        Votre commentaire contient des mots inappropriés. Veuillez le reformuler.
       </div>
     </div>
 
@@ -166,7 +165,6 @@
           </div>
         </div>
 
-        <!-- Étoiles de la note affichée -->
         <div class="avis-stars">
           <span *ngFor="let filled of starsArray(a.note)">
             <i [class]="filled ? 'fas fa-star star-gold-sm' : 'fas fa-star star-empty-sm'"></i>
@@ -175,7 +173,7 @@
         </div>
       </div>
 
-      <!-- ── Commentaire principal ── -->
+      <!-- ── Commentaire + Traduction ── -->
       <div class="avis-text-wrap">
 
         <!-- Texte original -->
@@ -185,19 +183,20 @@
         <div class="translation-block" *ngIf="translations[a.id]">
           <p class="avis-text translated">{{ translations[a.id] }}</p>
           <span class="translation-badge">
-            <i class="fas fa-language"></i> Traduit automatiquement · MyMemory
+            <i class="fas fa-language"></i>
+            {{ translationBadgeLabel(a.id) }}
           </span>
         </div>
 
         <!-- Barre de traduction -->
         <div class="translate-bar">
 
-          <!-- Bouton Traduire -->
+          <!-- Bouton Traduire (état initial) -->
           <button
             class="btn-translate"
             *ngIf="!translations[a.id] && !translatingId[a.id] && !translationErrors[a.id]"
             (click)="translateAvis(a)"
-            title="Traduire ce commentaire en français">
+            title="Traduire ce commentaire">
             <i class="fas fa-language"></i>
             <span>Traduire</span>
           </button>
@@ -208,14 +207,15 @@
           </span>
 
           <!-- Erreur + Réessayer -->
-          <span class="translate-error" *ngIf="translationErrors[a.id] && !translatingId[a.id]">
+          <span class="translate-error"
+                *ngIf="translationErrors[a.id] && !translatingId[a.id]">
             <i class="fas fa-exclamation-circle"></i> {{ translationErrors[a.id] }}
             <button class="btn-retry" (click)="translateAvis(a)">
               <i class="fas fa-redo"></i> Réessayer
             </button>
           </span>
 
-          <!-- Afficher l'original -->
+          <!-- Voir l'original (après traduction) -->
           <button
             class="btn-show-original"
             *ngIf="translations[a.id]"

@@ -399,5 +399,17 @@ analyzeChatbotImage(file: File, question = '', audience = 'farmer'): Observable<
       { headers: this.h() }
     ).pipe(map(r => ({ ...r.data, createdAt: normDate(r.data.createdAt) } as ReponseAvisResponse)));
   }
+  analyzePoultryChatbotImage(file: File, question = '', audience = 'farmer'): Observable<ImageChatbotResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('question', question);
+  formData.append('audience', audience);
+
+  return this.http.post<ApiResp<ImageChatbotResponse>>(
+    `${this.inv}/diagnostic/poultry-image-chatbot`,
+    formData,
+    { headers: this.h() }
+  ).pipe(map(r => r.data));
+}
 
 }

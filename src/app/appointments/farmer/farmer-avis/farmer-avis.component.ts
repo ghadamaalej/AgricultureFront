@@ -38,7 +38,7 @@ export class FarmerAvisComponent implements OnInit {
   submittingAvis = false;
   avisError = '';
 
-  // Commentaires (réponses d'agriculteurs)
+  // Commentaires
   commentInputs: { [avisId: number]: string } = {};
   showCommentInput: { [avisId: number]: boolean } = {};
   submittingComment: { [avisId: number]: boolean } = {};
@@ -46,36 +46,35 @@ export class FarmerAvisComponent implements OnInit {
   // Likes
   likingId: number | null = null;
 
-  // ── Traduction (MyMemory API — gratuite, sans clé) ────────────────────────
-  /** Textes traduits indexés par id d'avis */
+  // ── Traduction ────────────────────────────────────────────────────────────
+  /** Texte traduit indexé par id d'avis */
   translations: { [avisId: number]: string } = {};
-  /** Spinners de traduction */
+  /** Langue dans laquelle la traduction est affichée ('fr' | 'en') */
+  translationLang: { [avisId: number]: 'fr' | 'en' } = {};
+  /** Spinners */
   translatingId: { [avisId: number]: boolean } = {};
-  /** Messages d'erreur de traduction */
+  /** Messages d'erreur */
   translationErrors: { [avisId: number]: string } = {};
 
-  // Langue cible de traduction (français par défaut)
-  private readonly TARGET_LANG = 'fr';
-
   constructor(
-    private api: AppointmentsApiService,
+    private api:  AppointmentsApiService,
     private auth: AuthService,
     public  badWords: BadWordsService,
     private http: HttpClient
   ) {}
 
   ngOnInit() {
-    this.currentUserId = this.auth.getCurrentUserId()!;
+    this.currentUserId   = this.auth.getCurrentUserId()!;
     this.currentUserRole = this.auth.getCurrentRole() || '';
     this.load();
   }
 
   load() {
     this.loading = true;
-    this.error = '';
+    this.error   = '';
 
     this.api.getVetRatingSummary(this.vetId).subscribe({
-      next: s => { this.summary = s; },
+      next: s  => { this.summary = s; },
       error: () => {}
     });
 
@@ -116,34 +115,31 @@ export class FarmerAvisComponent implements OnInit {
   }
 
   // ── Créer un avis ────────────────────────────────────────
-  openAvisForm()  { this.showAvisForm = true; this.avisError = ''; }
+  openAvisForm()   { this.showAvisForm = true; this.avisError = ''; }
   cancelAvisForm() {
-    this.showAvisForm = false;
-    this.newNote = 0;
+    this.showAvisForm   = false;
+    this.newNote        = 0;
     this.newCommentaire = '';
-    this.avisError = '';
+    this.avisError      = '';
   }
 
   submitAvis() {
     if (this.newNote === 0) {
-      this.avisError = 'Veuillez sélectionner une note.';
-      return;
+      this.avisError = 'Veuillez sélectionner une note.'; return;
     }
     if (!this.newCommentaire.trim()) {
-      this.avisError = 'Veuillez écrire un commentaire.';
-      return;
+      this.avisError = 'Veuillez écrire un commentaire.'; return;
     }
     if (this.badWords.containsBadWord(this.newCommentaire)) {
-      this.avisError = '⚠️ Votre commentaire contient des mots inappropriés. Veuillez le reformuler pour publier votre avis.';
-      return;
+      this.avisError = '⚠️ Votre commentaire contient des mots inappropriés. Veuillez le reformuler.'; return;
     }
 
     this.submittingAvis = true;
-    this.avisError = '';
+    this.avisError      = '';
 
     const req: CreateAvisRequest = {
-      note: this.newNote,
-      commentaire: this.newCommentaire.trim(),
+      note:           this.newNote,
+      commentaire:    this.newCommentaire.trim(),
       veterinarianId: this.vetId
     };
 
@@ -151,7 +147,7 @@ export class FarmerAvisComponent implements OnInit {
       next: newAvis => {
         this.avis.unshift(newAvis);
         this.hasAlreadyReviewed = true;
-        this.submittingAvis = false;
+        this.submittingAvis     = false;
         this.cancelAvisForm();
         this.load();
       },
@@ -166,41 +162,79 @@ export class FarmerAvisComponent implements OnInit {
     return this.newCommentaire.length > 2 && this.badWords.containsBadWord(this.newCommentaire);
   }
 
-  // ── Traduction via MyMemory API ──────────────────────────────────────────
+  // ── Traduction intelligente ───────────────────────────────────────────────
   /**
-   * Traduit le commentaire d'un avis vers le français.
-   * API MyMemory : gratuite, 5000 caractères/jour, sans clé requise.
-   * Détecte automatiquement la langue source.
+   * Logique :
+   *  - Passe 1 : essai en|fr (anglais → français)
+   *    → Si résultat différent de l'original : succès, affiche en FR
+   *  - Passe 2 (fallback) : essai ar|fr (arabe → français)
+   *    → Si résultat différent : succès, affiche en FR
+   *  - Si les deux passes donnent un résultat IDENTIQUE à l'original :
+   *    → le texte est probablement déjà en français
+   *    → on traduit automatiquement fr|en (français → anglais)
    */
   translateAvis(a: AvisResponse): void {
     if (!a.commentaire?.trim()) return;
-
-    this.translatingId[a.id] = true;
+    this.translatingId[a.id]     = true;
     this.translationErrors[a.id] = '';
     delete this.translations[a.id];
+    delete this.translationLang[a.id];
 
-    // MyMemory API — format : langSource|langTarget (auto détecte avec 'auto')
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(a.commentaire)}&langpair=auto|${this.TARGET_LANG}`;
+    this.tryTranslate(a, 'en|fr', true);
+  }
+
+  private tryTranslate(a: AvisResponse, langPair: string, allowFallback: boolean): void {
+    const url = `https://api.mymemory.translated.net/get`
+              + `?q=${encodeURIComponent(a.commentaire)}&langpair=${langPair}`;
 
     this.http.get<any>(url).subscribe({
       next: res => {
-        this.translatingId[a.id] = false;
+        const translated: string = (res?.responseData?.translatedText || '').trim();
+        const status: number     =  res?.responseStatus ?? 0;
 
-        if (res?.responseStatus === 200 && res?.responseData?.translatedText) {
-          const translated: string = res.responseData.translatedText;
+        // Quota dépassé
+        if (translated.toUpperCase().startsWith('QUERY LENGTH') ||
+            translated.toUpperCase().includes('MYMEMORY WARNING')) {
+          this.translatingId[a.id]     = false;
+          this.translationErrors[a.id] = 'Limite de traduction gratuite atteinte. Réessayez plus tard.';
+          return;
+        }
 
-          // Si la traduction est identique au texte original → déjà en français
-          if (translated.toLowerCase().trim() === a.commentaire.toLowerCase().trim()) {
-            this.translationErrors[a.id] = 'Ce commentaire est déjà en français.';
-          } else {
-            this.translations[a.id] = translated;
+        if (status === 200 && translated) {
+          const sameAsOriginal = translated.toLowerCase() === a.commentaire.toLowerCase().trim();
+
+          // ── Passe 1 : en|fr → identique → tenter ar|fr
+          if (sameAsOriginal && allowFallback && langPair === 'en|fr') {
+            this.tryTranslate(a, 'ar|fr', false);
+            return;
           }
+
+          // ── Passe 2 : ar|fr → encore identique → le texte est en français → traduire fr|en
+          if (sameAsOriginal && langPair === 'ar|fr') {
+            this.tryTranslate(a, 'fr|en', false);
+            return;
+          }
+
+          // ── fr|en → identique (très rare) → on affiche quand même
+          this.translatingId[a.id]    = false;
+          this.translations[a.id]     = translated;
+          // Stocker la langue cible pour afficher le bon badge
+          this.translationLang[a.id]  = langPair === 'fr|en' ? 'en' : 'fr';
+
         } else {
-          this.translationErrors[a.id] = 'Traduction indisponible.';
+          // Échec → cascade de fallback
+          if (allowFallback && langPair === 'en|fr') {
+            this.tryTranslate(a, 'ar|fr', false);
+          } else if (langPair === 'ar|fr') {
+            this.tryTranslate(a, 'fr|en', false);
+          } else {
+            this.translatingId[a.id]     = false;
+            this.translationErrors[a.id] = 'Traduction indisponible pour ce texte.';
+          }
         }
       },
       error: () => {
-        this.translatingId[a.id] = false;
+        this.translatingId[a.id]     = false;
         this.translationErrors[a.id] = 'Erreur de connexion. Vérifiez votre réseau.';
       }
     });
@@ -210,6 +244,14 @@ export class FarmerAvisComponent implements OnInit {
   clearTranslation(avisId: number): void {
     delete this.translations[avisId];
     delete this.translationErrors[avisId];
+    delete this.translationLang[avisId];
+  }
+
+  /** Libellé du badge selon la langue cible */
+  translationBadgeLabel(avisId: number): string {
+    return this.translationLang[avisId] === 'en'
+      ? '🇬🇧 Traduit en anglais · MyMemory'
+      : '🇫🇷 Traduit en français · MyMemory';
   }
 
   // ── Commentaire d'agriculteur ────────────────────────────
@@ -221,23 +263,19 @@ export class FarmerAvisComponent implements OnInit {
   submitCommentaire(a: AvisResponse) {
     const contenu = (this.commentInputs[a.id] || '').trim();
     if (!contenu) return;
-
     if (this.badWords.containsBadWord(contenu)) {
       alert('⚠️ Votre réponse contient des mots inappropriés. Veuillez la reformuler.');
       return;
     }
-
     this.submittingComment[a.id] = true;
     this.api.addCommentaire(a.id, contenu).subscribe({
       next: c => {
         a.commentaires.push(c);
-        this.commentInputs[a.id] = '';
-        this.showCommentInput[a.id] = false;
+        this.commentInputs[a.id]     = '';
+        this.showCommentInput[a.id]  = false;
         this.submittingComment[a.id] = false;
       },
-      error: () => {
-        this.submittingComment[a.id] = false;
-      }
+      error: () => { this.submittingComment[a.id] = false; }
     });
   }
 

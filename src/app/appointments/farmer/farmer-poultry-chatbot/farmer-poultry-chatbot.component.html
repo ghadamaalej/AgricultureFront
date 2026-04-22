@@ -1,0 +1,48 @@
+<section class="poultry-chatbot-shell">
+  <div class="hero">
+    <p class="eyebrow">Chatbot Poultry IA</p>
+    <h2>Envoyer une image de volaille</h2>
+    <p>
+      Importez une image de poulet, de lesion ou de symptome visible. L IA retourne les maladies
+      les plus probables et un conseil simple avant la consultation veterinaire.
+    </p>
+  </div>
+
+  <div class="panel">
+    <label class="file-input">
+      <span>Image poultry</span>
+      <input type="file" accept="image/*" (change)="onFileSelected($event)">
+    </label>
+
+    <label class="field">
+      <span>Question optionnelle</span>
+      <textarea [(ngModel)]="question" rows="4" placeholder="Ex: dois je isoler le lot ? est ce contagieux ?"></textarea>
+    </label>
+
+    <button type="button" (click)="analyze()" [disabled]="loading || !selectedFile">
+      {{ loading ? 'Analyse en cours...' : 'Envoyer au chatbot poultry' }}
+    </button>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+  </div>
+
+  <div class="result-card" *ngIf="result">
+    <p class="eyebrow">Prediction principale</p>
+    <h3>{{ result.predictedLabel | titlecase }}</h3>
+    <p class="confidence">Confiance estimee: {{ result.confidence }}%</p>
+
+    <div class="prediction-list">
+      <article class="prediction" *ngFor="let prediction of result.predictions">
+        <span>#{{ prediction.rank }} {{ prediction.disease | titlecase }}</span>
+        <strong>{{ prediction.probability }}%</strong>
+      </article>
+    </div>
+
+    <div class="analysis">
+      <h4>Reponse du chatbot</h4>
+      <p>{{ result.analysis }}</p>
+    </div>
+
+    <div class="disclaimer">{{ result.disclaimer }}</div>
+  </div>
+</section>

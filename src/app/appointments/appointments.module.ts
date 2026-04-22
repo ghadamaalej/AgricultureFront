@@ -27,6 +27,8 @@ import { FarmerAvisComponent }           from './farmer/farmer-avis/farmer-avis.
 import { VetAvisComponent }              from './vet/vet-avis/vet-avis.component';
 
 import { InventoryModule }               from '../inventory/inventory.module';
+import { FarmerPoultryChatbotComponent } from './farmer/farmer-poultry-chatbot/farmer-poultry-chatbot.component';
+import { VetPoultryChatbotComponent }    from './vet/vet-poultry-chatbot/vet-poultry-chatbot.component';
 
 @NgModule({
   declarations: [
@@ -46,6 +48,8 @@ import { InventoryModule }               from '../inventory/inventory.module';
     VetImageChatbotComponent,
     FarmerAvisComponent,
     VetAvisComponent,
+     FarmerPoultryChatbotComponent,
+    VetPoultryChatbotComponent,
   ],
   imports: [
     CommonModule,

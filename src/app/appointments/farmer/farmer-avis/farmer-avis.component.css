@@ -1,3 +1,514 @@
+/* ============================================================
+   VARIABLES
+   ============================================================ */
+:root {
+  --primary: #0f5c3f;
+  --primary-dark: #0a3d28;
+  --primary-light: #e6f4ed;
+  --primary-soft: #d1e8df;
+  --gold: #f59e0b;
+  --gold-light: #fef3c7;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --error: #ef4444;
+  --error-light: #fee2e2;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+}
+
+/* ============================================================
+   SECTION WRAPPER
+   ============================================================ */
+.avis-section {
+  margin-top: 32px;
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.avis-header { margin-bottom: 28px; }
+
+.avis-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.avis-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.avis-title i { color: var(--gold); }
+
+.btn-give-avis {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+  box-shadow: var(--shadow-md);
+}
+.btn-give-avis:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+.already-reviewed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ── Résumé des notes ── */
+.rating-summary {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  flex-wrap: wrap;
+}
+
+.rating-big {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 110px;
+}
+
+.rating-number {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--gray-800);
+  line-height: 1;
+}
+
+.rating-stars-big { display: flex; gap: 4px; }
+.rating-stars-big .star-gold  { color: var(--gold); font-size: 1.25rem; }
+.rating-stars-big .star-empty { color: var(--gray-300); font-size: 1.25rem; }
+
+.rating-total {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.rating-distribution { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 200px; }
+
+.dist-row { display: flex; align-items: center; gap: 10px; }
+.dist-label { display: flex; align-items: center; gap: 4px; font-size: 0.8rem; color: var(--gray-600); min-width: 36px; }
+.star-gold-sm  { color: var(--gold); font-size: 0.7rem; }
+.star-empty-sm { color: var(--gray-300); font-size: 0.7rem; }
+
+.dist-bar-wrap {
+  flex: 1; height: 8px;
+  background: var(--gray-200);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.dist-bar-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 999px;
+  transition: width .4s ease;
+}
+.dist-count { font-size: 0.75rem; color: var(--gray-500); min-width: 20px; text-align: right; }
+
+.no-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  color: var(--gray-500);
+  font-size: 0.875rem;
+  font-style: italic;
+}
+.no-summary i { color: var(--gold); font-size: 1.2rem; }
+
+/* ============================================================
+   FORMULAIRE NOUVEAU AVIS
+   ============================================================ */
+.avis-form-card {
+  background: var(--primary-light);
+  border: 1px solid var(--primary-soft);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 28px;
+}
+
+.form-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ════════════════════════════════════════════
+   ÉTOILES INTERACTIVES — FIX PRINCIPAL
+   ════════════════════════════════════════════ */
+.star-selector {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.star-hint {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
+.stars-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Le wrapper span capte les événements souris */
+.star-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 2px;
+  transition: transform .15s ease;
+}
+.star-wrap:hover {
+  transform: scale(1.2);
+}
+
+/* L'icône Font Awesome fa-star */
+.star-wrap .fas.fa-star {
+  font-size: 2rem;          /* taille grande et visible */
+  transition: color .15s ease;
+  display: inline-block;    /* force l'affichage */
+  line-height: 1;
+}
+
+/* État inactif : gris clair */
+.star-wrap .fas.fa-star.star-inactive {
+  color: #d1d5db;
+}
+
+/* État actif (hover ou sélectionné) : or */
+.star-wrap .fas.fa-star.star-active {
+  color: #f59e0b;
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.5));
+}
+
+.note-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: white;
+  padding: 4px 14px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  margin-left: 4px;
+}
+
+/* ── Textarea ── */
+.field-wrap { margin-bottom: 16px; position: relative; }
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 8px;
+}
+
+.field-ta {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--gray-800);
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+  background: white;
+  transition: border-color .2s;
+}
+.field-ta:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(15, 92, 63, .1);
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: var(--gray-400);
+  float: right;
+  margin-top: 4px;
+}
+
+/* ── Erreur ── */
+.avis-err {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--error-light);
+  color: var(--error);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+/* ── Boutons formulaire ── */
+.form-actions { display: flex; gap: 12px; justify-content: flex-end; }
+
+.btn-cancel {
+  background: white;
+  border: 1px solid var(--gray-300);
+  color: var(--gray-700);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-cancel:hover { background: var(--gray-100); }
+.btn-cancel:disabled { opacity: .5; cursor: not-allowed; }
+
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  box-shadow: var(--shadow-md);
+}
+.btn-submit:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+.btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ============================================================
+   CHARGEMENT / ERREUR
+   ============================================================ */
+.loading-box {
+  display: flex; align-items: center; gap: 14px;
+  color: var(--gray-500); padding: 24px 0;
+}
+.loader {
+  width: 24px; height: 24px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.err-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--error-light); color: var(--error);
+  padding: 12px 16px; border-radius: var(--radius-md); font-size: .875rem;
+}
+
+/* ============================================================
+   LISTE DES AVIS
+   ============================================================ */
+.avis-list { display: flex; flex-direction: column; gap: 20px; }
+
+.avis-card {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  background: var(--gray-50);
+  transition: box-shadow .2s;
+}
+.avis-card:hover { box-shadow: var(--shadow-md); }
+
+.avis-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.author-info { display: flex; align-items: center; gap: 12px; }
+
+.author-av { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+.author-av img { width: 100%; height: 100%; object-fit: cover; }
+.author-av-ph {
+  width: 100%; height: 100%;
+  background: var(--primary); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.875rem; font-weight: 700;
+}
+
+.author-meta { display: flex; flex-direction: column; }
+.author-name { font-size: 0.9rem; font-weight: 700; color: var(--gray-800); }
+.avis-date   { font-size: 0.75rem; color: var(--gray-400); }
+
+.avis-stars { display: flex; align-items: center; gap: 3px; }
+.note-val { font-size: 0.8rem; color: var(--gray-600); font-weight: 600; margin-left: 4px; }
+
+.avis-text {
+  font-size: 0.9rem; color: var(--gray-700); line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+/* ── Actions ── */
+.avis-actions { display: flex; gap: 10px; margin-bottom: 12px; }
+
+.action-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 999px;
+  font-size: 0.8rem; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--gray-300); background: white; color: var(--gray-600);
+  transition: all .2s;
+}
+.action-btn:hover:not(:disabled) { background: var(--gray-100); border-color: var(--gray-400); }
+.action-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.like-btn.liked {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── Sous-commentaires ── */
+.sub-comments {
+  border-left: 3px solid var(--primary-soft);
+  padding-left: 16px; margin-bottom: 12px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.sub-comment { display: flex; gap: 10px; align-items: flex-start; }
+.sub-av { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+.sub-av img { width: 100%; height: 100%; object-fit: cover; }
+.sub-av-ph {
+  width: 100%; height: 100%;
+  background: var(--primary-soft); color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700;
+}
+.sub-body { flex: 1; }
+.sub-header { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.sub-author { font-size: 0.8rem; font-weight: 600; color: var(--gray-700); }
+.sub-date   { font-size: 0.7rem; color: var(--gray-400); }
+.sub-text   { font-size: 0.85rem; color: var(--gray-600); line-height: 1.5; }
+
+/* ── Input commentaire ── */
+.comment-input-wrap { margin-bottom: 12px; }
+.comment-input-row { display: flex; gap: 8px; }
+.comment-input {
+  flex: 1; padding: 8px 14px;
+  border: 1px solid var(--gray-300); border-radius: var(--radius-md);
+  font-size: 0.875rem; color: var(--gray-800); transition: border-color .2s;
+}
+.comment-input:focus { outline: none; border-color: var(--primary); }
+
+.btn-send-comment {
+  width: 40px; height: 40px;
+  background: var(--primary); color: white;
+  border: none; border-radius: var(--radius-md);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .2s; flex-shrink: 0;
+}
+.btn-send-comment:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-send-comment:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Réponse du vétérinaire ── */
+.vet-reply {
+  background: var(--primary-light);
+  border: 1px solid var(--primary-soft);
+  border-radius: var(--radius-md);
+  padding: 14px 16px; margin-top: 4px;
+}
+.vet-reply-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.vet-reply-av { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+.vet-reply-av img { width: 100%; height: 100%; object-fit: cover; }
+.vet-reply-av-ph {
+  width: 100%; height: 100%;
+  background: var(--primary); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700;
+}
+.vet-reply-meta { display: flex; flex-direction: column; gap: 2px; }
+.vet-reply-name {
+  font-size: 0.875rem; font-weight: 700; color: var(--primary);
+  display: flex; align-items: center; gap: 6px;
+}
+.vet-badge {
+  background: var(--primary); color: white;
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 0.65rem; font-weight: 600; letter-spacing: .5px;
+}
+.vet-reply-date { font-size: 0.7rem; color: var(--gray-500); }
+.vet-reply-text { font-size: 0.875rem; color: var(--gray-700); line-height: 1.6; }
+
+/* ── Empty ── */
+.empty-avis {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 32px; color: var(--gray-400); text-align: center;
+}
+.empty-avis i { font-size: 2rem; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .avis-section { padding: 20px; }
+  .rating-summary { flex-direction: column; }
+  .avis-title-row { flex-direction: column; align-items: flex-start; }
+  .stars-row .fas.fa-star { font-size: 1.6rem; }
+}
+
+
 /* ── À ajouter à la fin de farmer-avis.component.css ── */
 
 /* ── Bad words ─────────────────────────────────────── */
