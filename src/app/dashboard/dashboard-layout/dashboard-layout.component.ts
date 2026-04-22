@@ -25,7 +25,7 @@ export class DashboardLayoutComponent implements OnInit {
     { icon: 'fas fa-graduation-cap',     label: 'Training',     key: 'training',     route: '/dashboard/training'     },
     { icon: 'fas fa-exclamation-circle', label: 'Claims',       key: 'claims',       route: '/dashboard/claims'       },
     { icon: 'fas fa-stethoscope',        label: 'Appointments', key: 'appointments', route: '/dashboard/appointments' },
-    { icon: 'fas fa-hands-helping',         label: 'Helps',    key: 'Helps',    route: '/dashboard/Aide'    },
+    { icon: 'fas fa-hands-helping',      label: 'Helps',    key: 'Helps',    route: '/dashboard/Aide'    },
     { icon: 'fas fa-paw',                label: 'Animals',     key: 'Animals',     route: '/dashboard/Animals'     },
   ];
 
@@ -35,7 +35,6 @@ export class DashboardLayoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Sync activeMenu with current URL on load and navigation
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: any) => {
@@ -44,7 +43,6 @@ export class DashboardLayoutComponent implements OnInit {
         if (matched) this.activeMenu = matched.key;
       });
 
-    // Set on first load
     const current = this.router.url;
     const matched = this.menuItems.find(item => current === item.route || current.startsWith(item.route + '/'));
     if (matched) this.activeMenu = matched.key;

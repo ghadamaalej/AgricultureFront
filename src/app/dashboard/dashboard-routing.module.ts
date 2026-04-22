@@ -2,12 +2,14 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DashboardLayoutComponent } from './dashboard-layout/dashboard-layout.component';
 import { DashboardComponent }       from './dashboard/dashboard.component';
+import { DashboardEventComponent } from './dashboard-event/dashboard-event.component';
 
 const routes: Routes = [
   {
     path: '',component: DashboardLayoutComponent,
     children: [
-      { path: '',            component: DashboardComponent, pathMatch: 'full' },
+      { path: '',component: DashboardComponent, pathMatch: 'full' },
+      { path: 'events', component: DashboardEventComponent }
       // ↓ Décommente au fur et à mesure que tu crées les modules
       // {
       //   path: 'users',

@@ -30,23 +30,32 @@
       <div class="events-count">
         <span class="count-pill">{{ events.length }} events</span>
       </div>
+      <button class="btn-map-view" (click)="openMapView()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-map-icon">
+            <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+          </svg>
+          Nearby Events Map
+        </button>
+
+    </div>
+    <div class="loading-container" *ngIf="loading">
+     <div class="spinner"></div>
+     <p>Loading events...</p>
     </div>
 
-    <div class="events-grid">
+    <div class="events-grid" *ngIf="!loading && events.length > 0">
       <article *ngFor="let event of events" class="event-card">
-  <div class="card-image-wrap">
-    <img [src]="'assets/images/' + event.image" *ngIf="event.image" class="card-img" [alt]="event.titre" />
-    <div class="card-img-placeholder" *ngIf="!event.image"><span>🌿</span></div>
-    <span class="card-type-badge">{{ event.type }}</span>
-    <span class="card-price-tag">{{ event.montant > 0 ? (event.montant + ' DT') : 'Gratuit' }}</span>
-  </div>
+      <div class="card-image-wrap">
+        <img [src]="'assets/images/' + event.image" *ngIf="event.image" loading="lazy" class="card-img" [alt]="event.titre" />
+        <div class="card-img-placeholder" *ngIf="!event.image"><span>🌿</span></div>
+        <span class="card-type-badge">{{ event.type }}</span>
+        <span class="card-price-tag">{{ event.montant > 0 ? (event.montant + ' DT') : 'Gratuit' }}</span>
+    </div>
 
-  <!-- Seats progress strip -->
   <div class="seats-strip">
     <div class="seats-strip-fill"></div>
   </div>
 
-  <!-- Body -->
   <div class="card-body">
     <h3 class="card-title">{{ event.titre }}</h3>
 
@@ -77,7 +86,6 @@
   </span>
     </div>
 
-    <!-- Meta grid: 2 cols -->
     <div class="card-meta-grid">
       <div class="meta-cell">
         <span class="meta-lbl">Start date</span>
@@ -99,7 +107,6 @@
       </div>
     </div>
 
-    <!-- Seats row -->
     <div class="seats-row">
       <svg class="seats-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
@@ -128,7 +135,7 @@
 </article> 
     </div>
 
-    <div class="empty-state" *ngIf="events.length === 0">
+    <div class="empty-state" *ngIf="!loading && events.length === 0">
       <span class="empty-icon">🌱</span>
       <p>No events available at the moment.</p>
     </div>
