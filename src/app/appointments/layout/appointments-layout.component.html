@@ -21,15 +21,22 @@
           <i class="fas fa-stethoscope"></i><span>Diagnostic IA</span>
         </button>
         <button class="ni" [class.active]="view==='ai-chatbot'" (click)="setView('ai-chatbot')">
-          <i class="fas fa-robot"></i><span>Chatbot veterinaire</span>
+          <i class="fas fa-robot"></i><span>Chatbot vétérinaire</span>
         </button>
-          <button class="ni" [class.active]="view==='ai-farmer'" (click)="setView('ai-farmer')">
-          <i class="fas fa-camera"></i><span>Chatbot Image IA</span>
-        </button>
+       <!-- APRÈS (corrigé : deux boutons séparés) -->
+<button class="ni" [class.active]="view==='ai-farmer'" (click)="setView('ai-farmer')">
+  <i class="fas fa-camera"></i><span>Chatbot Image IA</span>
+</button>
+<button class="ni" [class.active]="view==='poultry-farmer'" (click)="setView('poultry-farmer')">
+  <i class="fas fa-feather"></i><span>Chatbot Poultry IA</span>
+</button>
       </ng-container>
 
       <!-- VÉTÉRINAIRE -->
       <ng-container *ngIf="isVet">
+
+        <!-- Section RDV -->
+        <div class="nav-section-label">Rendez-vous</div>
         <button class="ni" [class.active]="view==='list'" (click)="setView('list')">
           <i class="fas fa-calendar-alt"></i><span>Rendez-vous</span>
         </button>
@@ -39,16 +46,35 @@
         <button class="ni" [class.active]="view==='records'" (click)="setView('records')">
           <i class="fas fa-file-medical"></i><span>Dossiers médicaux</span>
         </button>
+
+        <!-- Section Inventaire -->
+       
+        <button class="ni" [class.active]="view==='products'" (click)="setView('products')">
+          <i class="fas fa-boxes"></i><span>Mes produits</span>
+        </button>
+       
+
+        <!-- Section Boutique -->
+        
+        <button class="ni shop-nav" [class.active]="view==='shop'" (click)="setView('shop')">
+          <i class="fas fa-store"></i><span>Ma Boutique</span>
+        </button>
+
+        <!-- Section Autres -->
+        
         <button class="ni" [class.active]="view==='profile'" (click)="setView('profile')">
           <i class="fas fa-user-circle"></i><span>Mon profil</span>
         </button>
         <button class="ni" [class.active]="view==='messages'" (click)="setView('messages')">
           <i class="fas fa-comments"></i><span>Messagerie</span>
         </button>
-           <button class="ni" [class.active]="view==='ai-vet'" (click)="setView('ai-vet')">
+        <button class="ni" [class.active]="view==='ai-vet'" (click)="setView('ai-vet')">
           <i class="fas fa-microscope"></i><span>IA Clinique Image</span>
         </button>
-         <button class="ni" [class.active]="view==='avis'" (click)="setView('avis')">
+          <button class="ni" [class.active]="view==='poultry-vet'" (click)="setView('poultry-vet')">
+          <i class="fas fa-disease"></i><span>IA Clinique Poultry</span>
+        </button>
+        <button class="ni" [class.active]="view==='avis'" (click)="setView('avis')">
           <i class="fas fa-star"></i><span>Mes avis</span>
         </button>
 
@@ -72,25 +98,36 @@
   </aside>
 
   <main class="main">
+
     <!-- FARMER views -->
     <ng-container *ngIf="isFarmer">
-      <app-my-appointments *ngIf="view==='list'" (switchView)="setView($event)"></app-my-appointments>
-      <app-vet-list        *ngIf="view==='book'"  (booked)="setView('list')" (openChatLayout)="setView('messages')"></app-vet-list>
-      <app-chat            *ngIf="view==='messages'"></app-chat>
-      <app-animal-diagnostic *ngIf="view==='diagnostic'"></app-animal-diagnostic>
-      <app-vet-ai-chatbot  *ngIf="view==='ai-chatbot'"></app-vet-ai-chatbot>
+      <app-my-appointments      *ngIf="view==='list'"       (switchView)="setView($event)"></app-my-appointments>
+      <app-vet-list             *ngIf="view==='book'"       (booked)="setView('list')" (openChatLayout)="setView('messages')"></app-vet-list>
+      <app-chat                 *ngIf="view==='messages'"></app-chat>
+      <app-animal-diagnostic    *ngIf="view==='diagnostic'"></app-animal-diagnostic>
+      <app-vet-ai-chatbot       *ngIf="view==='ai-chatbot'"></app-vet-ai-chatbot>
       <app-farmer-image-chatbot *ngIf="view==='ai-farmer'"></app-farmer-image-chatbot>
+      <app-farmer-poultry-chatbot *ngIf="view==='poultry-farmer'"></app-farmer-poultry-chatbot>
     </ng-container>
 
     <!-- VET views -->
     <ng-container *ngIf="isVet">
+      <!-- RDV -->
       <app-vet-dashboard        *ngIf="view==='list'"></app-vet-dashboard>
       <app-availability-manager *ngIf="view==='avail'"></app-availability-manager>
       <app-health-records       *ngIf="view==='records'"></app-health-records>
+      <!-- Inventaire -->
+      <app-vet-product-list     *ngIf="view==='products'"></app-vet-product-list>
+      <app-animal-list          *ngIf="view==='animals'"></app-animal-list>
+      <!-- Boutique -->
+      <app-vet-shop             *ngIf="view==='shop'" (goToInventory)="setView('products')"></app-vet-shop>
+      <!-- Autres -->
       <app-vet-profile-form     *ngIf="view==='profile'"></app-vet-profile-form>
       <app-chat                 *ngIf="view==='messages'"></app-chat>
-        <app-vet-image-chatbot    *ngIf="view==='ai-vet'"></app-vet-image-chatbot>
-        <app-vet-avis             *ngIf="view==='avis'"></app-vet-avis>
+      <app-vet-image-chatbot    *ngIf="view==='ai-vet'"></app-vet-image-chatbot>
+      <app-vet-avis             *ngIf="view==='avis'"></app-vet-avis>
+       <app-vet-poultry-chatbot  *ngIf="view==='poultry-vet'"></app-vet-poultry-chatbot>
     </ng-container>
+
   </main>
 </div>

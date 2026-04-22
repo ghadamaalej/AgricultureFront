@@ -964,3 +964,18 @@
     padding: 40px 24px;
   }
 }
+/* ── Boutique button ── */
+.btn-boutique {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; background: linear-gradient(135deg, #e65100, #f57c00);
+  color: #fff; border: none; border-radius: 10px; font-size: 14px;
+  font-weight: 600; cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(230,81,0,0.3);
+}
+.btn-boutique:hover { background: linear-gradient(135deg, #bf360c, #e65100); transform: translateY(-1px); }
+
+/* ── Shop overlay ── */
+.shop-overlay {
+  position: fixed; inset: 0; background: #fff; z-index: 900;
+  overflow-y: auto; padding: 0;
+}

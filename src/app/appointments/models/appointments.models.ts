@@ -132,6 +132,11 @@ export interface ChatMessage {
   receiverId: number;
   content: string;
   sentAt: string;
+  messageType: 'TEXT' | 'IMAGE' | 'FILE' | 'AUDIO';
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
+  attachmentMimeType?: string | null;
+  attachmentSize?: number | null;
 }
 
 export interface ChatConversation {

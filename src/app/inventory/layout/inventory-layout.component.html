@@ -20,6 +20,10 @@
         <i class="fas fa-chart-line"></i>
         <span>Statistiques</span>
       </button>
+      <button class="nav-item boutique-nav" [class.active]="activeTab === 'boutique'" (click)="setTab('boutique')">
+        <i class="fas fa-store"></i>
+        <span>Ma Boutique</span>
+      </button>
     </nav>
 
     <div class="sidebar-footer">
@@ -38,9 +42,10 @@
 
   <!-- ── Main content ─────────────────────────────────────── -->
   <main class="inv-main">
-    <app-product-list *ngIf="activeTab === 'inventory'"></app-product-list>
-    <app-animal-list  *ngIf="activeTab === 'animals'"></app-animal-list>
-      <app-statistics-dashboard *ngIf="activeTab === 'statistics'"></app-statistics-dashboard>
+    <app-product-list        *ngIf="activeTab === 'inventory'"></app-product-list>
+    <app-animal-list         *ngIf="activeTab === 'animals'"></app-animal-list>
+    <app-statistics-dashboard *ngIf="activeTab === 'statistics'"></app-statistics-dashboard>
+    <app-vet-shop            *ngIf="activeTab === 'boutique'"></app-vet-shop>
   </main>
 
 </div>

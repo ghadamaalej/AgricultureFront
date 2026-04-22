@@ -17,7 +17,12 @@ export interface InventoryProduct {
   currentQuantity: number;
   minThreshold: number;
   owner?: UserSummary;
-  ownerId?: number;
+  // Boutique fields (nullable)
+  prixVente?: number | null;
+  imageUrl?: string | null;
+  description?: string | null;
+  enBoutique?: boolean;
+  enStock?: boolean;
 }
 
 export interface Batch {

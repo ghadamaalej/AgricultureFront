@@ -1,0 +1,48 @@
+<section class="poultry-chatbot-shell">
+  <div class="hero">
+    <p class="eyebrow">Assistant Clinique Poultry</p>
+    <h2>Analyse d'image aviaire</h2>
+    <p>
+      Envoyez une image de volaille ou d'une lesion. L IA retourne les hypotheses
+      principales pour aider au tri clinique initial.
+    </p>
+  </div>
+
+  <div class="panel">
+    <label class="file-input">
+      <span>Image aviaire</span>
+      <input type="file" accept="image/*" (change)="onFileSelected($event)">
+    </label>
+
+    <label class="field">
+      <span>Question clinique</span>
+      <textarea [(ngModel)]="clinicalQuestion" rows="4" placeholder="Ex: quels diagnostics differentiels prioriser sur le lot ?"></textarea>
+    </label>
+
+    <button type="button" (click)="analyze()" [disabled]="loading || !selectedFile">
+      {{ loading ? 'Analyse clinique...' : 'Lancer l analyse poultry' }}
+    </button>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+  </div>
+
+  <div class="result-card" *ngIf="result">
+    <p class="eyebrow">Hypothese principale</p>
+    <h3>{{ result.predictedLabel | titlecase }}</h3>
+    <p class="confidence">Confiance estimee: {{ result.confidence }}%</p>
+
+    <div class="prediction-list">
+      <article class="prediction" *ngFor="let prediction of result.predictions">
+        <span>#{{ prediction.rank }} {{ prediction.disease | titlecase }}</span>
+        <strong>{{ prediction.probability }}%</strong>
+      </article>
+    </div>
+
+    <div class="analysis">
+      <h4>Synthese IA</h4>
+      <p>{{ result.analysis }}</p>
+    </div>
+
+    <div class="disclaimer">{{ result.disclaimer }}</div>
+  </div>
+</section>

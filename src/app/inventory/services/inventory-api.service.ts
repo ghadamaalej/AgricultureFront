@@ -130,4 +130,37 @@ export class InventoryApiService {
     { headers: this.headers() }
   );
 }
+
+  // ── Boutique en ligne ─────────────────────────────────────────────
+
+  /** Agriculteur: boutique publique d'un vétérinaire */
+  getPublicShop(vetId: number): Observable<InventoryProduct[]> {
+    return this.http.get<ApiResponse<InventoryProduct[]>>(
+      `${this.base}/products/shop/vet/${vetId}`
+    ).pipe(map(r => r.data));
+  }
+
+  /** Vétérinaire: mettre à jour infos boutique (prix, desc, image, visible) */
+  updateBoutiqueInfo(id: number, data: {
+    prixVente?: number;
+    description?: string;
+    enBoutique?: boolean;
+  }, image?: File): Observable<InventoryProduct> {
+    const fd = new FormData();
+    if (data.prixVente   != null) fd.append('prixVente',   String(data.prixVente));
+    if (data.description != null) fd.append('description', data.description);
+    if (data.enBoutique  != null) fd.append('enBoutique',  String(data.enBoutique));
+    if (image) fd.append('image', image);
+    return this.http.put<ApiResponse<InventoryProduct>>(
+      `${this.base}/products/${id}/boutique`, fd, { headers: this.headers() }
+    ).pipe(map(r => r.data));
+  }
+
+  /** Vétérinaire: toggle enBoutique */
+  toggleBoutique(id: number): Observable<InventoryProduct> {
+    return this.http.patch<ApiResponse<InventoryProduct>>(
+      `${this.base}/products/${id}/boutique/toggle`, {}, { headers: this.headers() }
+    ).pipe(map(r => r.data));
+  }
+
 }
