@@ -5,7 +5,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AppComponent }          from './app.component';
 import { AppRoutingModule }      from './app-routing.module';
-import { NavbarComponent }       from './components/navbar/navbar.component';
 import { HeroComponent }         from './components/hero/hero.component';
 import { AboutComponent }        from './components/about/about.component';
 import { ServicesComponent }     from './components/services/services.component';
@@ -19,6 +18,8 @@ import { HomeComponent }         from './components/home/home.component';
 import { NotFoundComponent }     from './components/not-found/not-found.component';
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
 import { SharedModule } from './shared/shared.module';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptorService } from './services/auth/auth-interceptor.service';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,9 @@ import { SharedModule } from './shared/shared.module';
     SharedModule
       
   ],
-  providers: [],
+ providers: [
+  { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptorService, multi: true }
+],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

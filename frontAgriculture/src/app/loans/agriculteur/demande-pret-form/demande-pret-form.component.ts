@@ -102,7 +102,7 @@ export class DemandePretFormComponent implements OnInit {
       dureeMois:        this.form.value.dureeMois,
       objet:            this.form.value.objet,
       service:          { id: this.serviceId },
-      AgriculteurId:    agriculteurId,
+      agriculteurId: agriculteurId,
       statut:           'EN_ATTENTE' as StatutDemande,
       dateDemande:      dateDemande,
       scoreSolvabilite: 0,

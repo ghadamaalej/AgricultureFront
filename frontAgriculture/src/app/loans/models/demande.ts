@@ -1,4 +1,4 @@
-export type StatutDemande = 'EN_ATTENTE' | 'APPROUVEE' | 'REJETEE';
+export type StatutDemande = 'EN_ATTENTE' | 'REJETEE' | 'APPROUVEE' ;
 
 export interface Demande {
   id?: number;
@@ -8,7 +8,7 @@ export interface Demande {
   dateDemande: string;
   scoreSolvabilite: number;
   documents: string[];
-  AgriculteurId: number;
+  agriculteurId: number;
   statut: StatutDemande;
   service?: { id: number };   
   serviceId?: number;
