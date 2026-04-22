@@ -1,0 +1,237 @@
+<app-navbar></app-navbar>
+
+<section class="hero-events">
+  <div class="hero-overlay"></div>
+
+  <div class="hero-leaves">
+    <span class="leaf leaf-1">🌿</span>
+    <span class="leaf leaf-2">🍃</span>
+    <span class="leaf leaf-3">🌱</span>
+  </div>
+
+  <div class="hero-content">
+    <span class="hero-badge">Secure Payment</span>
+
+    <h1>
+      Complete Your <span class="h1-accent">Booking</span>
+    </h1>
+
+    <p class="hero-sub">
+      Your reservation is just one step away
+    </p>
+
+    <nav class="breadcrumb" aria-label="breadcrumb">
+      <a href="/">Home</a>
+      <span class="sep"> › </span>
+      <a href="/events/listEvents">Events</a>
+      <span class="sep"> › </span>
+      <span class="active">Payment</span>
+    </nav>
+  </div>
+</section>
+
+<div class="pay-loading" *ngIf="loading">
+  <div class="spinner-wrap">
+    <div class="spinner"></div>
+    <p>Loading reservation details…</p>
+  </div>
+</div>
+
+<div class="pay-success-screen" *ngIf="paymentSuccess">
+  <div class="success-card">
+    <div class="success-icon-wrap">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    </div>
+    <h2>Payment Confirmed!</h2>
+    <p>Your booking for <strong>{{ event?.titre }}</strong> is confirmed.</p>
+    <p class="sub">A confirmation email will be sent within 24 hours.</p>
+    <div class="success-detail-row">
+      <span>{{ reservation?.nbPlaceReserve }} place(s)</span>
+      <span class="dot">•</span>
+      <span>{{ reservation?.montant }} DT total</span>
+    </div>
+    <button class="btn-back" (click)="goToEvents()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+      Back to Events
+    </button>
+  </div>
+</div>
+
+<div class="pay-success-screen cancel-success-screen" *ngIf="cancelSuccess">
+  <div class="success-card cancel-card">
+    <div class="success-icon-wrap cancel-icon-wrap">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M15 9l-6 6M9 9l6 6"/>
+      </svg>
+    </div>
+    <h2>Reservation Cancelled</h2>
+    <p>Your reservation has been cancelled successfully.</p>
+    <p class="sub">Redirecting you back to events…</p>
+  </div>
+</div>
+
+<div class="pay-layout" *ngIf="!loading && !paymentSuccess && !cancelSuccess">
+  <div class="pay-container">
+
+    <div class="summary-panel">
+      <div class="summary-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 6V4h8v2"/>
+        </svg>
+        <span>Reservation Summary</span>
+      </div>
+
+      <div class="summary-event-hero" *ngIf="event">
+        <img [src]="event.image ? 'assets/images/' + event.image : 'assets/images/placeholder.jpg'"
+             [alt]="event.titre" class="summary-event-img">
+        <div class="summary-event-overlay">
+          <span class="event-type-pill">{{ event.type }}</span>
+        </div>
+      </div>
+
+      <div class="summary-body" *ngIf="event">
+        <h3 class="summary-event-title">{{ event.titre }}</h3>
+
+        <div class="summary-row">
+          <div class="summary-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div>
+            <span class="row-label">Start</span>
+            <span class="row-value">{{ event.dateDebut | date:'EEE, MMM d yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <div class="summary-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
+              <circle cx="12" cy="16" r="1.5"/>
+            </svg>
+          </div>
+          <div>
+            <span class="row-label">End</span>
+            <span class="row-value">{{ event.dateFin | date:'EEE, MMM d yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <div class="summary-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div>
+            <span class="row-label">Location</span>
+            <span class="row-value">{{ event.lieu }}, {{ event.region }}</span>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <div class="summary-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div>
+            <span class="row-label">Seats Reserved</span>
+            <span class="row-value">{{ reservation?.nbPlaceReserve }} place(s)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="price-breakdown" *ngIf="reservation && event">
+        <div class="breakdown-row">
+          <span>{{ reservation.nbPlaceReserve }} × {{ event.montant }} DT</span>
+          <span>{{ reservation.montant }} DT</span>
+        </div>
+        <div class="breakdown-row breakdown-fees">
+          <span>Platform fee</span>
+          <span>0 DT</span>
+        </div>
+        <div class="breakdown-divider"></div>
+        <div class="breakdown-row breakdown-total">
+          <span>Total</span>
+          <span>{{ reservation.montant }} DT</span>
+        </div>
+      </div>
+
+      <button class="btn-cancel"
+              *ngIf="reservation?.etatPaiement !== 'PAID'"
+              (click)="cancelReservation()"
+              [disabled]="cancelLoading">
+        <ng-container *ngIf="!cancelLoading">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>
+          </svg>
+          Cancel Reservation
+        </ng-container>
+        <ng-container *ngIf="cancelLoading">
+          <span class="btn-spinner small"></span>
+          Cancelling…
+        </ng-container>
+      </button>
+
+      <div class="cancel-error" *ngIf="cancelError">{{ cancelError }}</div>
+    </div>
+
+    <div class="payment-panel">
+      <div class="payment-header">
+        <div class="secure-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Secure Payment
+        </div>
+        <div class="stripe-badge">
+          <svg width="40" height="16" viewBox="0 0 60 25" fill="none">
+            <text x="0" y="18" font-family="Arial" font-size="16" font-weight="bold" fill="#635BFF">stripe</text>
+          </svg>
+        </div>
+      </div>
+
+      <p class="payment-subtitle">Your payment is encrypted and processed securely by Stripe.</p>
+
+      <div class="stripe-element-wrap">
+        <div id="stripe-payment-element"></div>
+        <div class="stripe-loading" *ngIf="!stripeReady && !paymentError">
+          <div class="spinner small"></div>
+          <span>Loading payment form…</span>
+        </div>
+      </div>
+
+      <div class="pay-error-msg" *ngIf="paymentError">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ paymentError }}
+      </div>
+
+      <button class="btn-pay"
+              (click)="pay()"
+              [disabled]="!stripeReady || processingPayment">
+        <ng-container *ngIf="!processingPayment">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Pay {{ reservation?.montant }} DT
+        </ng-container>
+        <ng-container *ngIf="processingPayment">
+          <span class="btn-spinner"></span>
+          Processing…
+        </ng-container>
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

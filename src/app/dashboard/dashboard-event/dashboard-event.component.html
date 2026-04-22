@@ -1,0 +1,122 @@
+<div class="admin-shell">
+
+  <!-- Toast -->
+  <div class="toast" *ngIf="toastMessage" [ngClass]="toastType">
+    <span class="toast-icon">{{ toastType === 'success' ? '✓' : '✕' }}</span>
+    {{ toastMessage }}
+  </div>
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <h1>Event Validation</h1>
+      <p class="subtitle">Review municipal permissions and validate requests</p>
+    </div>
+    <button class="btn-refresh" (click)="loadEvents()">Refresh</button>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-strip">
+    <div class="stat-card">
+      <span class="stat-num">{{ events.length }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+
+    <div class="stat-card planned">
+      <span class="stat-num">{{ countByStatut('PLANNED') }}</span>
+      <span class="stat-label">Pending</span>
+    </div>
+
+    <div class="stat-card validated">
+      <span class="stat-num">{{ countByStatut('VALIDATED') }}</span>
+      <span class="stat-label">Validated</span>
+    </div>
+
+    <div class="stat-card rejected">
+      <span class="stat-num">{{ countByStatut('REJECTED') }}</span>
+      <span class="stat-label">Rejected</span>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-tabs">
+    <button (click)="setFilter('ALL')" [class.active]="filterStatut === 'ALL'">All</button>
+    <button (click)="setFilter('PLANNED')" [class.active]="filterStatut === 'PLANNED'">Pending</button>
+    <button (click)="setFilter('VALIDATED')" [class.active]="filterStatut === 'VALIDATED'">Validated</button>
+    <button (click)="setFilter('REJECTED')" [class.active]="filterStatut === 'REJECTED'">Rejected</button>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content" [class.has-detail]="selectedEvent">
+
+    <!-- LIST -->
+    <div class="event-list">
+
+      <div *ngIf="loading">Loading...</div>
+
+      <div *ngIf="!loading && filteredEvents.length === 0">
+        No events found
+      </div>
+
+      <div *ngFor="let event of filteredEvents"
+           class="event-row"
+           [class.selected]="selectedEvent?.id === event.id"
+           [class.status-planned]="getStatus(event) === 'PLANNED'"
+           [class.status-validated]="getStatus(event) === 'VALIDATED'"
+           [class.status-rejected]="getStatus(event) === 'REJECTED'"
+           (click)="selectEvent(event)">
+
+        <div>
+          <span class="status-pill" [ngClass]="'pill-' + getStatus(event).toLowerCase()">
+            {{ getStatus(event) === 'PLANNED' ? 'Pending'
+              : getStatus(event) === 'VALIDATED' ? 'Validated'
+              : 'Rejected' }}
+          </span>
+
+          <strong>{{ event.titre }}</strong>
+          <small>{{ event.type }} - {{ event.region }}</small>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="detail-panel" *ngIf="selectedEvent">
+
+      <h2>{{ selectedEvent.titre }}</h2>
+
+      <div>
+        Status:
+        <span [ngClass]="'pill-' + getStatus(selectedEvent).toLowerCase()">
+          {{ getStatus(selectedEvent) }}
+        </span>
+      </div>
+
+      <p>{{ selectedEvent.description }}</p>
+
+      <p><b>Location:</b> {{ selectedEvent.lieu }}</p>
+      <p><b>Price:</b> {{ selectedEvent.montant }} TND</p>
+      <p><b>Capacity:</b> {{ selectedEvent.capaciteMax }}</p>
+
+      <div *ngIf="selectedEvent.autorisationmunicipale">
+        <button class="btn-preview" (click)="previewDocument()">
+         Preview Document
+        </button>
+      </div>
+
+      <iframe *ngIf="previewUrl" [src]="previewUrl" width="100%" height="300"></iframe>
+
+     <div *ngIf="getStatus(selectedEvent) === 'PLANNED'" class="action-buttons">
+  <button class="btn-validate" (click)="validateEvent()">
+    ✔ Validate
+  </button>
+
+  <button class="btn-reject" (click)="rejectEvent()">
+    ✖ Reject
+  </button>
+</div>
+
+    </div>
+
+  </div>
+</div>

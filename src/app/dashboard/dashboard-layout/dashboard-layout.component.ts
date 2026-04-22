@@ -30,6 +30,8 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     { icon: 'fas fa-stethoscope',        label: 'Appointments', key: 'appointments', route: '/dashboard/appointments' },
     { icon: 'fas fa-hands-helping',      label: 'Helps',        key: 'Helps',        route: '/dashboard/Aide'         },
     { icon: 'fas fa-paw',                label: 'Animals',      key: 'Animals',      route: '/dashboard/Animals'      },
+    { icon: 'fas fa-hands-helping',      label: 'Helps',    key: 'Helps',    route: '/dashboard/Aide'    },
+    { icon: 'fas fa-paw',                label: 'Animals',     key: 'Animals',     route: '/dashboard/Animals'     },
   ];
 
   constructor(

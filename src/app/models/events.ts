@@ -10,7 +10,10 @@ export interface Events {
     image: string;
     region: string;
     capaciteMax: number;
-     inscrits: number;
-     statut: string; 
+    inscrits: number;
+    statut: string; 
+    autorisationmunicipale?: string;
+    isValid: boolean | null;
+
 }
 

@@ -8,6 +8,8 @@ import { DetailsEventComponent } from './details-event/details-event.component';
 import { OrganisateurEventListComponent } from './organisateur-event-list/organisateur-event-list.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { OrganisateurEventFormComponent } from './organisateur-event-form/organisateur-event-form.component';
+import { PaymentComponent } from './payment/payment/payment.component';
+import { EventMapComponent } from './event-map/event-map.component';
 
 
 @NgModule({
@@ -16,7 +18,9 @@ import { OrganisateurEventFormComponent } from './organisateur-event-form/organi
     ListComponent,
     DetailsEventComponent,
     OrganisateurEventListComponent,
-    OrganisateurEventFormComponent
+    OrganisateurEventFormComponent,
+    PaymentComponent,
+    EventMapComponent,
   ],
   imports: [
     CommonModule,

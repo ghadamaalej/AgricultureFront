@@ -1,0 +1,190 @@
+<app-navbar></app-navbar>
+
+<section class="hero-events">
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <span class="hero-badge">Explore Locations</span>
+    <h1>Events <span class="h1-accent">Map</span></h1>
+    <p class="hero-sub">Discover all agriculture events</p>
+
+    <nav class="breadcrumb">
+      <a href="/">Home</a>
+      <span class="sep"> › </span>
+      <span class="active">Map</span>
+    </nav>
+  </div>
+</section>
+
+<div class="map-page">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+
+    <button class="back-btn" (click)="goBack()">
+      ← All Events
+    </button>
+
+    <div class="top-center">
+
+      <!-- TYPE FILTER -->
+      <div class="type-chips">
+        <button
+          class="chip"
+          [class.chip-on]="filterType === ''"
+          (click)="filterType=''; onTypeChange()"
+        >
+          All
+        </button>
+
+        <button
+          *ngFor="let t of typeOptions"
+          class="chip"
+          [class.chip-on]="filterType === t"
+          [style.--cc]="getTypeColor(t)"
+          (click)="filterType=t; onTypeChange()"
+        >
+          {{ getTypeLabel(t) }}
+        </button>
+      </div>
+
+      <!-- TRAVEL MODE -->
+      <div class="mode-group">
+        <button class="mode-btn" [class.mode-on]="travelMode==='walk'" (click)="onTravelModeChange('walk')">
+          <i class="fa-solid fa-person-walking"></i> Walk
+        </button>
+
+        <button class="mode-btn" [class.mode-on]="travelMode==='bike'" (click)="onTravelModeChange('bike')">
+          <i class="fa-solid fa-bicycle"></i> Bike
+        </button>
+
+        <button class="mode-btn" [class.mode-on]="travelMode==='car'" (click)="onTravelModeChange('car')">
+          <i class="fa-solid fa-car"></i> Car
+        </button>
+      </div>
+
+    </div>
+
+    <span class="ev-count">{{ events.length }} event(s)</span>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="map-layout">
+
+    <!-- MAP -->
+    <div class="map-wrap">
+
+      <div class="nav-info" *ngIf="isNavigating">
+        🚗 ETA: {{ eta }} | Distance: {{ (distanceLeft/1000) | number:'1.1-1' }} km
+      </div>
+
+      <div #mapHost id="agri-map"></div>
+
+      <div *ngIf="loading" class="map-loader">
+        <div class="spinner"></div>
+        <span>Loading map & events...</span>
+      </div>
+
+      <div *ngIf="locError && !loading" class="map-err">
+        ⚠ {{ locError }}
+      </div>
+
+    </div>
+
+    <!-- EVENT LIST -->
+    <div class="event-list">
+
+      <div *ngIf="!paginatedEvents.length && !loading" class="empty">
+        <div style="font-size:40px">🌾</div>
+        <p>No events available.</p>
+      </div>
+
+      <div
+        *ngFor="let ev of paginatedEvents"
+        class="ev-card"
+        [class.ev-card-sel]="selected?.id === ev.id"
+        (click)="selectEvent(ev)"
+      >
+
+        <!-- HEADER -->
+        <div class="ev-header" [style.background]="getTypeColor(ev.type)">
+          <span>{{ getTypeLabel(ev.type) }}</span>
+        </div>
+
+        <!-- BODY -->
+        <div class="ev-body">
+
+          <div class="ev-title">{{ ev.titre }}</div>
+          <div class="ev-lieu">📍 {{ ev.lieu }}</div>
+          <div class="ev-date">{{ ev.dateDebut | date:'EEE dd MMM yyyy' }}</div>
+
+          <!-- TRAVEL -->
+          <div class="travel-row">
+
+            <div class="titem" [class.titem-on]="travelMode==='walk'">
+              <i class="fa-solid fa-person-walking"></i>
+              <span>{{ formatDur(ev.walkMinutes) }}</span>
+            </div>
+
+            <div class="titem" [class.titem-on]="travelMode==='bike'">
+              <i class="fa-solid fa-bicycle"></i>
+              <span>{{ formatDur(ev.bikeMinutes) }}</span>
+            </div>
+
+            <div class="titem" [class.titem-on]="travelMode==='car'">
+              <i class="fa-solid fa-car"></i>
+              <span>{{ formatDur(ev.carMinutes) }}</span>
+            </div>
+
+          </div>
+
+          <!-- PROGRESS -->
+          <div class="fill-wrap">
+            <div class="fill-bar">
+              <div
+                class="fill-inner"
+                [style.width.%]="ev.fillPercent"
+                [style.background]="ev.fillPercent>=90?'#E24B4A':ev.fillPercent>=70?'#EF9F27':'#3B6D11'"
+              ></div>
+            </div>
+            <span>{{ ev.inscrits }}/{{ ev.capaciteMax }}</span>
+          </div>
+
+          <!-- FOOTER -->
+          <div class="ev-footer">
+
+            <span *ngIf="ev.montant > 0" class="ev-price">
+              {{ ev.montant | number:'1.2-2' }} DT
+            </span>
+
+            <span *ngIf="ev.montant === 0" class="ev-free">
+              Free
+            </span>
+
+            <button class="details-btn" (click)="openEventDetails(ev); $event.stopPropagation()">
+              Event Details →
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="pagination">
+
+        <button (click)="page = page - 1" [disabled]="page === 1">
+          Prev
+        </button>
+
+        <span>
+          Page {{ page }} / {{ totalPages }}
+        </span>
+
+        <button (click)="page = page + 1" [disabled]="page >= totalPages">
+          Next
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+</div>

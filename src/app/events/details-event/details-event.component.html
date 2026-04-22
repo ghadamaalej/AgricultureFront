@@ -137,7 +137,7 @@
   </div>
 </section>
 
-<section class="event-details-section">
+<section class="event-details-section" *ngIf="event">
   <div class="page">
     <div class="card">
       <div class="hero-banner">
@@ -286,12 +286,10 @@
               <span>{{ event.capaciteMax - (event.inscrits || 0) }} available</span>
             </div>
 
-            <!-- Séparateur -->
             <div class="seats-divider"></div>
 
-            <!-- Sélecteur nombre de places -->
             <div class="places-selector" *ngIf="placesRestantes > 0">
-              <span class="places-label">Nombre de places</span>
+              <span class="places-label">Select number</span>
               <div class="places-row">
                 <div class="places-controls">
                   <button class="qty-btn" (click)="decrementPlaces()" [disabled]="nbPlaceReserve <= 1">−</button>
@@ -306,7 +304,6 @@
 
           </div>
 
-          <!-- DROITE : prix + feedback + bouton -->
           <div class="booking-panel">
 
             <div class="price-display">
@@ -364,7 +361,7 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
-          Booking confirmed by email within 24 hours — free cancellation up to 48 hours before the event.
+          Booking confirmed by email — free cancellation up to 48 hours before the event.
         </div>
 
       </div>

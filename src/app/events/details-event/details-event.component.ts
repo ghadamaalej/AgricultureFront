@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Events } from 'src/app/models/events';
 import { EventService } from 'src/app/services/event/event.service';
 import { WeatherService, WeatherData, ForecastDay } from 'src/app/services/weather/weather.service';
 import { ReservationService, Reservation } from 'src/app/services/reservation/reservation.service';
-import { AuthService } from 'src/app/services/auth/auth.service'; // adapte le chemin
+import { AuthService } from 'src/app/services/auth/auth.service';
 
 @Component({
   selector: 'app-details-event',
@@ -19,7 +19,6 @@ export class DetailsEventComponent implements OnInit {
   weatherError = false;
   weatherInfo: string = '';
 
-  // ── Réservation ──────────────────────────────────────────
   nbPlaceReserve: number = 1;
   bookingLoading = false;
   bookingSuccess = false;
@@ -27,6 +26,7 @@ export class DetailsEventComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,               
     private eventService: EventService,
     private weatherService: WeatherService,
     private reservationService: ReservationService,
@@ -41,7 +41,6 @@ export class DetailsEventComponent implements OnInit {
     });
   }
 
-  // ── Météo (inchangé) ─────────────────────────────────────
   loadWeather(): void {
     const location = `${this.event.lieu}, ${this.event.region}`;
     const days = this.calculateDays();
@@ -122,15 +121,14 @@ export class DetailsEventComponent implements OnInit {
       nbPlaceReserve: this.nbPlaceReserve,
       montant: this.event.montant * this.nbPlaceReserve,
       evenement: { id: this.event.id },
-      id_user: currentUser.userId         
+      id_user: currentUser.userId
     };
 
     this.reservationService.addReservation(reservation).subscribe({
-      next: () => {
+      next: (res) => {                                        
         this.bookingLoading = false;
-        this.bookingSuccess = true;
-        this.event.inscrits = (this.event.inscrits || 0) + this.nbPlaceReserve;
-        this.nbPlaceReserve = 1;
+        this.router.navigate(['/events/payment', res.id]);  
+        window.scrollTo(0, 0);          
       },
       error: () => {
         this.bookingLoading = false;
