@@ -111,6 +111,12 @@ export interface ConsumeStockRequest {
   reason: Reason;
   note?: string;
 }
+export interface UpdateAnimalRequest {
+  espece: string;
+  poids: number;
+  dateNaissance: string;
+}
+
 
 export interface AdjustStockRequest {
   quantity: number;

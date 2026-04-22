@@ -6,7 +6,7 @@ import {
   ApiResponse, InventoryProduct, Batch, StockMovement,
   Animal, AnimalDetail, VaccinationCampaign,
   CreateProductRequest, UpdateProductRequest, AddStockRequest,
-  CreateAnimalRequest, ConsumeStockRequest, AdjustStockRequest
+  CreateAnimalRequest, ConsumeStockRequest, UpdateAnimalRequest, AdjustStockRequest
 } from '../models/inventory.models';
 import { AuthService } from '../../services/auth/auth.service';
 
@@ -94,7 +94,7 @@ export class InventoryApiService {
     ).pipe(map(r => r.data));
   }
 
-  updateAnimal(id: number, req: CreateAnimalRequest): Observable<Animal> {
+  updateAnimal(id: number, req: UpdateAnimalRequest): Observable<Animal> {
     return this.http.put<ApiResponse<Animal>>(
       `${this.base}/animals/${id}`, req, { headers: this.headers() }
     ).pipe(map(r => r.data));
