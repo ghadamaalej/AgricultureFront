@@ -19,7 +19,7 @@ import { NotFoundComponent }     from './components/not-found/not-found.componen
 import { RegisterExtraComponent } from './components/register-extra/register-extra.component';
 import { SharedModule } from './shared/shared.module';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { AuthInterceptorService } from './services/auth/auth-interceptor.service';
+import { AuthTokenInterceptor } from './services/auth/AuthTokenInterceptor';
 
 @NgModule({
   declarations: [
@@ -48,8 +48,12 @@ import { AuthInterceptorService } from './services/auth/auth-interceptor.service
       
   ],
  providers: [
-  { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptorService, multi: true }
-],
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthTokenInterceptor,
+      multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
