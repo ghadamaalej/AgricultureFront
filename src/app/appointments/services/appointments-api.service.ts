@@ -82,6 +82,7 @@ export class AppointmentsApiService {
   // Gestion-User: port 8081, no context-path
   private usr = 'http://localhost:8081/api';
 
+
   constructor(private http: HttpClient, private auth: AuthService) {}
 
   private h(): HttpHeaders {
@@ -240,7 +241,7 @@ export class AppointmentsApiService {
   getConversationMessages(conversationId: number): Observable<ChatMessage[]> {
     return this.http.get<ApiResp<ChatMessage[]>>(
       `${this.inv}/messages/conversations/${conversationId}/messages`, { headers: this.h() }
-    ).pipe(map(r => (r.data || []).map((m: any) => ({ ...m, sentAt: normDate(m.sentAt) }))));
+    ).pipe(map(r => (r.data || []).map((m: any) => this.normalizeChatMessage(m))));
   }
 
  sendConversationMessage(conversationId: number, content: string): Observable<ChatMessage> {
@@ -249,12 +250,33 @@ export class AppointmentsApiService {
     { content },
     { headers: this.h() }
   ).pipe(
-    map(r => ({
-      ...r.data,
-      sentAt: normDate(r.data?.sentAt) ?? ''
-    } as ChatMessage))
+    map(r => this.normalizeChatMessage(r.data))
   );
 }
+
+sendConversationAttachment(conversationId: number, file: File, content?: string): Observable<ChatMessage> {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (content && content.trim()) {
+    formData.append('content', content.trim());
+  }
+  return this.http.post<ApiResp<ChatMessage>>(
+    `${this.inv}/messages/conversations/${conversationId}/attachments`,
+    formData,
+    { headers: this.h() }
+  ).pipe(map(r => this.normalizeChatMessage(r.data)));
+}
+private normalizeChatMessage(message: any): ChatMessage {
+ const rawUrl = message?.attachmentUrl ? String(message.attachmentUrl) : null;
+  return {
+    ...message,
+    messageType: message?.messageType || 'TEXT',
+    attachmentUrl: rawUrl,
+    sentAt: normDate(message?.sentAt) ?? ''
+  } as ChatMessage;
+}
+
+
 getVetStats(vetId: number): Observable<AppointmentStats> {
   return this.http.get<ApiResp<AppointmentStats>>(
     `${this.inv}/appointments/vet/${vetId}/stats`,

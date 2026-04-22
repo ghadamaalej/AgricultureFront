@@ -59,35 +59,30 @@
     <div class="star-selector">
       <span class="star-hint">Votre note :</span>
       <div class="stars-row">
-        <!-- Étoile 1 -->
         <span class="star-wrap"
               (mouseenter)="setHover(1)" (mouseleave)="clearHover()" (click)="setNote(1)">
           <i class="fas fa-star"
              [class.star-active]="1 <= (hoverNote || newNote)"
              [class.star-inactive]="!(1 <= (hoverNote || newNote))"></i>
         </span>
-        <!-- Étoile 2 -->
         <span class="star-wrap"
               (mouseenter)="setHover(2)" (mouseleave)="clearHover()" (click)="setNote(2)">
           <i class="fas fa-star"
              [class.star-active]="2 <= (hoverNote || newNote)"
              [class.star-inactive]="!(2 <= (hoverNote || newNote))"></i>
         </span>
-        <!-- Étoile 3 -->
         <span class="star-wrap"
               (mouseenter)="setHover(3)" (mouseleave)="clearHover()" (click)="setNote(3)">
           <i class="fas fa-star"
              [class.star-active]="3 <= (hoverNote || newNote)"
              [class.star-inactive]="!(3 <= (hoverNote || newNote))"></i>
         </span>
-        <!-- Étoile 4 -->
         <span class="star-wrap"
               (mouseenter)="setHover(4)" (mouseleave)="clearHover()" (click)="setNote(4)">
           <i class="fas fa-star"
              [class.star-active]="4 <= (hoverNote || newNote)"
              [class.star-inactive]="!(4 <= (hoverNote || newNote))"></i>
         </span>
-        <!-- Étoile 5 -->
         <span class="star-wrap"
               (mouseenter)="setHover(5)" (mouseleave)="clearHover()" (click)="setNote(5)">
           <i class="fas fa-star"
@@ -108,9 +103,16 @@
         rows="4"
         placeholder="Décrivez votre expérience avec ce vétérinaire…"
         class="field-ta"
+        [class.field-ta--error]="hasInappropriateContent"
         maxlength="1000">
       </textarea>
       <span class="char-count">{{ newCommentaire.length }}/1000</span>
+
+      <!-- ⚠️ Avertissement bad words -->
+      <div class="bad-word-warning" *ngIf="hasInappropriateContent">
+        <i class="fas fa-exclamation-triangle"></i>
+        Votre commentaire contient des mots inappropriés. Veuillez le reformuler pour pouvoir publier votre avis.
+      </div>
     </div>
 
     <div class="avis-err" *ngIf="avisError">
@@ -121,7 +123,9 @@
       <button class="btn-cancel" (click)="cancelAvisForm()" [disabled]="submittingAvis">
         Annuler
       </button>
-      <button class="btn-submit" (click)="submitAvis()" [disabled]="submittingAvis">
+      <button class="btn-submit"
+              (click)="submitAvis()"
+              [disabled]="submittingAvis || hasInappropriateContent">
         <i class="fas fa-spinner fa-spin" *ngIf="submittingAvis"></i>
         <i class="fas fa-paper-plane"    *ngIf="!submittingAvis"></i>
         Publier mon avis
@@ -171,8 +175,57 @@
         </div>
       </div>
 
-      <!-- Commentaire principal -->
-      <p class="avis-text">{{ a.commentaire }}</p>
+      <!-- ── Commentaire principal ── -->
+      <div class="avis-text-wrap">
+
+        <!-- Texte original -->
+        <p class="avis-text" *ngIf="!translations[a.id]">{{ a.commentaire }}</p>
+
+        <!-- Texte traduit -->
+        <div class="translation-block" *ngIf="translations[a.id]">
+          <p class="avis-text translated">{{ translations[a.id] }}</p>
+          <span class="translation-badge">
+            <i class="fas fa-language"></i> Traduit automatiquement · MyMemory
+          </span>
+        </div>
+
+        <!-- Barre de traduction -->
+        <div class="translate-bar">
+
+          <!-- Bouton Traduire -->
+          <button
+            class="btn-translate"
+            *ngIf="!translations[a.id] && !translatingId[a.id] && !translationErrors[a.id]"
+            (click)="translateAvis(a)"
+            title="Traduire ce commentaire en français">
+            <i class="fas fa-language"></i>
+            <span>Traduire</span>
+          </button>
+
+          <!-- Chargement -->
+          <span class="translate-loading" *ngIf="translatingId[a.id]">
+            <i class="fas fa-spinner fa-spin"></i> Traduction en cours…
+          </span>
+
+          <!-- Erreur + Réessayer -->
+          <span class="translate-error" *ngIf="translationErrors[a.id] && !translatingId[a.id]">
+            <i class="fas fa-exclamation-circle"></i> {{ translationErrors[a.id] }}
+            <button class="btn-retry" (click)="translateAvis(a)">
+              <i class="fas fa-redo"></i> Réessayer
+            </button>
+          </span>
+
+          <!-- Afficher l'original -->
+          <button
+            class="btn-show-original"
+            *ngIf="translations[a.id]"
+            (click)="clearTranslation(a.id)">
+            <i class="fas fa-undo-alt"></i>
+            <span>Voir l'original</span>
+          </button>
+
+        </div>
+      </div>
 
       <!-- Actions : Like + Répondre -->
       <div class="avis-actions" *ngIf="isAgriculteur">
@@ -222,14 +275,20 @@
             [(ngModel)]="commentInputs[a.id]"
             placeholder="Votre réponse…"
             class="comment-input"
+            [class.comment-input--error]="commentInputs[a.id] && badWords.containsBadWord(commentInputs[a.id])"
             (keyup.enter)="submitCommentaire(a)">
           <button
             class="btn-send-comment"
             (click)="submitCommentaire(a)"
-            [disabled]="submittingComment[a.id] || !commentInputs[a.id]?.trim()">
+            [disabled]="submittingComment[a.id] || !commentInputs[a.id]?.trim() || badWords.containsBadWord(commentInputs[a.id] || '')">
             <i class="fas fa-spinner fa-spin" *ngIf="submittingComment[a.id]"></i>
             <i class="fas fa-paper-plane"    *ngIf="!submittingComment[a.id]"></i>
           </button>
+        </div>
+        <div class="bad-word-warning bad-word-warning--sm"
+             *ngIf="commentInputs[a.id] && badWords.containsBadWord(commentInputs[a.id])">
+          <i class="fas fa-exclamation-triangle"></i>
+          Votre réponse contient des mots inappropriés.
         </div>
       </div>
 

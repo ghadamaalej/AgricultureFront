@@ -4,7 +4,7 @@ import localeFr from '@angular/common/locales/fr';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule ,HTTP_INTERCEPTORS} from '@angular/common/http';
 import { AppComponent }          from './app.component';
 import { AppRoutingModule }      from './app-routing.module';
 import { NavbarComponent }       from './components/navbar/navbar.component';
@@ -31,6 +31,7 @@ import { LOCALE_ID } from '@angular/core';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { AppToastComponent } from './shared/components/app-toast/app-toast.component';
 import { ClaimsModule } from './claims/claims.module';
+import { SuccessToastInterceptor } from './core/interceptors/success-toast.interceptor';
 
 registerLocaleData(localeFr);
 
@@ -70,7 +71,10 @@ registerLocaleData(localeFr);
   
     
   ],
-  providers: [{ provide: LOCALE_ID, useValue: 'fr' }],
+  providers: [
+    { provide: LOCALE_ID, useValue: 'fr' },
+    { provide: HTTP_INTERCEPTORS, useClass: SuccessToastInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

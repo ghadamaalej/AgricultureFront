@@ -12,20 +12,37 @@
 .conversation-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px}
 .conversation-top strong{color:#223622}
 .conversation-top span,.conversation-bottom{font-size:.8rem;color:#718471}
-.chat-main{display:flex;flex-direction:column;min-width:0}
+.chat-main{display:flex;flex-direction:column;min-width:0;min-height:0}
 .chat-header{padding:18px 20px;border-bottom:1px solid #e8efe8;background:#fff}
 .chat-header h3{margin:0;color:#1a2e1a}
 .chat-header p{margin:4px 0 0;color:#758775;font-size:.85rem}
-.messages{flex:1;overflow:auto;padding:20px;background:#f4f8f4}
+.messages{flex:1;min-height:0;overflow:auto;padding:20px;background:#f4f8f4}
 .message-row{display:flex;margin-bottom:12px}
 .message-row.mine{justify-content:flex-end}
 .bubble{max-width:70%;background:#fff;border-radius:16px;padding:10px 12px;box-shadow:0 4px 12px rgba(0,0,0,.06)}
 .message-row.mine .bubble{background:#dff2df}
 .content{white-space:pre-wrap;color:#223622}
+.msg-image{display:block;max-width:260px;max-height:220px;border-radius:10px;margin-top:6px}
+.msg-audio{display:block;width:260px;max-width:100%;margin-top:6px}
+.msg-file{display:inline-block;margin-top:6px;color:#1b5f2a;font-weight:600;text-decoration:none}
+.msg-file:hover{text-decoration:underline}
 .time{margin-top:6px;font-size:.72rem;color:#7a8b7a;text-align:right}
 .composer{padding:16px;border-top:1px solid #e8efe8;display:flex;gap:12px;background:#fff}
 .composer textarea{flex:1;resize:none;border:1px solid #d7e4d7;border-radius:12px;padding:12px;font-family:inherit}
 .composer button{border:none;background:#2f7d32;color:#fff;padding:0 18px;border-radius:12px;font-weight:600;cursor:pointer}
 .composer button:disabled{opacity:.6;cursor:not-allowed}
+.secondary-btn{background:#ffffff !important;color:#2f7d32 !important;border:1px solid #b8d4b9 !important}
+.secondary-btn.recording{background:#c53f3f !important;color:#fff !important;border-color:#c53f3f !important}
+.icon-btn{width:76px;display:flex;align-items:center;justify-content:center;padding:0}
+.icon-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.icon-btn.recording svg{fill:currentColor;stroke:currentColor}
+.composer .secondary-btn svg{display:none}
+.composer .secondary-btn{position:relative;font-size:0}
+.composer .secondary-btn::before{font-size:22px;line-height:1}
+.composer .secondary-btn:first-of-type::before{content:"📎"}
+.composer .secondary-btn:nth-of-type(2)::before{content:"🎤"}
+.composer .secondary-btn.recording:nth-of-type(2)::before{content:"■";font-size:16px;font-weight:700}
+.selected-file{padding:0 16px 12px;display:flex;align-items:center;justify-content:space-between;font-size:.85rem;color:#486048}
+.selected-file button{border:none;background:transparent;color:#2f7d32;cursor:pointer;font-weight:600}
 .empty-chat,.side-loading,.chat-error{padding:20px;color:#6f806f}
 @media (max-width: 900px){.chat-shell{grid-template-columns:1fr;height:auto;min-height:80vh}.chat-sidebar{max-height:320px}}

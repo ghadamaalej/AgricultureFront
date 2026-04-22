@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { AppointmentsApiService } from '../../services/appointments-api.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { BadWordsService } from '../../../services/bad-words/bad-words.service';
 import {
   AvisResponse,
   VetRatingSummary,
@@ -44,9 +46,22 @@ export class FarmerAvisComponent implements OnInit {
   // Likes
   likingId: number | null = null;
 
+  // ── Traduction (MyMemory API — gratuite, sans clé) ────────────────────────
+  /** Textes traduits indexés par id d'avis */
+  translations: { [avisId: number]: string } = {};
+  /** Spinners de traduction */
+  translatingId: { [avisId: number]: boolean } = {};
+  /** Messages d'erreur de traduction */
+  translationErrors: { [avisId: number]: string } = {};
+
+  // Langue cible de traduction (français par défaut)
+  private readonly TARGET_LANG = 'fr';
+
   constructor(
     private api: AppointmentsApiService,
-    private auth: AuthService
+    private auth: AuthService,
+    public  badWords: BadWordsService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -81,9 +96,6 @@ export class FarmerAvisComponent implements OnInit {
   setHover(n: number)  { this.hoverNote = n; }
   clearHover()         { this.hoverNote = 0; }
   setNote(n: number)   { this.newNote = n; }
-  starClass(n: number, hovered: number, selected: number): string {
-    return (n <= (hovered || selected)) ? 'star filled' : 'star';
-  }
 
   starsArray(note: number): boolean[] {
     return [1, 2, 3, 4, 5].map(i => i <= Math.round(note));
@@ -113,8 +125,18 @@ export class FarmerAvisComponent implements OnInit {
   }
 
   submitAvis() {
-    if (this.newNote === 0) { this.avisError = 'Veuillez sélectionner une note.'; return; }
-    if (!this.newCommentaire.trim()) { this.avisError = 'Veuillez écrire un commentaire.'; return; }
+    if (this.newNote === 0) {
+      this.avisError = 'Veuillez sélectionner une note.';
+      return;
+    }
+    if (!this.newCommentaire.trim()) {
+      this.avisError = 'Veuillez écrire un commentaire.';
+      return;
+    }
+    if (this.badWords.containsBadWord(this.newCommentaire)) {
+      this.avisError = '⚠️ Votre commentaire contient des mots inappropriés. Veuillez le reformuler pour publier votre avis.';
+      return;
+    }
 
     this.submittingAvis = true;
     this.avisError = '';
@@ -140,23 +162,54 @@ export class FarmerAvisComponent implements OnInit {
     });
   }
 
-  // ── Like ─────────────────────────────────────────────────
-  toggleLike(a: AvisResponse) {
-    if (a.agriculteurId === this.currentUserId) return; // ne peut pas liker son propre avis
-    this.likingId = a.id;
-    this.api.toggleLike(a.id).subscribe({
-      next: () => {
-        if (a.likedByMe) {
-          a.likedByMe = false;
-          a.nbLikes--;
+  get hasInappropriateContent(): boolean {
+    return this.newCommentaire.length > 2 && this.badWords.containsBadWord(this.newCommentaire);
+  }
+
+  // ── Traduction via MyMemory API ──────────────────────────────────────────
+  /**
+   * Traduit le commentaire d'un avis vers le français.
+   * API MyMemory : gratuite, 5000 caractères/jour, sans clé requise.
+   * Détecte automatiquement la langue source.
+   */
+  translateAvis(a: AvisResponse): void {
+    if (!a.commentaire?.trim()) return;
+
+    this.translatingId[a.id] = true;
+    this.translationErrors[a.id] = '';
+    delete this.translations[a.id];
+
+    // MyMemory API — format : langSource|langTarget (auto détecte avec 'auto')
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(a.commentaire)}&langpair=auto|${this.TARGET_LANG}`;
+
+    this.http.get<any>(url).subscribe({
+      next: res => {
+        this.translatingId[a.id] = false;
+
+        if (res?.responseStatus === 200 && res?.responseData?.translatedText) {
+          const translated: string = res.responseData.translatedText;
+
+          // Si la traduction est identique au texte original → déjà en français
+          if (translated.toLowerCase().trim() === a.commentaire.toLowerCase().trim()) {
+            this.translationErrors[a.id] = 'Ce commentaire est déjà en français.';
+          } else {
+            this.translations[a.id] = translated;
+          }
         } else {
-          a.likedByMe = true;
-          a.nbLikes++;
+          this.translationErrors[a.id] = 'Traduction indisponible.';
         }
-        this.likingId = null;
       },
-      error: () => { this.likingId = null; }
+      error: () => {
+        this.translatingId[a.id] = false;
+        this.translationErrors[a.id] = 'Erreur de connexion. Vérifiez votre réseau.';
+      }
     });
+  }
+
+  /** Efface la traduction et réaffiche le texte original */
+  clearTranslation(avisId: number): void {
+    delete this.translations[avisId];
+    delete this.translationErrors[avisId];
   }
 
   // ── Commentaire d'agriculteur ────────────────────────────
@@ -169,6 +222,11 @@ export class FarmerAvisComponent implements OnInit {
     const contenu = (this.commentInputs[a.id] || '').trim();
     if (!contenu) return;
 
+    if (this.badWords.containsBadWord(contenu)) {
+      alert('⚠️ Votre réponse contient des mots inappropriés. Veuillez la reformuler.');
+      return;
+    }
+
     this.submittingComment[a.id] = true;
     this.api.addCommentaire(a.id, contenu).subscribe({
       next: c => {
@@ -177,9 +235,23 @@ export class FarmerAvisComponent implements OnInit {
         this.showCommentInput[a.id] = false;
         this.submittingComment[a.id] = false;
       },
-      error: e => {
+      error: () => {
         this.submittingComment[a.id] = false;
       }
+    });
+  }
+
+  // ── Like ─────────────────────────────────────────────────
+  toggleLike(a: AvisResponse) {
+    if (a.agriculteurId === this.currentUserId) return;
+    this.likingId = a.id;
+    this.api.toggleLike(a.id).subscribe({
+      next: () => {
+        if (a.likedByMe) { a.likedByMe = false; a.nbLikes--; }
+        else             { a.likedByMe = true;  a.nbLikes++; }
+        this.likingId = null;
+      },
+      error: () => { this.likingId = null; }
     });
   }
 

@@ -45,7 +45,22 @@
              *ngFor="let m of messages; trackBy: trackByMessage"
              [class.mine]="isMine(m)">
           <div class="bubble">
-            <div class="content">{{ m.content }}</div>
+            <div class="content" *ngIf="m.content">{{ m.content }}</div>
+            <img class="msg-image"
+                 *ngIf="m.messageType === 'IMAGE' && m.attachmentUrl"
+                 [src]="getAttachmentUrl(m)"
+                 [alt]="m.attachmentFileName || 'Image envoyée'" />
+            <audio class="msg-audio"
+                   *ngIf="m.messageType === 'AUDIO' && m.attachmentUrl"
+                   [src]="getAttachmentUrl(m)"
+                   controls></audio>
+            <a class="msg-file"
+               *ngIf="m.messageType === 'FILE' && m.attachmentUrl"
+               [href]="getAttachmentUrl(m)"
+               target="_blank"
+               rel="noopener">
+              {{ m.attachmentFileName || 'Télécharger la pièce jointe' }}
+            </a>
             <div class="time">{{ m.sentAt | date:'short' }}</div>
           </div>
         </div>
@@ -56,8 +71,21 @@
       </ng-template>
 
       <div class="composer">
+        <input #fileInput type="file" hidden (change)="onFileSelected($event)" />
         <textarea [(ngModel)]="draft" rows="2" placeholder="Écrire un message..."></textarea>
-        <button (click)="send()" [disabled]="sending || !draft.trim()">Envoyer</button>
+        <button type="button" class="secondary-btn" (click)="fileInput.click()" [disabled]="sending">Fichier</button>
+        <button type="button"
+                class="secondary-btn"
+                (click)="toggleRecording()"
+                [disabled]="sending || !recordingSupported"
+                [class.recording]="recording">
+          {{ recording ? 'Stop' : 'Vocal' }}
+        </button>
+        <button (click)="send()" [disabled]="sending || (!draft.trim() && !selectedFile)">Envoyer</button>
+      </div>
+      <div class="selected-file" *ngIf="selectedFile">
+        <span>{{ selectedFile.name }}</span>
+        <button type="button" (click)="clearSelectedFile()">Retirer</button>
       </div>
     </ng-container>
 
