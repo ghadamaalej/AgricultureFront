@@ -144,6 +144,19 @@
             <i class="fas fa-tasks"></i>
             <span>Manage Reservations</span>
           </a>
+
+          <a
+            *ngIf="isAgriculteur"
+            class="shortcut-btn"
+            routerLink="/marketplace/manage-rental-proposals">
+            <i class="fas fa-file-signature"></i>
+            <span>Manage Rental Proposals</span>
+          </a>
+
+          <a class="shortcut-btn" routerLink="/marketplace/my-rental-proposals">
+            <i class="fas fa-file-contract"></i>
+            <span>My Rental Proposals</span>
+          </a>
         </div>
       </div>
     </aside>
@@ -160,7 +173,7 @@
 
       <div class="products-grid">
         <div class="product-card reveal"
-             *ngFor="let p of filteredItems; let i = index"
+             *ngFor="let p of paginatedItems; let i = index"
              [style.animation-delay]="(i * 0.08) + 's'">
 
           <div class="product-img">
@@ -219,6 +232,19 @@
 
             <h3 class="product-name">{{ p.name }}</h3>
 
+
+            <div class="product-rating" *ngIf="p.reviewCount > 0">
+              <span
+                class="star"
+                *ngFor="let filled of getStars(p.averageRating)"
+                [class.filled]="filled">
+                ★
+              </span>
+              <span class="review-count">
+                ({{ p.reviewCount }})
+              </span>
+            </div>
+
             <div class="product-price-row">
               <div class="product-price">
                 <span class="price-current">
@@ -238,6 +264,22 @@
           </div>
         </div>
       </div>
+
+      <div class="pagination" *ngIf="filteredItems.length > itemsPerPage">
+
+          <button (click)="prevPage()" [disabled]="currentPage === 1">
+            ⬅ Prev
+          </button>
+
+          <span>Page {{ currentPage }}</span>
+
+          <button
+            (click)="nextPage()"
+            [disabled]="currentPage * itemsPerPage >= filteredItems.length">
+            Next ➡
+          </button>
+
+        </div>
 
       <!-- FORM MODAL -->
       <div class="modal" *ngIf="showForm">
@@ -754,5 +796,8 @@
     </button>
   </div>
 </div>
-
+<app-recipe-chatbot
+  [currentUserId]="currentUserId"
+  [openReservationPopup]="openReservationPopup.bind(this)">
+</app-recipe-chatbot>
 <app-footer></app-footer>

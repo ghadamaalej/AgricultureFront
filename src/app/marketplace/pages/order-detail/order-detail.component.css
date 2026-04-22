@@ -1,0 +1,18 @@
+@import '../cart/cart.component.css';
+
+
+.cart-summary hr {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 18px 0;
+}
+
+.total-to-pay {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.total-to-pay strong {
+  color: var(--primary);
+}

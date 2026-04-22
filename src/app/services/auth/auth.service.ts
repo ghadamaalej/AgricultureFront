@@ -103,7 +103,6 @@ export class AuthService {
                     this.storeUser(user);
                     this.currentUserSubject.next(user);
 
-                    // Log user role and account status to console
                     console.log('🔐 User logged in successfully!');
                     console.log('👤 User Role:', response.role);
                     console.log('🆔 User ID:', response.userId);
@@ -176,29 +175,17 @@ export class AuthService {
     }
 
     getDefaultRouteForRole(role: BackendRole | null): string {
-        if (!role) {
-            return '/';
-        }
-
+        if (!role) return '/';
         switch (role) {
-            case 'ADMIN':
-                return '/dashboard';
-            case 'ACHETEUR':
-                return '/marketplace';
-            case 'AGRICULTEUR':
-                return '/delivery';
-            case 'EXPERT_AGRICOLE':
-                return '/expert/home';
-            case 'TRANSPORTEUR':
-                return '/transporter/home';
-            case 'VETERINAIRE':
-                return '/appointments';
-            case 'AGENT':
-                return '/agent/home';
-            case 'ORGANISATEUR_EVENEMENT':
-                return '/organizer/home';
-            default:
-                return '/';
+            case 'ADMIN':               return '/dashboard';
+            case 'ACHETEUR':            return '/marketplace';
+            case 'AGRICULTEUR':         return '/delivery';
+            case 'EXPERT_AGRICOLE':     return '/expert/home';
+            case 'TRANSPORTEUR':        return '/transporter/home';
+            case 'VETERINAIRE':         return '/appointments';
+            case 'AGENT':               return '/agent/home';
+            case 'ORGANISATEUR_EVENEMENT': return '/organizer/home';
+            default:                    return '/';
         }
     }
 

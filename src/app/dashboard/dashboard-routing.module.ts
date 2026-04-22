@@ -1,63 +1,59 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { DashboardLayoutComponent } from './dashboard-layout/dashboard-layout.component';
-import { DashboardComponent }       from './dashboard/dashboard.component';
-import { UsersComponent } from './users/users.component';
-
+import { DashboardLayoutComponent }  from './dashboard-layout/dashboard-layout.component';
+import { DashboardComponent }        from './dashboard/dashboard.component';
+import { UsersComponent }            from './users/users.component';
+import { MarketplaceAdminComponent } from './marketplace-admin/marketplace-admin.component';
 
 const routes: Routes = [
-  {
-    path: '',component: DashboardLayoutComponent,
-    children: [
-      { path: '',            component: DashboardComponent, pathMatch: 'full' },
-        {
-        path: 'claims',
-        loadChildren: () =>
-          import('../claims/claims-admin.module').then(m => m.ClaimsAdminModule)
-      },
-     
-      // ↓ Décommente au fur et à mesure que tu crées les modules
-       {
-          path: 'users',component: UsersComponent
+    {
+        path: '',
+        component: DashboardLayoutComponent,
+        children: [
+            { path: '', component: DashboardComponent, pathMatch: 'full' },
 
-        },
-      // {
-      //   path: 'deliveries',
-      //   loadChildren: () =>
-      //     import('./delivery-admin/delivery-admin.module').then(m => m.DeliveryAdminModule)
-      // },
-      // {
-      //   path: 'events',
-      //   loadChildren: () =>
-      //     import('./events-admin/events-admin.module').then(m => m.EventsAdminModule)
-      // },
-      // {
-      //   path: 'loans',
-      //   loadChildren: () =>
-      //     import('./loans-admin/loans-admin.module').then(m => m.LoansAdminModule)
-      // },
-      // {
-      //   path: 'marketplace',
-      //   loadChildren: () =>
-      //     import('./marketplace-admin/marketplace-admin.module').then(m => m.MarketplaceAdminModule)
-      // },
-      // {
-      //   path: 'forums',
-      //   loadChildren: () =>
-      //     import('./forums-admin/forums-admin.module').then(m => m.ForumsAdminModule)
-      // },
-      // {
-      //   path: 'training',
-      //   loadChildren: () =>
-      //     import('./training-admin/training-admin.module').then(m => m.TrainingAdminModule)
-      // },
-      { path: '**', redirectTo: '' }
-    ]
-  }
+            {
+                path: 'claims',
+                loadChildren: () =>
+                    import('../claims/claims-admin.module').then(m => m.ClaimsAdminModule)
+            },
+
+            { path: 'users',       component: UsersComponent },
+            { path: 'marketplace', component: MarketplaceAdminComponent },
+
+            // {
+            //   path: 'deliveries',
+            //   loadChildren: () =>
+            //     import('./delivery-admin/delivery-admin.module').then(m => m.DeliveryAdminModule)
+            // },
+            // {
+            //   path: 'events',
+            //   loadChildren: () =>
+            //     import('./events-admin/events-admin.module').then(m => m.EventsAdminModule)
+            // },
+            // {
+            //   path: 'loans',
+            //   loadChildren: () =>
+            //     import('./loans-admin/loans-admin.module').then(m => m.LoansAdminModule)
+            // },
+            // {
+            //   path: 'forums',
+            //   loadChildren: () =>
+            //     import('./forums-admin/forums-admin.module').then(m => m.ForumsAdminModule)
+            // },
+            // {
+            //   path: 'training',
+            //   loadChildren: () =>
+            //     import('./training-admin/training-admin.module').then(m => m.TrainingAdminModule)
+            // },
+
+            { path: '**', redirectTo: '' }
+        ]
+    }
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule]
 })
 export class DashboardRoutingModule { }

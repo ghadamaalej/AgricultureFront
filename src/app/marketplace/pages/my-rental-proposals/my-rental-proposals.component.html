@@ -1,0 +1,259 @@
+<app-navbar></app-navbar>
+
+<section class="section-padding marketplace-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">My Rental Proposals</span>
+      <h2 class="section-title">
+        Track <span>Your Rental Proposals</span>
+      </h2>
+      <p class="section-desc">
+        Follow the status of your rental proposals and generate your contract once it is ready.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="back-wrapper">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+  </div>
+</div>
+
+<div class="reservations-page">
+
+  <div class="page-header">
+    <div>
+      <h1>My Rental Proposals</h1>
+      <p>Review your rental requests, their status, and the next available action.</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-number">{{ getTotalProposals() }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">{{ getProposalCountByStatus('EN_ATTENTE') }}</span>
+      <span class="stat-label">Pending</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">{{ getProposalCountByStatus('ACCEPTEE') }}</span>
+      <span class="stat-label">Accepted</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">{{ getProposalCountByStatus('FINALISEE') }}</span>
+      <span class="stat-label">Finalized</span>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="empty-box">
+    Loading...
+  </div>
+
+  <div *ngIf="errorMessage" class="empty-box">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!loading && !errorMessage && proposals.length === 0" class="empty-box">
+    No rental proposals found.
+  </div>
+
+  <div class="proposal-list" *ngIf="proposals.length > 0">
+    <div class="proposal-card" *ngFor="let proposal of proposals">
+
+      <div class="proposal-image">
+        <img [src]="getProposalImage(proposal)" [alt]="getProposalTitle(proposal)">
+      </div>
+
+      <div class="proposal-body">
+        <div class="proposal-top">
+          <div class="proposal-main">
+            <div class="proposal-type-chip">
+              <i class="fas" [ngClass]="proposal?.location?.type === 'terrain' ? 'fa-map-marker-alt' : 'fa-tractor'"></i>
+              {{ getProposalTypeLabel(proposal) }}
+            </div>
+
+            <h2>{{ getProposalTitle(proposal) }}</h2>
+
+            <p class="proposal-subtitle">
+              {{ getProposalSubtitle(proposal) }}
+            </p>
+          </div>
+
+          <span class="status-badge" [ngClass]="getStatusClass(proposal.statut)">
+            {{ getStatusLabel(proposal.statut) }}
+          </span>
+        </div>
+
+        <div class="proposal-info-grid">
+          <div class="info-box">
+            <strong>Rental Start</strong>
+            <span>{{ proposal.dateDebut }}</span>
+          </div>
+
+          <div class="info-box">
+            <strong>Rental End</strong>
+            <span>{{ proposal.dateFin }}</span>
+          </div>
+
+          <div class="info-box">
+            <strong>Duration</strong>
+            <span>{{ proposal.nbMois }} month(s)</span>
+          </div>
+
+          <div class="info-box">
+            <strong>Monthly Price</strong>
+            <span>{{ proposal.montantMensuel }} DT</span>
+          </div>
+
+          <div class="info-box">
+            <strong>Total Amount</strong>
+            <span>{{ proposal.montantTotal }} DT</span>
+          </div>
+
+          <div class="info-box">
+            <strong>Status</strong>
+            <span>{{ getStatusLabel(proposal.statut) }}</span>
+          </div>
+        </div>
+
+        <div class="proposal-refusal-box" *ngIf="proposal.messageRefus">
+          <strong>Refusal Reason</strong>
+          <p>{{ proposal.messageRefus }}</p>
+        </div>
+
+        <div class="proposal-actions" *ngIf="canGenerateContract(proposal)">
+        <button class="details-btn" (click)="generateContract(proposal)">
+            <i class="fas fa-file-contract"></i>
+            {{ getContractButtonLabel(proposal) }}
+        </button>
+        </div>
+
+        <div class="proposal-actions" *ngIf="proposal.statut === 'EN_ATTENTE'">
+          <button class="state-btn pending-btn" disabled>
+            <i class="fas fa-clock"></i>
+            Waiting for farmer response
+          </button>
+        </div>
+
+        <div class="proposal-actions" *ngIf="proposal.statut === 'ACCEPTEE'">
+          <button class="state-btn accepted-btn" disabled>
+            <i class="fas fa-check-circle"></i>
+            Accepted — waiting for contract info
+          </button>
+        </div>
+
+        <div class="proposal-actions" *ngIf="proposal.statut === 'REFUSEE'">
+          <button class="state-btn refused-btn" disabled>
+            <i class="fas fa-times-circle"></i>
+            Proposal Refused
+          </button>
+        </div>
+
+                <div class="proposal-actions" *ngIf="proposal.statut === 'FINALISEE'">
+                  <button class="state-btn accepted-btn" disabled>
+                    <i class="fas fa-check-circle"></i>
+                    Proposal Finalized
+                  </button>
+
+                  <button class="payment-btn" (click)="goToRentalPayment(proposal)">
+                    <i class="fas fa-credit-card"></i>
+                    Manage Payment
+                  </button>
+                </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="showPopup"
+  (click)="closePopup()"
+  style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    padding: 20px;
+  ">
+
+  <div
+    (click)="$event.stopPropagation()"
+    [ngStyle]="{
+      width: '100%',
+      'max-width': '460px',
+      background: 'white',
+      'border-radius': '24px',
+      padding: '32px 28px',
+      'text-align': 'center',
+      'box-shadow': popupType === 'success'
+        ? '0 25px 60px rgba(76,175,80,0.18)'
+        : '0 25px 60px rgba(220,53,69,0.18)'
+    }">
+
+    <div
+      [ngStyle]="{
+        width: '72px',
+        height: '72px',
+        margin: '0 auto 18px',
+        'border-radius': '50%',
+        display: 'flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        background: popupType === 'success'
+          ? 'rgba(76,175,80,0.12)'
+          : 'rgba(220,53,69,0.12)'
+      }">
+
+      <i
+        class="fas"
+        [class.fa-check-circle]="popupType === 'success'"
+        [class.fa-times-circle]="popupType === 'error'"
+        [ngStyle]="{
+          'font-size': '34px',
+          color: popupType === 'success' ? '#4caf50' : '#dc3545'
+        }">
+      </i>
+    </div>
+
+    <h3
+      [ngStyle]="{
+        margin: '0 0 10px',
+        'font-size': '24px',
+        'font-weight': '700',
+        color: popupType === 'success' ? '#222' : '#b02a37'
+      }">
+      {{ popupTitle }}
+    </h3>
+
+    <p
+      [ngStyle]="{
+        margin: '0 0 24px',
+        'font-size': '15px',
+        'line-height': '1.6',
+        color: '#555'
+      }">
+      {{ popupMessage }}
+    </p>
+
+    <button
+      type="button"
+      class="btn"
+      [ngClass]="popupType === 'success' ? 'btn-primary' : 'btn-danger'"
+      (click)="closePopup()">
+      OK
+    </button>
+  </div>
+</div>
+
+<app-footer></app-footer>

@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit, OnDestroy, HostListener, ViewChild, E
 import { NavigationEnd, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { CartService } from './services/cart/cart.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
     selector: 'app-root',
@@ -36,7 +37,10 @@ import { CartService } from './services/cart/cart.service';
     </button>
 
     <!-- Floating Cart -->
-    <button class="floating-cart" routerLink="/marketplace/cart">
+    <button
+      class="floating-cart"
+      routerLink="/marketplace/cart"
+      *ngIf="showFloatingCart">
       <i class="fas fa-shopping-cart"></i>
       <span class="cart-badge" *ngIf="cartCount > 0">
         {{ cartCount }}
@@ -45,7 +49,7 @@ import { CartService } from './services/cart/cart.service';
 
     <app-toast></app-toast>
 
-    <!-- Router outlet — gère tout -->
+    <!-- Router outlet -->
     <router-outlet></router-outlet>
 
     <!-- Persistent 3D Explorer — never destroyed, CSS-toggled to preserve state -->
@@ -204,6 +208,7 @@ import { CartService } from './services/cart/cart.service';
 export class AppComponent implements OnInit, AfterViewInit {
     preloaderHidden  = false;
     showBackTop      = false;
+    showFloatingCart = false;  // ← from v2
     fabMode: 'jump-reply' | 'scroll-top' = 'scroll-top';
     isForumsPostPage = false;
     isExplorerRoute  = false;
@@ -219,7 +224,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         'http://127.0.0.1:8089',
     ]);
 
-    /** Maps folio routes → Angular routes. Add entries as modules go live. */
     private readonly folioRouteMap: Record<string, string> = {
         '/delivery':     '/delivery',
         '/forum':        '/forums',
@@ -250,25 +254,27 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.cartService.cartCount$.subscribe(count => {
             this.cartCount = count;
         });
-        this.cartService.refreshCartCount();
+
+        // Initial visibility check (v2)
+        this.updateFloatingCartVisibility();
 
         this.isForumsPostPage = this.router.url.startsWith('/forums/post/');
         this.isExplorerRoute  = this.router.url.startsWith('/explorer');
 
-        this.router.events.subscribe((event) => {
-            if (event instanceof NavigationEnd) {
+        this.router.events
+            .pipe(filter(event => event instanceof NavigationEnd))
+            .subscribe((event: NavigationEnd) => {
                 this.isForumsPostPage = event.urlAfterRedirects.startsWith('/forums/post/');
                 this.isExplorerRoute  = event.urlAfterRedirects.startsWith('/explorer');
                 this.updateFabState();
+                this.updateFloatingCartVisibility(); // ← from v2
                 window.setTimeout(() => this.updateFabState(), 120);
-            }
-        });
+            });
 
         this.updateFabState();
     }
 
     ngAfterViewInit(): void {
-        // Set iframe src exactly once — never touch it again so the 3D state is never reset.
         if (this.explorerFrame && !this.explorerLoaded) {
             const token = localStorage.getItem('authToken');
             const base  = 'http://localhost:5173/explorer/';
@@ -370,5 +376,37 @@ export class AppComponent implements OnInit, AfterViewInit {
             if (el.getBoundingClientRect().top < window.innerHeight - 80)
                 el.classList.add('visible');
         });
+    }
+
+    // ── From v2: smart cart visibility ──────────────────────────────────────
+    updateFloatingCartVisibility(): void {
+        const url = this.router.url;
+
+        const token =
+            localStorage.getItem('authToken') ||   // v1 key kept first
+            localStorage.getItem('token') ||
+            localStorage.getItem('jwt') ||
+            localStorage.getItem('accessToken');
+
+        const user =
+            localStorage.getItem('currentUser') ||
+            localStorage.getItem('user') ||
+            localStorage.getItem('authUser');
+
+        const isLoggedIn = !!token || !!user;
+
+        const hiddenRoutes =
+            url === '/' ||
+            url.startsWith('/auth') ||
+            url.startsWith('/dashboard') ||
+            url.includes('/marketplace/rental-contract/');
+
+        this.showFloatingCart = isLoggedIn && !hiddenRoutes;
+
+        if (this.showFloatingCart) {
+            this.cartService.refreshCartCount();
+        } else {
+            this.cartCount = 0;
+        }
     }
 }

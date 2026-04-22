@@ -1,0 +1,127 @@
+<app-navbar></app-navbar>
+
+<section class="section-padding marketplace-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Orders</span>
+      <h2 class="section-title">Past <span>Orders</span></h2>
+      <p class="section-desc">
+        View your paid orders and open each one to see its product details.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section-padding cart-page">
+  <div class="container">
+    <div *ngIf="loading" class="empty-box">Loading orders...</div>
+
+    <div *ngIf="!loading && orders.length === 0" class="empty-box">
+      <i class="fas fa-receipt"></i>
+      <h3>No past paid orders</h3>
+      <p>Your paid orders will appear here.</p>
+    </div>
+
+    <!-- PAID ORDERS -->
+    <div *ngIf="!loading && orders.length > 0" class="cart-items">
+      <div class="cart-item order-card" *ngFor="let order of orders" (click)="openOrder(order)">
+        <div class="order-paid-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+
+        <div class="item-info">
+          <h3>Paid Order</h3>
+          <p>Paid on {{ order.dateCommande | date:'medium' }}</p>
+          <p class="paid-line">
+            Paid
+            <span *ngIf="order.methodePaiement">with {{ order.methodePaiement }}</span>
+          </p>
+        </div>
+
+        <div class="item-actions">
+          <div class="item-total">
+            {{ order.montantTotal | number:'1.2-2' }} DT
+          </div>
+
+          <button class="btn btn-primary" (click)="openOrder(order); $event.stopPropagation()">
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FACTURES -->
+    <div *ngIf="!loading && factures.length > 0" class="factures-section">
+      <div class="factures-header">
+        <div>
+          <h3>
+            <i class="fas fa-file-invoice"></i>
+            Factures
+          </h3>
+          <p>Your invoices generated after successful payments.</p>
+        </div>
+      </div>
+
+      <div class="facture-list">
+        <div class="facture-card" *ngFor="let facture of factures">
+          <div class="facture-icon">
+            <i class="fas fa-file-invoice-dollar"></i>
+          </div>
+
+          <div class="facture-main">
+            <div class="facture-top">
+              <div>
+                <span class="facture-label">Invoice number</span>
+                <h4>{{ facture.numero }}</h4>
+              </div>
+
+              <span class="facture-status">
+                Paid
+              </span>
+            </div>
+
+            <div class="facture-meta-grid">
+              <div class="facture-meta">
+                <span>Facture date</span>
+                <strong>{{ facture.date | date:'mediumDate' }}</strong>
+              </div>
+
+              <div class="facture-meta">
+                <span>Payment date</span>
+                <strong>{{ facture.datePaiement | date:'medium' }}</strong>
+              </div>
+
+              <div class="facture-meta">
+                <span>Method</span>
+                <strong>{{ facture.methode }}</strong>
+              </div>
+
+              <div class="facture-meta">
+                <span>Payment reference</span>
+                <strong>{{ facture.paiementReference }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="facture-side">
+            <span class="facture-total-label">Total</span>
+            <div class="facture-total">
+              {{ facture.total | number:'1.2-2' }} DT
+            </div>
+
+            <button
+              class="btn btn-primary facture-btn"
+              type="button"
+              (click)="openFacture(facture); $event.stopPropagation()">
+              <i class="fas fa-file-pdf"></i>
+              View Facture
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<app-footer></app-footer>

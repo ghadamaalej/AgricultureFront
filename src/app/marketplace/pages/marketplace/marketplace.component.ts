@@ -5,6 +5,9 @@ import { LocationService } from '../../../services/location/location.service';
 import { DisponibiliteService } from '../../../services/disponibilite/disponibilite.service';
 import { ReservationVisiteService } from '../../../services/reservation/reservation-visite.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { AiRecipeService } from '../../../services/ai-recipe.service';
+import { CartService } from '../../../services/cart/cart.service';
+import { ReviewService } from '../../../services/review/review.service';
 
 @Component({
   selector: 'app-marketplace',
@@ -13,6 +16,8 @@ import { AuthService } from '../../../services/auth/auth.service';
 })
 export class MarketplaceComponent implements OnInit {
 
+  currentPage: number = 1;
+  itemsPerPage: number = 16;
   searchTerm: string = '';
   selectedCategory: string = '';
   maxPrice: number = 5000;
@@ -108,13 +113,21 @@ export class MarketplaceComponent implements OnInit {
   imagePreview: string | ArrayBuffer | null = null;
   selectedFile: File | null = null;
 
+  showAiAssistant = false;
+aiPrompt = '';
+aiLoading = false;
+aiResult: any = null;
+
   constructor(
     private router: Router,
     private productService: ProductService,
     private locationService: LocationService,
     private disponibiliteService: DisponibiliteService,
     private reservationVisiteService: ReservationVisiteService,
-    private authService: AuthService
+    private aiRecipeService: AiRecipeService,
+    private cartService: CartService,
+    private authService: AuthService,
+    private reviewService: ReviewService,
   ) {}
 
   ngOnInit() {
@@ -175,31 +188,56 @@ export class MarketplaceComponent implements OnInit {
   }
 
   loadProducts() {
-    this.productService.getAll().subscribe((data: any) => {
-      const produits = data?._embedded?.produitAgricoles;
+  this.productService.getAll().subscribe((data: any) => {
+    const produits = data?._embedded?.produitAgricoles || data || [];
 
-      if (!produits) {
-        console.error('No produits found in response');
-        return;
-      }
+    if (!Array.isArray(produits)) {
+      console.error('No produits found in response');
+      return;
+    }
 
-      this.items = produits.map((p: any) => ({
-        id: this.extractId(p._links.self.href),
-        name: p.nom,
-        category: p.category || '',
-        type: 'Product',
-        price: p.prix,
-        image: p.photoProduit
-          ? 'http://localhost:8090/uploads/' + p.photoProduit
-          : 'assets/images/product1.jpg',
-        description: p.description,
-        quantity: p.quantiteDisponible,
-        idUser: p.idUser
-      }));
+    this.items = produits.map((p: any) => ({
+      id: this.extractId(p._links?.self?.href || ''),
+      name: p.nom,
+      category: p.category || '',
+      type: 'Product',
+      price: p.prix,
+      image: p.photoProduit
+        ? 'http://localhost:8090/uploads/' + p.photoProduit
+        : 'assets/images/product1.jpg',
+      description: p.description,
+      quantity: p.quantiteDisponible,
+      idUser: p.idUser,
+      averageRating: 0,
+      reviewCount: 0
+    }));
 
-      this.filteredItems = this.items;
+    this.items.forEach((item: any) => {
+      this.reviewService.getReviews('PRODUCT', item.id).subscribe({
+        next: (reviews: any[]) => {
+          const list = Array.isArray(reviews) ? reviews : [];
+          item.reviewCount = list.length;
+
+          if (list.length > 0) {
+            const total = list.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
+            item.averageRating = total / list.length;
+          } else {
+            item.averageRating = 0;
+          }
+
+          this.filteredItems = [...this.items];
+        },
+        error: () => {
+          item.reviewCount = 0;
+          item.averageRating = 0;
+          this.filteredItems = [...this.items];
+        }
+      });
     });
-  }
+
+    this.filteredItems = [...this.items];
+  });
+}
 
   extractId(url: string): number {
     return Number(url.split('/').pop());
@@ -336,7 +374,9 @@ export class MarketplaceComponent implements OnInit {
         !this.showOnlyMine || p.idUser === this.currentUserId;
 
       return matchesSearch && matchesPrice && matchesRentCategory && matchesBuyCategory && matchesMine;
+      
     });
+    this.currentPage = 1;
   }
 
   toggleMyPosts(): void {
@@ -833,10 +873,35 @@ export class MarketplaceComponent implements OnInit {
         surface: r.superficie,
         unit: r.uniteSuperficie,
         soilType: r.typeSol,
-        hasReservation: false
+        hasReservation: false,
+        averageRating: 0,
+        reviewCount: 0
       }));
 
       this.applyFilters();
+
+      this.rentItems.forEach((item: any) => {
+        this.reviewService.getReviews('RENTAL', item.id).subscribe({
+          next: (reviews: any[]) => {
+            const list = Array.isArray(reviews) ? reviews : [];
+            item.reviewCount = list.length;
+
+            if (list.length > 0) {
+              const total = list.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
+              item.averageRating = total / list.length;
+            } else {
+              item.averageRating = 0;
+            }
+
+            this.filteredItems = [...this.filteredItems];
+          },
+          error: () => {
+            item.reviewCount = 0;
+            item.averageRating = 0;
+            this.filteredItems = [...this.filteredItems];
+          }
+        });
+      });
 
       this.rentItems.forEach(item => {
         this.locationService.hasActiveReservations(item.id)
@@ -974,4 +1039,72 @@ buildDisponibilitesForUpdate() {
   );
 }
 
+get paginatedItems() {
+  const start = (this.currentPage - 1) * this.itemsPerPage;
+  return this.filteredItems.slice(start, start + this.itemsPerPage);
+}
+
+nextPage() {
+  if (this.currentPage * this.itemsPerPage < this.filteredItems.length) {
+    this.currentPage++;
+  }
+}
+
+prevPage() {
+  if (this.currentPage > 1) {
+    this.currentPage--;
+  }
+}
+
+toggleAiAssistant() {
+  this.showAiAssistant = !this.showAiAssistant;
+}
+
+generateRecipe(addToCart: boolean = false) {
+  if (!this.currentUserId) {
+    this.openReservationPopup('Login Required', 'Please sign in first.', 'error');
+    return;
+  }
+
+  if (!this.aiPrompt.trim()) {
+    this.openReservationPopup('Prompt Required', 'Please write what recipe you want.', 'error');
+    return;
+  }
+
+  this.aiLoading = true;
+
+  this.aiRecipeService.generateRecipeCart({
+    userId: this.currentUserId,
+    prompt: this.aiPrompt,
+    addToCart
+  }).subscribe({
+    next: (res) => {
+      this.aiResult = res;
+      this.aiLoading = false;
+
+      if (addToCart) {
+        this.cartService.refreshCartCount();
+        this.openReservationPopup(
+          'Recipe Cart Ready',
+          'Matched ingredients were added to your cart.',
+          'success'
+        );
+      }
+    },
+    error: (err) => {
+      this.aiLoading = false;
+      this.openReservationPopup(
+        'AI Error',
+        err?.error?.message || 'Failed to generate recipe.',
+        'error'
+      );
+    }
+  });
+}
+
+
+getStars(rating: number): boolean[] {
+  const rounded = Math.round(rating || 0);
+  return [1, 2, 3, 4, 5].map(star => star <= rounded);
+}
 }

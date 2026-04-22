@@ -1,0 +1,81 @@
+<app-navbar></app-navbar>
+
+<section class="section-padding marketplace-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Order Details</span>
+      <h2 class="section-title">Paid <span>Order</span></h2>
+      <p class="section-desc">
+        See the products included in this paid order.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section-padding cart-page">
+  <div class="container">
+    <button class="btn btn-secondary" (click)="goBack()" style="margin-bottom: 20px;">
+      Back
+    </button>
+
+    <div *ngIf="loading" class="empty-box">Loading order details...</div>
+
+    <div *ngIf="!loading && order">
+      <div class="cart-summary" style="margin-bottom: 24px; position: static;">
+        <h3>Paid Order</h3>
+        <div class="summary-row">
+          <span>Date</span>
+          <strong>{{ order.dateCommande | date:'medium' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Payment</span>
+          <strong>
+            <i class="fas fa-check-circle" style="color:#22c55e; margin-right:8px;"></i>
+            Paid
+          </strong>
+        </div>
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <strong>{{ order.sousTotal | number:'1.2-2' }} DT</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Commission 20%</span>
+          <strong>{{ order.commission | number:'1.2-2' }} DT</strong>
+        </div>
+
+        <div class="summary-row" *ngIf="order.tip && order.tip > 0">
+          <span>Tip</span>
+          <strong>{{ order.tip | number:'1.2-2' }} DT</strong>
+        </div>
+
+        <hr>
+
+        <div class="summary-row total-to-pay">
+          <span>Total Paid</span>
+          <strong>{{ order.montantTotal | number:'1.2-2' }} DT</strong>
+        </div>
+      </div>
+
+      <div class="cart-items">
+        <div class="cart-item" *ngFor="let item of items">
+          <img [src]="item.imageUrl" [alt]="item.nom">
+
+          <div class="item-info">
+            <h3>{{ item.nom }}</h3>
+            <p>{{ item.prixUnitaire }} DT / KG</p>
+            <p>Quantity: {{ item.quantite }} KG</p>
+          </div>
+
+          <div class="item-actions">
+            <div class="item-total">
+              {{ item.sousTotal | number:'1.2-2' }} DT
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer></app-footer>

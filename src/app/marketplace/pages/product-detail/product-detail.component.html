@@ -138,14 +138,14 @@
         </div>
       </div>
 
-<!-- RENT BUTTON -->
-<button
-  *ngIf="mode === 'rent'"
-  class="add-to-cart"
-  (click)="openBooking()">
-  <i class="fas fa-calendar"></i>
-  Book Now
-</button>
+      <!-- RENT BUTTON -->
+      <button
+        *ngIf="mode === 'rent'"
+        class="add-to-cart"
+        (click)="openBooking()">
+        <i class="fas fa-calendar"></i>
+        Book Now
+      </button>
       <!-- RENT BOOKING PANEL -->
       <div *ngIf="mode === 'rent' && bookingOpen" class="booking-panel">
 
@@ -186,12 +186,17 @@
         <!-- Date -->
         <div *ngIf="selectedSlot" class="visit-date-box">
           <label>Visit Date</label>
+          <mat-form-field appearance="outline" class="visit-date-field">
+          <mat-label>Visit Date</mat-label>
           <input
-            type="date"
+            matInput
+            [matDatepicker]="picker"
             [(ngModel)]="selectedDate"
-            [min]="product.startDate"
-            [max]="product.endDate">
-        </div>
+            [matDatepickerFilter]="dateFilter">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+                </div>
 
         <!-- Actions -->
         <div class="booking-actions" *ngIf="selectedSlot">
@@ -203,41 +208,195 @@
           </button>
         </div>
 
-    <div class="reservation-popup-overlay" *ngIf="showReservationPopup">
-  <div class="reservation-popup">
+          <div class="reservation-popup-overlay" *ngIf="showReservationPopup">
+            <div class="reservation-popup">
 
-    <div class="popup-icon">
-      <i class="fas fa-check-circle"
-         *ngIf="reservationPopupTitle === 'Reservation Sent'"></i>
+              <div class="popup-icon">
+              <i class="fas fa-check-circle"
+                *ngIf="reservationPopupTitle === 'Reservation Sent'"></i>
 
-      <i class="fas fa-exclamation-circle"
-         *ngIf="reservationPopupTitle !== 'Reservation Sent'"></i>
+                  <i class="fas fa-exclamation-circle"
+                    *ngIf="reservationPopupTitle !== 'Reservation Sent'"></i>
+              </div>
+
+                <h3>{{ reservationPopupTitle }}</h3>
+                <p>{{ reservationPopupMessage }}</p>
+
+                  <button class="btn btn-primary" (click)="closeReservationPopup()">
+                    OK
+                  </button>
+
+            </div>
+          </div>
+
+
+
+          <div class="reservation-popup-overlay"
+              *ngIf="showReservationPopup"
+              (click)="closeReservationPopup()">
+
+            <div class="reservation-popup" (click)="$event.stopPropagation()">
+              ...
+            </div>
+          </div>
+      </div>
+          
+          <div class="reviews-list" *ngIf="reviews.length > 0">
+            <div class="review-card" *ngFor="let review of visibleReviews">
+              <div class="review-card-top">
+                <div class="review-stars">
+                  <i
+                    class="fas fa-star"
+                    *ngFor="let s of getStarArray(review.rating)">
+                  </i>
+                </div>
+
+                <small>{{ review.createdAt | date:'mediumDate' }}</small>
+              </div>
+
+              <p class="review-note">
+                {{ review.comment || 'No note added.' }}
+              </p>
+            </div>
+          </div>
+
+          <button
+            *ngIf="reviews.length > 2"
+            type="button"
+            class="toggle-reviews-btn"
+            (click)="showAllReviews = !showAllReviews">
+            {{ showAllReviews ? 'Show Less' : 'Show All Reviews' }}
+          </button>
+
+                <div class="review-form-box">
+                  <h4>{{ isEditingReview ? 'Edit your review' : 'Write a review' }}</h4>
+
+                  <div *ngIf="currentUserId; else loginToReview">
+
+                    <!-- USER ALREADY REVIEWED AND NOT EDITING -->
+                    <div *ngIf="myReview && !isEditingReview" class="my-review-box">
+                      <div class="review-card-top">
+                        <div class="review-stars">
+                          <i
+                            class="fas fa-star"
+                            *ngFor="let s of getStarArray(myReview.rating)">
+                          </i>
+                        </div>
+
+                        <small>Your review</small>
+                      </div>
+
+                      <p class="review-note">
+                        {{ myReview.comment || 'No note added.' }}
+                      </p>
+
+                      <button
+                        type="button"
+                        class="edit-review-btn"
+                        (click)="startEditReview()">
+                        <i class="fas fa-edit"></i>
+                        Edit Review
+                      </button>
+                    </div>
+
+                    <!-- CREATE OR EDIT FORM -->
+                    <div *ngIf="(!myReview && canReview) || isEditingReview; else reviewLocked">
+
+                      <label class="review-label">Your Rating</label>
+                      <div class="interactive-stars">
+                        <button
+                          type="button"
+                          class="star-btn"
+                          *ngFor="let star of getFiveStars()"
+                          (click)="setRating(star)">
+                          <i
+                            class="fas fa-star"
+                            [class.active]="star <= reviewRating">
+                          </i>
+                        </button>
+                      </div>
+
+                      <label class="review-label">Small Note</label>
+                      <input
+                        type="text"
+                        [(ngModel)]="reviewComment"
+                        maxlength="120"
+                        class="review-note-input"
+                        placeholder="Example: Very fresh product, fast delivery." />
+
+                      <small class="review-note-hint">
+                        {{ (reviewComment || '').length }}/120
+                      </small>
+
+                      <div class="review-actions">
+                        <button
+                          class="add-to-cart"
+                          [disabled]="submittingReview"
+                          (click)="isEditingReview ? updateMyReview() : submitReview()">
+                          {{ submittingReview ? 'Submitting...' : (isEditingReview ? 'Update Review' : 'Submit Review') }}
+                        </button>
+
+                        <button
+                          *ngIf="isEditingReview"
+                          type="button"
+                          class="cancel-review-btn"
+                          (click)="cancelEditReview()">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+
+                    <ng-template #reviewLocked>
+                      <div class="review-locked-message" *ngIf="!myReview">
+                        {{ reviewReason || 'You can only review items you actually bought or rented.' }}
+                      </div>
+                    </ng-template>
+                  </div>
+
+                  <ng-template #loginToReview>
+                    <div class="review-locked-message">
+                      Please sign in first to review.
+                    </div>
+                  </ng-template>
+                </div>
     </div>
 
-    <h3>{{ reservationPopupTitle }}</h3>
-    <p>{{ reservationPopupMessage }}</p>
-
-    <button class="btn btn-primary" (click)="closeReservationPopup()">
-      OK
-    </button>
-    
-
   </div>
-</div>
-<div class="reservation-popup-overlay"
-     *ngIf="showReservationPopup"
-     (click)="closeReservationPopup()">
 
-  <div class="reservation-popup" (click)="$event.stopPropagation()">
-    ...
-  </div>
-</div>
+
+    <div class="container"> 
+  
+      <div *ngIf="recommendations.length > 0" class="recommendation-section">
+
+        <div class="rec-header">
+          <h3>Recommended just for you</h3>
+          <span>Based on your interest</span>
+        </div>
+
+        <div class="rec-scroll">
+
+          <div class="rec-card" *ngFor="let r of recommendations">
+
+            <div class="rec-img">
+              <img [src]="r.image">
+            </div>
+
+            <div class="rec-content">
+              <h4>{{ r.name }}</h4>
+              <p class="rec-price">{{ r.price }} DT</p>
+
+              <button (click)="goToProduct(r.id)">
+                View Product
+              </button>
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
     </div>
-
-  </div>
 </section>
 <div
   *ngIf="showReservationPopup"
