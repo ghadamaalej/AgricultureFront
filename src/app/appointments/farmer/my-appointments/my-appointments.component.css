@@ -1,63 +1,391 @@
-.page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px}
-.pt{font-size:1.7rem;font-weight:700;color:#1a2e1a;margin:0 0 4px}
-.ps{color:#6b8c6b;font-size:.9rem;margin:0}
-.btn-book{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#2d6a2d,#3d8a3d);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px rgba(45,106,45,.25)}
-.btn-book:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(45,106,45,.35)}
-.sm{text-align:center;padding:40px;color:#6b8c6b;font-size:.95rem;display:flex;align-items:center;justify-content:center;gap:8px}
-.sm.err{color:#c0392b}
-.empty{text-align:center;padding:70px 20px;color:#6b8c6b}
-.empty i{font-size:3rem;margin-bottom:14px;display:block;color:#b0c8b0}
-.empty p{margin:0 0 20px;font-size:.95rem}
-.appt-list{display:flex;flex-direction:column;gap:14px}
-.appt-card{background:#fff;border-radius:14px;border:1.5px solid #e8f0e8;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;transition:box-shadow .2s,transform .2s}
-.appt-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);transform:translateY(-1px)}
-.card-accepted .card-top{background:linear-gradient(135deg,#f0fff0,#e8ffec)}
-.card-refused  .card-top{background:linear-gradient(135deg,#fff5f5,#fff0f0)}
-.card-cancelled .card-top{background:#fafafa}
-.card-top{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #eef4ee;background:#f8fbf8}
-.status-badge{display:flex;align-items:center;gap:6px;font-size:.76rem;font-weight:700;padding:5px 12px;border-radius:20px}
-.st-wait    {background:#fff8e0;color:#a07000}
-.st-ok      {background:#e8ffec;color:#1a7a2d}
-.st-refused {background:#fff0f0;color:#c0392b}
-.st-cancelled{background:#f4f4f4;color:#777}
-.appt-date{font-size:.82rem;color:#7a9a7a;display:flex;align-items:center;gap:6px}
-.appt-date i{color:#3d7a3d}
-.card-body{padding:16px 20px}
-.info-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.info-item{display:flex;flex-direction:column;gap:3px}
-.il{font-size:.7rem;color:#9aaa9a;text-transform:uppercase;font-weight:700;letter-spacing:.5px}
-.iv{font-size:.9rem;color:#1a2e1a;font-weight:500}
-.empty-val{color:#bbb}
-.refusal-reason{margin-top:12px;background:#fff0f0;border-radius:8px;padding:10px 14px;font-size:.83rem;color:#c0392b;display:flex;align-items:center;gap:8px;border:1px solid #f0d0d0}
-.card-footer{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid #eef4ee;background:#fafffe}
-.created-at{font-size:.76rem;color:#b0b8b0}
-.btn-cancel{display:flex;align-items:center;gap:6px;background:#fff0f0;color:#c0392b;border:1.5px solid #f0d0d0;border-radius:8px;padding:8px 16px;font-size:.83rem;font-weight:600;cursor:pointer;transition:all .2s}
-.btn-cancel:hover{background:#c0392b;color:#fff;border-color:#c0392b}
-.btn-cancel:disabled{opacity:.5;cursor:not-allowed}
+/* ================================================================
+   MES RENDEZ-VOUS — UI Premium Agriculteur / Vétérinaire
+   Design: Luxury-Organic | Dark Forest + Gold Accents
+   ================================================================ */
+
+/* ---- Page Header ---- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(42, 95, 52, 0.12);
+  position: relative;
+}
+
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 64px;
+  height: 3px;
+  background: linear-gradient(90deg, #2a5f34, #c9a84c);
+  border-radius: 2px;
+}
+
+.pt {
+  font-family: 'DM Serif Display', 'Playfair Display', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #1a2f1e;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.ps {
+  color: #6b8a72;
+  font-size: 0.88rem;
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+/* ---- CTA Button ---- */
+.btn-book {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: linear-gradient(135deg, #1e4d26 0%, #2d7a3a 50%, #3a9147 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 22px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 16px rgba(30, 77, 38, 0.28), inset 0 1px 0 rgba(255,255,255,0.12);
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-book::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-book:hover::before { left: 100%; }
+.btn-book:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(30, 77, 38, 0.38);
+}
+
+.btn-book:active { transform: translateY(0); }
+
+/* ================================================================
+   STATS GRID — Statistiques Premium
+   ================================================================ */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin: 20px 0 24px;
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 14px;
+  margin: 0 0 32px;
 }
 
 .stat-card {
   background: #fff;
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-  border: 1px solid #eef2f7;
+  border-radius: 18px;
+  padding: 22px 18px 18px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(42, 95, 52, 0.07);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: default;
 }
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  opacity: 0.05;
+  transition: opacity 0.25s;
+}
+
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(42,95,52,0.14); }
+.stat-card:hover::after { opacity: 0.1; }
+
+.stat-card:nth-child(1) { border-top: 3px solid #2d7a3a; }
+.stat-card:nth-child(1)::after { background: #2d7a3a; }
+.stat-card:nth-child(2) { border-top: 3px solid #c9a84c; }
+.stat-card:nth-child(2)::after { background: #c9a84c; }
+.stat-card:nth-child(3) { border-top: 3px solid #3a8aef; }
+.stat-card:nth-child(3)::after { background: #3a8aef; }
+.stat-card:nth-child(4) { border-top: 3px solid #e05252; }
+.stat-card:nth-child(4)::after { background: #e05252; }
+.stat-card:nth-child(5) { border-top: 3px solid #7c5cbf; }
+.stat-card:nth-child(5)::after { background: #7c5cbf; }
+.stat-card:nth-child(6) { border-top: 3px solid #1aab8a; }
+.stat-card:nth-child(6)::after { background: #1aab8a; }
 
 .stat-label {
   display: block;
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 8px;
+  font-size: 0.71rem;
+  font-weight: 700;
+  color: #8a9e90;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
 }
 
 .stat-value {
-  font-size: 28px;
+  display: block;
+  font-family: 'DM Serif Display', 'Playfair Display', Georgia, serif;
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #1a2f1e;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+/* ================================================================
+   ÉTATS CHARGEMENT / VIDE / ERREUR
+   ================================================================ */
+.sm {
+  text-align: center;
+  padding: 48px 20px;
+  color: #8a9e90;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #f8faf7;
+  border-radius: 16px;
+  border: 1px dashed #cddfc8;
+}
+
+.sm.err { color: #c0392b; background: #fff5f5; border-color: #f0c8c8; }
+
+.empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: #8a9e90;
+  background: linear-gradient(160deg, #f8faf7, #f0f6f0);
+  border-radius: 20px;
+  border: 1px dashed #cddfc8;
+}
+
+.empty i { font-size: 3.2rem; margin-bottom: 18px; display: block; color: #b0c8b0; opacity: 0.7; }
+.empty p { margin: 0 0 24px; font-size: 0.95rem; }
+
+/* ================================================================
+   LISTE DES RDV
+   ================================================================ */
+.appt-list { display: flex; flex-direction: column; gap: 14px; }
+
+.appt-card {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(42, 95, 52, 0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  overflow: hidden;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.appt-card:hover { box-shadow: 0 8px 28px rgba(42, 95, 52, 0.12); transform: translateY(-2px); }
+.card-accepted { border-left: 4px solid #2d7a3a; }
+.card-refused  { border-left: 4px solid #e05252; }
+.card-cancelled { border-left: 4px solid #aaa; opacity: 0.82; }
+
+/* ---- Card Top ---- */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f4ef;
+  background: #fafdf9;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card-accepted .card-top { background: linear-gradient(135deg, #f0fff2, #e8f9ec); }
+.card-refused  .card-top { background: linear-gradient(135deg, #fff5f5, #fff0f0); }
+.card-cancelled .card-top { background: #f7f7f7; }
+
+/* ---- Status Badge ---- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.74rem;
   font-weight: 700;
-  color: #111827;
+  padding: 6px 14px;
+  border-radius: 50px;
+  letter-spacing: 0.03em;
+}
+
+.st-wait     { background: #fff8e1; color: #9a7200; border: 1px solid #f0d96a; }
+.st-ok       { background: #e8f9ec; color: #1a6b2a; border: 1px solid #9dd9ac; }
+.st-refused  { background: #fff0f0; color: #b42318; border: 1px solid #f0b4b0; }
+.st-cancelled{ background: #f3f3f3; color: #666;    border: 1px solid #ddd; }
+
+/* ---- Date ---- */
+.appt-date { font-size: 0.82rem; color: #7a9a82; display: flex; align-items: center; gap: 7px; font-weight: 500; }
+.appt-date i { color: #3d7a3d; font-size: 0.85rem; }
+
+/* ---- Card Body ---- */
+.card-body { padding: 18px 20px; }
+
+.info-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.info-item { display: flex; flex-direction: column; gap: 4px; }
+.il { font-size: 0.68rem; color: #9aaa9a; text-transform: uppercase; font-weight: 700; letter-spacing: 0.07em; }
+.iv { font-size: 0.9rem; color: #1a2f1e; font-weight: 500; }
+.empty-val { color: #ccc; }
+
+.refusal-reason {
+  margin-top: 14px;
+  background: linear-gradient(135deg, #fff5f5, #fff0ef);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.83rem;
+  color: #c0392b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #f0d0cc;
+}
+
+/* ---- Card Footer ---- */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid #f0f4ef;
+  background: #fafdf9;
+}
+
+.created-at { font-size: 0.74rem; color: #b0b8b0; font-style: italic; }
+
+.btn-cancel {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  color: #c0392b;
+  border: 1.5px solid #f0d0cc;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover { background: #c0392b; color: #fff; border-color: #c0392b; box-shadow: 0 4px 14px rgba(192,57,43,0.25); }
+.btn-cancel:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 768px) {
+  .page-header { flex-direction: column; gap: 16px; }
+  .pt { font-size: 1.6rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .info-row { grid-template-columns: 1fr; }
+  .card-top { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stat-value { font-size: 2rem; }
+}
+
+/* ================================================================
+   NOUVELLES CLASSES HTML AMÉLIORÉ
+   ================================================================ */
+
+/* Header avec icône */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-icon {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #1e4d26, #2d7a3a);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 14px rgba(30, 77, 38, 0.28);
+  flex-shrink: 0;
+}
+
+/* Stats avec icône + body */
+.stat-card { display: flex; align-items: center; gap: 14px; }
+.stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+.stat-body { display: flex; flex-direction: column; gap: 4px; }
+
+.stat-total   .stat-icon { background: #e8f9ec; color: #2d7a3a; }
+.stat-pending .stat-icon { background: #fff8e1; color: #9a7200; }
+.stat-accepted .stat-icon { background: #e8f3ff; color: #3a8aef; }
+.stat-refused .stat-icon  { background: #fff0f0; color: #e05252; }
+.stat-upcoming .stat-icon { background: #f3eeff; color: #7c5cbf; }
+.stat-animals  .stat-icon { background: #e6faf6; color: #1aab8a; }
+
+/* Animal chip */
+.animal-espece {
+  display: inline-block;
+  background: #e8f3ff;
+  color: #2a6aaf;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-right: 6px;
+}
+.animal-ref { font-weight: 700; color: #1a2f1e; }
+.motif-text { font-style: italic; }
+.créneau { display: flex; align-items: center; gap: 4px; font-size: 0.86rem; color: #3d7a3d; }
+
+/* Refusal redesign */
+.refusal-icon {
+  width: 34px; height: 34px;
+  background: #ffd5d0;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #c0392b;
+  flex-shrink: 0;
+}
+.refusal-label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #c0392b; opacity: 0.75; margin-bottom: 3px; }
+.refusal-text { display: block; font-size: 0.88rem; color: #b42318; }
+
+/* Empty redesign */
+.empty-icon { font-size: 3.5rem; margin-bottom: 16px; color: #b0c8b0; opacity: 0.65; }
+.empty-title { font-family: 'DM Serif Display','Playfair Display',Georgia,serif; font-weight: 400; font-size: 1.4rem; color: #3d6547; margin-bottom: 10px; }
+.empty-desc { font-size: 0.88rem; line-height: 1.65; margin-bottom: 28px; }
+
+/* Card top layout */
+.card-top-left { display: flex; align-items: center; }
+.card-top-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.appt-time { display: flex; align-items: center; gap: 5px; margin-left: 10px; padding-left: 10px; border-left: 1px solid #e0ecd8; }
+.appt-date-undefined { opacity: 0.55; font-style: italic; }
+
+@media (max-width: 600px) {
+  .header-left { gap: 10px; }
+  .header-icon { width: 40px; height: 40px; font-size: 1rem; }
 }

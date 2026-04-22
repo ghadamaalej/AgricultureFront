@@ -30,7 +30,7 @@ export class SuccessToastInterceptor implements HttpInterceptor {
     if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return false;
 
     const url = req.url.toLowerCase();
-    const excluded = ['/login', '/register', '/refresh', '/auth', '/signin', '/signup'];
+    const excluded = ['/login', '/register', '/refresh', '/auth', '/signin', '/signup', '/messages/'];
     return !excluded.some((entry) => url.includes(entry));
   }
 

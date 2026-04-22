@@ -23,12 +23,13 @@
         <button class="ni" [class.active]="view==='ai-chatbot'" (click)="setView('ai-chatbot')">
           <i class="fas fa-robot"></i><span>Chatbot vétérinaire</span>
         </button>
-        <button class="ni" [class.active]="view==='ai-chatbot'" (click)="setView('ai-farmer')">
-          <i class="fas fa-camera"></i><span>Chatbot Image IA</span>
-           <button class="ni" [class.active]="view==='ai-chatbot'" (click)="setView('poultry-farmer')">
-          <i class="fas fa-feather"></i><span>Chatbot Poultry IA</span>
-        </button>
-        </button>
+       <!-- APRÈS (corrigé : deux boutons séparés) -->
+<button class="ni" [class.active]="view==='ai-farmer'" (click)="setView('ai-farmer')">
+  <i class="fas fa-camera"></i><span>Chatbot Image IA</span>
+</button>
+<button class="ni" [class.active]="view==='poultry-farmer'" (click)="setView('poultry-farmer')">
+  <i class="fas fa-feather"></i><span>Chatbot Poultry IA</span>
+</button>
       </ng-container>
 
       <!-- VÉTÉRINAIRE -->

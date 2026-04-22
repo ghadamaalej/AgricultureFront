@@ -119,7 +119,8 @@ export class ChatComponent implements OnInit, OnDestroy {
       : this.api.sendConversationMessage(this.selectedConversation.id, content);
 
     request$.subscribe({
-      next: () => {
+      next: sentMessage => {
+        this.applyOutgoingMessage(sentMessage);
         this.draft = '';
         this.selectedFile = null;
         this.recorderChunks = [];
@@ -240,18 +241,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.recording = false;
     }
 
-    const convo = this.conversations.find(c => c.id === message.conversationId);
-    if (convo) {
-      convo.lastMessage = this.getMessagePreview(message);
-      convo.lastMessageAt = message.sentAt;
-      this.conversations = [convo, ...this.conversations.filter(c => c.id !== convo.id)];
-    } else {
-      this.loadConversations(message.conversationId);
-    }
-
-    if (this.selectedConversation?.id === message.conversationId && !this.messages.some(m => m.id === message.id)) {
-      this.messages = [...this.messages, message];
-    }
+    this.applyOutgoingMessage(message);
   }
 
   getConversationTitle(conversation: ChatConversation): string {
@@ -269,6 +259,21 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.recorder = null;
     this.stoppingRecording = false;
     this.recording = false;
+  }
+
+  private applyOutgoingMessage(message: ChatMessage): void {
+    const convo = this.conversations.find(c => c.id === message.conversationId);
+    if (convo) {
+      convo.lastMessage = this.getMessagePreview(message);
+      convo.lastMessageAt = message.sentAt;
+      this.conversations = [convo, ...this.conversations.filter(c => c.id !== convo.id)];
+    } else {
+      this.loadConversations(message.conversationId);
+    }
+
+    if (this.selectedConversation?.id === message.conversationId && !this.messages.some(m => m.id === message.id)) {
+      this.messages = [...this.messages, message];
+    }
   }
 
   trackByConversation(_: number, item: ChatConversation): number { return item.id; }
