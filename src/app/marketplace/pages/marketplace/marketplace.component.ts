@@ -374,7 +374,7 @@ aiResult: any = null;
         !this.showOnlyMine || p.idUser === this.currentUserId;
 
       return matchesSearch && matchesPrice && matchesRentCategory && matchesBuyCategory && matchesMine;
-      
+
     });
     this.currentPage = 1;
   }

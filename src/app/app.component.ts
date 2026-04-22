@@ -262,7 +262,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.isExplorerRoute  = this.router.url.startsWith('/explorer');
 
         this.router.events
-            .pipe(filter(event => event instanceof NavigationEnd))
+            .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
             .subscribe((event: NavigationEnd) => {
                 this.isForumsPostPage = event.urlAfterRedirects.startsWith('/forums/post/');
                 this.isExplorerRoute  = event.urlAfterRedirects.startsWith('/explorer');

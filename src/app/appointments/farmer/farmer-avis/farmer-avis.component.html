@@ -226,7 +226,7 @@
           <button
             class="btn-send-comment"
             (click)="submitCommentaire(a)"
-            [disabled]="submittingComment[a.id] || !commentInputs[a.id]?.trim()">
+            [disabled]="submittingComment[a.id] || !commentInputs[a.id].trim()">
             <i class="fas fa-spinner fa-spin" *ngIf="submittingComment[a.id]"></i>
             <i class="fas fa-paper-plane"    *ngIf="!submittingComment[a.id]"></i>
           </button>

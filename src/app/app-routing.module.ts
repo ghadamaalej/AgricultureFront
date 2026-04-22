@@ -19,7 +19,6 @@ const routes: Routes = [
   { path: 'explorer', component: ExplorerHostComponent },
   { path: 'auth',     component: AuthComponent, canActivate: [GuestGuard] },
 
-  // Feature modules (lazy-loaded)
   {
     path: 'forums',
     loadChildren: () => import('./forums/forums.module').then(m => m.ForumsModule)
