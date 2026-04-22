@@ -43,7 +43,7 @@
         <i [class]="getRoleIcon(role)"></i>
         {{ formatRole(role) }}
       </h3>
-      <span class="role-count">{{ groupedUsers[role]?.length || 0 }} en attente</span>
+      <span class="role-count">{{ groupedUsers[role].length || 0 }} en attente</span>
     </div>
 
     <div class="table-wrapper">

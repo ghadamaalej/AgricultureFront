@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } fr
 import { DeliveryMapService } from '../../services/delivery-map.service';
 import { DeliveryRequestService } from '../../services/delivery-request.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { getDeliveryUserRole } from '../../services/delivery-auth.helper';
 
 type DeliveryStatus = 'En attente' | 'Acceptée' | 'En cours' | 'Livrée' | 'Refusée';
 
@@ -54,7 +53,7 @@ type TransporterProfile = {
 export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('mapContainer', { static: false }) mapContainer?: ElementRef;
 
-  role = getDeliveryUserRole();
+  role = (localStorage.getItem('role') || localStorage.getItem('userRole') || 'Client').toLowerCase();
   private currentUserId = this.requestService.getCurrentUserId();
   showAllStatusOption = true;
 
@@ -163,9 +162,9 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
       this.mapService.addMarker(
         delivery.pickupLat,
         delivery.pickupLng,
-        `<strong>Departure:</strong> ${delivery.pickup}`,
+        `<strong>Départ:</strong> ${delivery.pickup}`,
         {
-          title: 'Departure',
+          title: 'Départ',
           zIndexOffset: 1000,
           icon: this.mapService.getPointIcon('start')
         }
@@ -251,8 +250,8 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
     if (!this.canManageDelivery(delivery)) {
       this.pushNotification(
         'error',
-        'Edit unavailable',
-        'A request already accepted by a transporter can no longer be edited.'
+        'Modification indisponible',
+        'Une demande déjà acceptée par un livreur ne peut plus être modifiée.'
       );
       return;
     }
@@ -267,8 +266,8 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
     if (!this.canManageDelivery(delivery)) {
       this.pushNotification(
         'error',
-        'Deletion unavailable',
-        'A request already accepted by a transporter can no longer be deleted.'
+        'Suppression indisponible',
+        'Une demande déjà acceptée par un livreur ne peut plus être supprimée.'
       );
       return;
     }
@@ -298,14 +297,14 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
     if (delivery?.farmerName) {
       return delivery.farmerName;
     }
-    return 'Farmer';
+    return 'Agriculteur';
   }
 
   getTransporterDisplayName(delivery?: TrackingItem): string {
     if (delivery?.transporterName) {
       return delivery.transporterName;
     }
-    return 'Transporter not assigned';
+    return 'Transporteur non assigne';
   }
 
   canOpenTransporterProfile(delivery?: TrackingItem): boolean {
@@ -396,11 +395,11 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
     this.requestService.evaluerTransporteur(delivery.id, this.selectedRating, this.currentUserId).subscribe((updated) => {
       this.ratingInProgress = false;
       if (!updated) {
-        this.pushNotification('error', 'Rating not possible', 'The rating could not be saved.');
+        this.pushNotification('error', 'Notation impossible', 'La note n a pas pu etre enregistree.');
         return;
       }
 
-      this.pushNotification('success', 'Thank you for your rating', `You rated this transporter ${this.selectedRating}/5.`);
+      this.pushNotification('success', 'Merci pour votre note', `Vous avez note ce livreur ${this.selectedRating}/5.`);
       this.reloadDeliveries();
     });
   }
@@ -415,11 +414,11 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
     this.requestService.ignorerNotationTransporteur(delivery.id, this.currentUserId).subscribe((updated) => {
       this.ratingInProgress = false;
       if (!updated) {
-        this.pushNotification('error', 'Action not possible', 'Unable to ignore this prompt at the moment.');
+        this.pushNotification('error', 'Action impossible', 'Impossible d ignorer cette interface pour le moment.');
         return;
       }
 
-      this.pushNotification('info', 'Rating skipped', 'You can continue without rating this transporter.');
+      this.pushNotification('info', 'Notation ignoree', 'Vous pouvez continuer sans noter ce livreur.');
       this.reloadDeliveries();
     });
   }
@@ -449,8 +448,8 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
       if (!deleted) {
         this.pushNotification(
           'error',
-          'Deletion not possible',
-          'The request may have already been accepted by a transporter. The list has been reloaded.'
+          'Suppression impossible',
+          'La demande a peut-être déjà été acceptée par un livreur. La liste a été rechargée.'
         );
         this.reloadDeliveries();
         return;
@@ -493,7 +492,6 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
       const delivered = r.status === 'Livrée';
       const accepted = r.status === 'Acceptée';
       const displayStatus: DeliveryStatus = accepted ? 'En attente' : (r.status as DeliveryStatus);
-      const hasRealGps = Boolean(r.currentLat && r.currentLng);
       return {
         id: r.id,
         reference: r.reference,
@@ -506,12 +504,10 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
         pickupLng: r.pickupLng,
         dropoffLat: r.dropoffLat,
         dropoffLng: r.dropoffLng,
-        currentLat: r.currentLat || (delivered ? r.dropoffLat : undefined),
-        currentLng: r.currentLng || (delivered ? r.dropoffLng : undefined),
-        progress: delivered ? 100 : (inProgress && hasRealGps)
-          ? this.computeProgress(r.pickupLat, r.pickupLng, r.dropoffLat, r.dropoffLng, r.currentLat!, r.currentLng!)
-          : 0,
-        etaMinutes: 0,
+        currentLat: r.currentLat || (inProgress ? (r.pickupLat + r.dropoffLat) / 2 : delivered ? r.dropoffLat : undefined),
+        currentLng: r.currentLng || (inProgress ? (r.pickupLng + r.dropoffLng) / 2 : delivered ? r.dropoffLng : undefined),
+        progress: delivered ? 100 : inProgress ? 52 : 0,
+        etaMinutes: delivered ? 0 : inProgress ? 45 : 0,
         ownerId: r.createdById,
         farmerId: r.createdById,
         transporterId: r.acceptedById,
@@ -519,22 +515,20 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
         transporterName: this.formatPersonName(r.acceptedByEmail, 'Transporteur', r.acceptedById),
         rating: r.rating,
         ratingStatus: r.ratingStatus,
-        hasLivePosition: hasRealGps
+        hasLivePosition: Boolean(r.currentLat && r.currentLng)
       };
     });
   }
 
   private resolveRoutePoints(delivery: TrackingItem): { lat: number; lng: number }[] {
-    const points: { lat: number; lng: number }[] = [];
-
-    if (delivery.status === 'En cours' && delivery.currentLat && delivery.currentLng) {
-      points.push({ lat: delivery.currentLat, lng: delivery.currentLng });
-      if (delivery.dropoffLat && delivery.dropoffLng) {
-        points.push({ lat: delivery.dropoffLat, lng: delivery.dropoffLng });
-      }
-      return points;
+    if (delivery.status === 'En cours' && delivery.currentLat && delivery.currentLng && delivery.pickupLat && delivery.pickupLng) {
+      return [
+        { lat: delivery.currentLat, lng: delivery.currentLng },
+        { lat: delivery.pickupLat, lng: delivery.pickupLng }
+      ];
     }
 
+    const points: { lat: number; lng: number }[] = [];
     if (delivery.pickupLat && delivery.pickupLng) {
       points.push({ lat: delivery.pickupLat, lng: delivery.pickupLng });
     }
@@ -542,26 +536,6 @@ export class DeliveryTrackingComponent implements OnInit, OnDestroy, AfterViewIn
       points.push({ lat: delivery.dropoffLat, lng: delivery.dropoffLng });
     }
     return points;
-  }
-
-  private computeProgress(
-    pickupLat: number, pickupLng: number,
-    dropoffLat: number, dropoffLng: number,
-    currentLat: number, currentLng: number
-  ): number {
-    const total = this.haversine(pickupLat, pickupLng, dropoffLat, dropoffLng);
-    if (total === 0) return 0;
-    const done = this.haversine(pickupLat, pickupLng, currentLat, currentLng);
-    return Math.min(100, Math.round((done / total) * 100));
-  }
-
-  private haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2
-      + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
   private reloadDeliveries(): void {

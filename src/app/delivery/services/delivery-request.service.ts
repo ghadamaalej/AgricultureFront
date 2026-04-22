@@ -286,6 +286,20 @@ export class DeliveryRequestService {
     );
   }
 
+  saveSignature(livraisonId: number, signatureData: string, agriculteurId: number): Observable<LivraisonApi | null> {
+    return this.http.post<LivraisonApi>(
+      `${this.apiBase}/${livraisonId}/signature`,
+      { signatureData },
+      { params: new HttpParams().set('agriculteurId', String(agriculteurId)) }
+    ).pipe(
+      tap((updated) => this.upsertFromApi(updated)),
+      catchError((err) => {
+        console.warn('Save signature failed.', err);
+        return of(null);
+      })
+    );
+  }
+
   ignorerNotationTransporteur(requestId: string, agriculteurId?: number): Observable<LivraisonApi | null> {
     const numericId = this.toNumericId(requestId);
     const ownerId = agriculteurId || this.getCurrentUserId();
@@ -299,26 +313,6 @@ export class DeliveryRequestService {
       tap((updated) => this.upsertFromApi(updated)),
       catchError((err) => {
         console.warn('Ignore rating failed.', err);
-        return of(null);
-      })
-    );
-  }
-
-  saveSignature(requestId: string | number, signatureData: string, agriculteurId?: number): Observable<LivraisonApi | null> {
-    const numericId = typeof requestId === 'number' ? requestId : this.toNumericId(requestId);
-    const ownerId = agriculteurId || this.getCurrentUserId();
-    if (!numericId || !ownerId) {
-      return of(null);
-    }
-
-    return this.http.post<LivraisonApi>(
-      `${this.apiBase}/${numericId}/signature`,
-      { signatureData },
-      { params: new HttpParams().set('agriculteurId', String(ownerId)) }
-    ).pipe(
-      tap((updated) => this.upsertFromApi(updated)),
-      catchError((err) => {
-        console.warn('Save signature failed.', err);
         return of(null);
       })
     );

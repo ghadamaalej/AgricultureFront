@@ -36,7 +36,7 @@
           </div>
           <div class="info-item">
             <span class="info-lbl">Propriétaire</span>
-            <span class="info-val">{{ detail.owner?.username || '-' }}</span>
+            <span class="info-val">{{ detail.owner.username || '-' }}</span>
           </div>
         </div>
 
@@ -57,7 +57,7 @@
             <tr *ngFor="let v of detail.vaccinations">
               <td>{{ v.vaccin || '—' }}</td>
               <td>{{ v.dateVaccin ? (v.dateVaccin | date:'dd/MM/yyyy') : '-' }}</td>
-              <td>{{ v.dose ?? '—' }}</td>
+              <td>{{ v.dose || '—' }}</td>
               <td>
                 <span class="status-badge" [ngClass]="v.status === 'DONE' ? 'st-done' : 'st-pending'">
                   {{ v.status === 'DONE' ? 'Effectuée' : 'En attente' }}

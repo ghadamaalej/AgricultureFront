@@ -246,4 +246,3 @@ Checklist:
 3. Verify JWT headers are attached to delivery API calls.
 4. Fill `src/environments/environment.ts` with a local Groq key only if the chatbot feature is needed.
 5. Run `npm run test:sim` to execute the delivery simulation specs if required.
-

@@ -158,6 +158,7 @@ export class DeliveryLivraisonDetailComponent implements OnInit, OnDestroy {
   }
 
   private renderRoute(): void {
+    if (!this.mapService.getMap()) return;
     this.mapService.clear();
 
     this.mapService.addMarker(

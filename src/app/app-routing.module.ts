@@ -8,94 +8,102 @@ import { AuthComponent }       from './components/auth/auth.component';
 import { AuthGuard }           from './services/auth/auth.guard';
 import { GuestGuard }          from './services/auth/guest.guard';
 import { RegisterExtraComponent }            from './components/register-extra/register-extra.component';
-import { DiseasePredictorComponent }         from './components/disease-predictor/disease-predictor.component';
-import { AssistanceDetailComponent }         from './components/assistance-detail/assistance-detail.component';
-import { HelpRequestComponent }              from './components/help-request/help-request.component';
-import { ExpertAssistanceRequestsComponent } from './components/expert-assistance-requests/expert-assistance-requests.component';
 import { RoleHomePlaceholderComponent }      from './components/role-home-placeholder/role-home-placeholder.component';
 import { ExplorerHostComponent }             from './components/explorer-host/explorer-host.component';
+import { DiseasePredictorComponent }         from './components/disease-predictor/disease-predictor.component';
+import { HelpRequestComponent }              from './components/help-request/help-request.component';
+import { ExpertAssistanceRequestsComponent } from './components/expert-assistance-requests/expert-assistance-requests.component';
 
 const routes: Routes = [
-    { path: '',        component: HomeComponent,      pathMatch: 'full' },
-    { path: 'explorer', component: ExplorerHostComponent },
-    { path: 'auth',    component: AuthComponent,      canActivate: [GuestGuard] },
+  { path: '',         component: HomeComponent,       pathMatch: 'full' },
+  { path: 'explorer', component: ExplorerHostComponent },
+  { path: 'auth',     component: AuthComponent, canActivate: [GuestGuard] },
 
-    { path: 'disease-predictor', component: DiseasePredictorComponent },
-    { path: 'help-request',      component: HelpRequestComponent },
-    {
-        path: 'expert/assistance-requests',
-        component: ExpertAssistanceRequestsComponent,
-        canActivate: [AuthGuard],
-        data: { roles: ['EXPERT_AGRICOLE'] }
-    },
-    { path: 'assistance/:id', component: AssistanceDetailComponent },
+  // Feature modules (lazy-loaded)
+  {
+    path: 'forums',
+    loadChildren: () => import('./forums/forums.module').then(m => m.ForumsModule)
+  },
+  {
+    path: 'delivery',
+    loadChildren: () => import('./delivery/delivery.module').then(m => m.DeliveryModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'dashboard',
+    loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'marketplace',
+    loadChildren: () => import('./marketplace/marketplace.module').then(m => m.MarketplaceModule)
+  },
+  {
+    path: 'loans',
+    loadChildren: () => import('./loans/loans.module').then(m => m.LoansModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'claims',
+    loadChildren: () => import('./claims/claims.module').then(m => m.ClaimsModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'events',
+    loadChildren: () => import('./events/events.module').then(m => m.EventsModule)
+  },
+  {
+    path: 'formations',
+    loadChildren: () => import('./training/training.module').then(m => m.TrainingModule)
+  },
+  {
+    path: 'farm',
+    loadChildren: () => import('./features/farm/farm.module').then(m => m.FarmModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'inventory',
+    loadChildren: () => import('./inventory/inventory.module').then(m => m.InventoryModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'appointments',
+    loadChildren: () => import('./appointments/appointments.module').then(m => m.AppointmentsModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'animals',
+    loadChildren: () => import('./animals/animals.module').then(m => m.AnimalsModule),
+    canActivate: [AuthGuard]
+  },
 
-    {
-        path: 'forums',
-        loadChildren: () => import('./forums/forums.module').then(m => m.ForumsModule)
-    },
-    {
-        path: 'marketplace',
-        loadChildren: () => import('./marketplace/marketplace.module').then(m => m.MarketplaceModule)
-    },
-    {
-        path: 'delivery',
-        loadChildren: () => import('./delivery/delivery.module').then(m => m.DeliveryModule),
-        canActivate: [AuthGuard]
-    },
-    {
-        path: 'appointments',
-        loadChildren: () => import('./appointments/appointments.module').then(m => m.AppointmentsModule)
-    },
-    {
-        path: 'inventory',
-        loadChildren: () => import('./inventory/inventory.module').then(m => m.InventoryModule)
-    },
-    {
-        path: 'claims',
-        loadChildren: () => import('./claims/claims.module').then(m => m.ClaimsModule)
-    },
-    {
-        path: 'events',
-        loadChildren: () => import('./events/events.module').then(m => m.EventsModule)
-    },
-    {
-        path: 'dashboard',
-        loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule),
-        canActivate: [AuthGuard],
-        data: { roles: ['ADMIN'] }
-    },
-    {
-        path: 'farm',
-        loadChildren: () => import('./features/farm/farm.module').then(m => m.FarmModule),
-        canActivate: [AuthGuard]
-    },
-    {
-        path: 'training',
-        loadChildren: () => import('./training/training.module').then(m => m.TrainingModule)
-    },
+  // Standalone page components declared in AppModule
+  { path: 'disease-predictor', component: DiseasePredictorComponent, canActivate: [AuthGuard] },
+  { path: 'help-request',      component: HelpRequestComponent,      canActivate: [AuthGuard] },
+  { path: 'expert/assistance-requests', component: ExpertAssistanceRequestsComponent, canActivate: [AuthGuard] },
 
-    // TODO: Replace each role-home placeholder route with its dedicated module/page when implemented.
-    { path: 'buyer/home',        component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['ACHETEUR'],               homeLabel: 'buyer home'               } },
-    { path: 'farmer/home',       redirectTo: '/delivery', pathMatch: 'full' },
-    { path: 'expert/home',       component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['EXPERT_AGRICOLE'],         homeLabel: 'agricultural expert home' } },
-    { path: 'transporter/home',  redirectTo: '/delivery', pathMatch: 'full' },
-    { path: 'veterinarian/home', component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['VETERINAIRE'],             homeLabel: 'veterinarian home'        } },
-    { path: 'agent/home',        component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['AGENT'],                  homeLabel: 'agent home'               } },
-    { path: 'organizer/home',    component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['ORGANISATEUR_EVENEMENT'],  homeLabel: 'event organizer home'     } },
+  // Role-home placeholders
+  { path: 'buyer/home',       component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['ACHETEUR'],              homeLabel: 'buyer home'          } },
+  { path: 'farmer/home',      component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['AGRICULTEUR'],           homeLabel: 'farmer home'         } },
+  { path: 'expert/home',      component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['EXPERT_AGRICOLE'],       homeLabel: 'agricultural expert home' } },
+  { path: 'transporter/home', component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['TRANSPORTEUR'],         homeLabel: 'transporter home'    } },
+  { path: 'veterinarian/home',component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['VETERINAIRE'],          homeLabel: 'veterinarian home'   } },
+  { path: 'agent/home',       component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['AGENT'],                homeLabel: 'agent home'          } },
+  { path: 'organizer/home',   component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['ORGANISATEUR_EVENEMENT'], homeLabel: 'event organizer home' } },
 
-    { path: 'register-extra', component: RegisterExtraComponent },
-    { path: 'blog/:id',       component: BlogDetailComponent    },
-    { path: '404',            component: NotFoundComponent      },
-    { path: '**',             redirectTo: '/404'                }
+  { path: 'register-extra', component: RegisterExtraComponent },
+  { path: 'blog/:id',       component: BlogDetailComponent    },
+  { path: '404',            component: NotFoundComponent      },
+  { path: '**',             redirectTo: '/404'                }
 ];
 
 @NgModule({
-    declarations: [],
-    imports: [
-        CommonModule,
-        RouterModule.forRoot(routes)
-    ],
-    exports: [RouterModule]
+  declarations: [],
+  imports: [
+    CommonModule,
+    RouterModule.forRoot(routes)
+  ],
+  exports: [RouterModule]
 })
 export class AppRoutingModule { }
