@@ -1,0 +1,72 @@
+<div class="delivery-with-negotiation">
+  <!-- Delivery information -->
+  <div class="delivery-info" *ngIf="delivery">
+    <div class="delivery-header">
+      <h3>{{ delivery.reference || 'DLV-' + delivery.id }}</h3>
+      <div class="delivery-status" [class]="'status-' + (delivery.status || delivery.status?.toLowerCase())">
+        {{ delivery.status || delivery.statusDisplay || 'Pending' }}
+      </div>
+    </div>
+
+    <div class="delivery-details">
+      <div class="detail-row">
+        <span class="label">Product:</span>
+        <span class="value">{{ delivery.product || delivery.typeProduit || 'Not specified' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Weight:</span>
+        <span class="value">{{ delivery.weightKg || delivery.poids || 0 }} kg</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Price:</span>
+        <span class="value price">{{ delivery.estimatedPrice || delivery.prix || 0 }} TND</span>
+      </div>
+      <div class="detail-row" *ngIf="delivery.prixNegocie && delivery.prixNegocie > 0">
+        <span class="label">Negotiated price:</span>
+        <span class="value negotiated-price">{{ delivery.prixNegocie }} TND</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Route:</span>
+        <span class="value route">
+          {{ delivery.pickupLabel || delivery.adresseDepart }} →
+          {{ delivery.dropoffLabel || delivery.adresseArrivee }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Negotiation component -->
+  <div class="negotiation-section" *ngIf="showNegotiation && delivery">
+    <app-negotiation
+      [livraisonId]="delivery.id"
+      [currentUserId]="currentUserId"
+      [userRole]="userRole"
+      [livraison]="delivery"
+      (negotiationCompleted)="onNegotiationCompleted($event)"
+      (negotiationError)="onNegotiationError($event)">
+    </app-negotiation>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="quick-actions" *ngIf="delivery">
+    <button class="action-btn"
+            *ngIf="canNegotiate()"
+            (click)="showNegotiation = !showNegotiation">
+      <i class="fas fa-handshake"></i>
+      {{ showNegotiation ? 'Hide negotiation' : 'Negotiate price' }}
+    </button>
+
+    <button class="action-btn"
+            *ngIf="canRespondToNegotiation()"
+            (click)="showNegotiation = !showNegotiation">
+      <i class="fas fa-comments"></i>
+      {{ showNegotiation ? 'Hide negotiation' : 'View negotiation' }}
+    </button>
+  </div>
+
+  <!-- Error messages -->
+  <div class="error-message" *ngIf="negotiationError">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ negotiationError }}
+  </div>
+</div>

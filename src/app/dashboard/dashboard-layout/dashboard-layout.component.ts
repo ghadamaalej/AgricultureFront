@@ -13,6 +13,7 @@ import { AuthService } from '../../services/auth/auth.service';
 export class DashboardLayoutComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
+
   sidebarOpen = true;
   activeMenu  = 'dashboard';
 
@@ -23,33 +24,31 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     { icon: 'fas fa-calendar-alt',       label: 'Events',       key: 'events',       route: '/dashboard/events'       },
     { icon: 'fas fa-hand-holding-usd',   label: 'Loans',        key: 'loans',        route: '/dashboard/loans'        },
     { icon: 'fas fa-store',              label: 'Marketplace',  key: 'marketplace',  route: '/dashboard/marketplace'  },
-    { icon: 'fas fa-comments',           label: 'Community',    key: 'community',    route: '/forums'                 },
+    { icon: 'fas fa-comments',           label: 'Community',    key: 'community',    route: '/dashboard/forums'       },
     { icon: 'fas fa-graduation-cap',     label: 'Training',     key: 'training',     route: '/dashboard/training'     },
     { icon: 'fas fa-exclamation-circle', label: 'Claims',       key: 'claims',       route: '/dashboard/claims'       },
     { icon: 'fas fa-stethoscope',        label: 'Appointments', key: 'appointments', route: '/dashboard/appointments' },
-    { icon: 'fas fa-hands-helping',         label: 'Helps',    key: 'Helps',    route: '/dashboard/Aide'    },
-    { icon: 'fas fa-paw',                label: 'Animals',     key: 'Animals',     route: '/dashboard/Animals'     },
+    { icon: 'fas fa-hands-helping',      label: 'Helps',        key: 'Helps',        route: '/dashboard/Aide'         },
+    { icon: 'fas fa-paw',                label: 'Animals',      key: 'Animals',      route: '/dashboard/Animals'      },
   ];
 
   constructor(
-    private router: Router,
-    private authService: AuthService
+      private router: Router,
+      private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    // Sync activeMenu with current URL on load and navigation
     this.router.events
-      .pipe(
-        filter(e => e instanceof NavigationEnd),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((e: any) => {
-        const url = e.urlAfterRedirects;
-        const matched = this.menuItems.find(item => url === item.route || url.startsWith(item.route + '/'));
-        if (matched) this.activeMenu = matched.key;
-      });
+        .pipe(
+            filter(e => e instanceof NavigationEnd),
+            takeUntil(this.destroy$)
+        )
+        .subscribe((e: any) => {
+          const url = e.urlAfterRedirects;
+          const matched = this.menuItems.find(item => url === item.route || url.startsWith(item.route + '/'));
+          if (matched) this.activeMenu = matched.key;
+        });
 
-    // Set on first load
     const current = this.router.url;
     const matched = this.menuItems.find(item => current === item.route || current.startsWith(item.route + '/'));
     if (matched) this.activeMenu = matched.key;
@@ -59,8 +58,8 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     console.log('[Dashboard] Navigating to:', route);
     this.activeMenu = key;
     this.router.navigate([route]).then(
-      (success) => console.log('[Dashboard] Navigation success:', success),
-      (error) => console.error('[Dashboard] Navigation error:', error)
+        (success) => console.log('[Dashboard] Navigation success:', success),
+        (error)   => console.error('[Dashboard] Navigation error:', error)
     );
   }
 

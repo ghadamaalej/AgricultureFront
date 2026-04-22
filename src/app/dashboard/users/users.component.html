@@ -1,0 +1,130 @@
+<div class="users-page">
+  <div class="section-header">
+    <div class="section-label">
+      <i class="fas fa-users"></i> Gestion des comptes
+    </div>
+    <h2 class="section-title">
+      Utilisateurs en <span>attente</span>
+    </h2>
+    <p class="section-desc">
+      Consultez et gérez les demandes de création de compte des nouveaux utilisateurs
+    </p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="state-container loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des utilisateurs...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="state-container error-state">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Success State -->
+  <div *ngIf="success && !loading" class="state-container success-state">
+    <i class="fas fa-check-circle"></i>
+    <p>{{ success }}</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && getRoleKeys().length === 0 && !error" class="state-container empty-state">
+    <i class="fas fa-inbox"></i>
+    <p>Aucun utilisateur en attente pour le moment</p>
+    <span class="empty-subtitle">Tous les utilisateurs en attente ont été traités</span>
+  </div>
+
+  <!-- Users by Role -->
+  <div *ngFor="let role of getRoleKeys(); let i = index" class="role-section">
+    <div class="role-header">
+      <h3 class="role-title">
+        <i [class]="getRoleIcon(role)"></i>
+        {{ formatRole(role) }}
+      </h3>
+      <span class="role-count">{{ groupedUsers[role].length || 0 }} en attente</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>Prénom</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Région</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let user of groupedUsers[role]" class="user-row">
+            <td>
+              <div class="user-photo">
+                <img
+                  *ngIf="user.photo; else noPhoto"
+                  [src]="user.photo"
+                  alt="Photo utilisateur"
+                  title="{{user.prenom}} {{user.nom}}"
+                />
+                <ng-template #noPhoto>
+                  <div class="no-photo">
+                    <i class="fas fa-user"></i>
+                  </div>
+                </ng-template>
+              </div>
+            </td>
+
+            <td class="text-primary">{{ user.prenom || '-' }}</td>
+            <td class="text-primary">{{ user.nom || '-' }}</td>
+            <td>
+              <a [href]="'mailto:' + user.email" class="email-link">
+                {{ user.email || '-' }}
+              </a>
+            </td>
+            <td>
+              <a *ngIf="user.telephone" [href]="'tel:' + user.telephone" class="phone-link">
+                {{ user.telephone }}
+              </a>
+              <span *ngIf="!user.telephone">-</span>
+            </td>
+            <td>{{ user.region || '-' }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="'status-' + (user.statutCompte?.toLowerCase() || 'unknown')">
+                {{ user.statutCompte || '-' }}
+              </span>
+            </td>
+
+            <td>
+              <div class="actions-cell">
+                <button
+                  type="button"
+                  (click)="approuver(user)"
+                  [disabled]="loading"
+                  class="btn-action btn-approve"
+                  title="Accepter cet utilisateur"
+                >
+                  <i class="fas fa-check"></i> Accepter
+                </button>
+
+                <button
+                  type="button"
+                  (click)="refuser(user)"
+                  [disabled]="loading"
+                  class="btn-action btn-refuse"
+                  title="Refuser cet utilisateur"
+                >
+                  <i class="fas fa-times"></i> Refuser
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

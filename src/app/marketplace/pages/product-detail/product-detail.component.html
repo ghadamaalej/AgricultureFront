@@ -1,0 +1,324 @@
+<app-navbar></app-navbar>
+
+<section class="section-padding marketplace-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Marketplace</span>
+      <h2 class="section-title">
+        Discover <span>Products</span> & Rentals
+      </h2>
+      <p class="section-desc">
+        Buy agricultural products or rent equipment easily.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section-padding product-detail">
+  <div class="container" style="margin-bottom: 20px;">
+  <button class="back-btn" (click)="goBack()">
+    <i class="fas fa-arrow-left"></i>
+    Back
+  </button>
+</div>
+  <div class="container detail-layout">
+
+    <!-- LEFT -->
+    <div class="detail-image">
+      <img [src]="product.image || 'assets/images/product1.jpg'" alt="item">
+    </div>
+
+    <!-- RIGHT -->
+    <div class="detail-info">
+
+      <span class="badge" *ngIf="mode === 'rent' || canBuyProduct()">
+        {{ mode === 'buy' ? 'For Sale' : 'For Rent' }}
+      </span>
+
+      <span class="badge sold-out-badge" *ngIf="mode === 'buy' && !canBuyProduct()">
+        Sold Out
+      </span>
+
+      <h1 class="product-title">{{ product.name }}</h1>
+
+      <div class="price">
+        {{ product.price }} DT
+        <span *ngIf="mode === 'rent'">/month</span>
+        <span *ngIf="mode === 'buy'">/KG</span>
+      </div>
+
+      <!-- BUY DETAILS -->
+      <div class="meta" *ngIf="mode === 'buy'">
+        <span>Quantity: {{ product.quantity || 0 }} KG</span>
+      </div>
+
+      <!-- RENT DETAILS -->
+      <div class="meta rent-meta" *ngIf="mode === 'rent'">
+
+        <span *ngIf="product.type === 'materiel' && product.brand">
+          Brand: {{ product.brand }}
+        </span>
+
+        <span *ngIf="product.type === 'materiel' && product.model">
+          Model: {{ product.model }}
+        </span>
+
+        <span *ngIf="product.type === 'materiel' && product.condition">
+          Condition: {{ product.condition }}
+        </span>
+
+        <span *ngIf="product.startDate">
+          Available From: {{ product.startDate }}
+        </span>
+
+        <span *ngIf="product.endDate">
+          Available Until: {{ product.endDate }}
+        </span>
+
+        <span *ngIf="product.type === 'terrain' && product.localisation">
+          Location: {{ product.localisation }}
+        </span>
+
+        <span *ngIf="product.type === 'terrain' && product.surface">
+          Surface: {{ product.surface }} {{ product.unit }}
+        </span>
+
+        <span *ngIf="product.type === 'terrain' && product.soilType">
+          Soil Type: {{ product.soilType }}
+        </span>
+
+      </div>
+
+      <p class="description">
+        {{ product.description || 'No description available.' }}
+      </p>
+
+      <!-- BUY ACTION -->
+      <div *ngIf="mode === 'buy'" class="cart-panel">
+
+        <button
+          *ngIf="!showQuantitySelector"
+          class="add-to-cart"
+          [disabled]="!canBuyProduct()"
+          (click)="openQuantitySelector()">
+          <i class="fas fa-shopping-cart"></i>
+          {{ canBuyProduct() ? 'Add to Cart' : 'Out of Stock' }}
+        </button>
+
+        <div *ngIf="showQuantitySelector" class="quantity-box">
+          <h4>Select Quantity</h4>
+
+          <div class="quantity-controls">
+            <button type="button" class="qty-btn" (click)="decreaseQuantity()">-</button>
+
+            <span class="qty-value">{{ selectedQuantity }}</span>
+
+            <button
+              type="button"
+              class="qty-btn"
+              (click)="increaseQuantity()"
+              [disabled]="selectedQuantity >= (product.quantity || 0)">
+              +
+            </button>
+          </div>
+
+          <div class="quantity-meta">
+            <span>Available: {{ product.quantity || 0 }} KG</span>
+            <span>Total: {{ cartTotal | number:'1.2-2' }} DT</span>
+          </div>
+
+          <div class="booking-actions">
+            <button type="button" class="btn btn-secondary" (click)="cancelQuantitySelection()">
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" (click)="addProductToCart()">
+              Confirm Add
+            </button>
+          </div>
+        </div>
+      </div>
+
+<!-- RENT BUTTON -->
+<button
+  *ngIf="mode === 'rent'"
+  class="add-to-cart"
+  (click)="openBooking()">
+  <i class="fas fa-calendar"></i>
+  Book Now
+</button>
+      <!-- RENT BOOKING PANEL -->
+      <div *ngIf="mode === 'rent' && bookingOpen" class="booking-panel">
+
+        <h3 class="booking-title">Choose Your Visit</h3>
+
+        <!-- Day selection -->
+        <div class="day-picker">
+          <button
+            *ngFor="let day of daysOfWeek"
+            type="button"
+            class="day-btn"
+            [class.active]="selectedDay === day.value"
+            (click)="selectDay(day.value)">
+            {{ day.label }}
+          </button>
+        </div>
+
+        <!-- Slots -->
+        <div *ngIf="selectedDay" class="slot-section">
+          <h4>Available Time Slots</h4>
+
+          <div *ngIf="filteredAvailabilities.length > 0" class="slot-list">
+            <button
+              *ngFor="let slot of filteredAvailabilities"
+              type="button"
+              class="slot-btn"
+              [class.active]="selectedSlot === slot"
+              (click)="selectSlot(slot)">
+              {{ slot.heureDebut }} - {{ slot.heureFin }}
+            </button>
+          </div>
+
+          <p *ngIf="filteredAvailabilities.length === 0">
+            No slots available for this day.
+          </p>
+        </div>
+
+        <!-- Date -->
+        <div *ngIf="selectedSlot" class="visit-date-box">
+          <label>Visit Date</label>
+          <input
+            type="date"
+            [(ngModel)]="selectedDate"
+            [min]="product.startDate"
+            [max]="product.endDate">
+        </div>
+
+        <!-- Actions -->
+        <div class="booking-actions" *ngIf="selectedSlot">
+          <button type="button" class="btn btn-secondary" (click)="bookingOpen = false">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-primary" (click)="confirmBooking()">
+            Confirm Visit
+          </button>
+        </div>
+
+    <div class="reservation-popup-overlay" *ngIf="showReservationPopup">
+  <div class="reservation-popup">
+
+    <div class="popup-icon">
+      <i class="fas fa-check-circle"
+         *ngIf="reservationPopupTitle === 'Reservation Sent'"></i>
+
+      <i class="fas fa-exclamation-circle"
+         *ngIf="reservationPopupTitle !== 'Reservation Sent'"></i>
+    </div>
+
+    <h3>{{ reservationPopupTitle }}</h3>
+    <p>{{ reservationPopupMessage }}</p>
+
+    <button class="btn btn-primary" (click)="closeReservationPopup()">
+      OK
+    </button>
+    
+
+  </div>
+</div>
+<div class="reservation-popup-overlay"
+     *ngIf="showReservationPopup"
+     (click)="closeReservationPopup()">
+
+  <div class="reservation-popup" (click)="$event.stopPropagation()">
+    ...
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+<div
+  *ngIf="showReservationPopup"
+  (click)="closeReservationPopup()"
+  style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    padding: 20px;
+  ">
+
+  <div
+    (click)="$event.stopPropagation()"
+    [ngStyle]="{
+      width: '100%',
+      'max-width': '460px',
+      background: 'white',
+      'border-radius': '24px',
+      padding: '32px 28px',
+      'text-align': 'center',
+      'box-shadow': reservationPopupType === 'success'
+        ? '0 25px 60px rgba(76,175,80,0.18)'
+        : '0 25px 60px rgba(220,53,69,0.18)'
+    }">
+
+    <div
+      [ngStyle]="{
+        width: '72px',
+        height: '72px',
+        margin: '0 auto 18px',
+        'border-radius': '50%',
+        display: 'flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        background: reservationPopupType === 'success'
+          ? 'rgba(76,175,80,0.12)'
+          : 'rgba(220,53,69,0.12)'
+      }">
+
+      <i
+        class="fas"
+        [class.fa-check-circle]="reservationPopupType === 'success'"
+        [class.fa-times-circle]="reservationPopupType === 'error'"
+        [ngStyle]="{
+          'font-size': '34px',
+          color: reservationPopupType === 'success' ? '#4caf50' : '#dc3545'
+        }">
+      </i>
+    </div>
+
+    <h3
+      [ngStyle]="{
+        margin: '0 0 10px',
+        'font-size': '24px',
+        'font-weight': '700',
+        color: reservationPopupType === 'success' ? '#222' : '#b02a37'
+      }">
+      {{ reservationPopupTitle }}
+    </h3>
+
+    <p
+      [ngStyle]="{
+        margin: '0 0 24px',
+        'font-size': '15px',
+        'line-height': '1.6',
+        color: '#555'
+      }">
+      {{ reservationPopupMessage }}
+    </p>
+
+    <button
+      type="button"
+      class="btn"
+      [ngClass]="reservationPopupType === 'success' ? 'btn-primary' : 'btn-danger'"
+      (click)="closeReservationPopup()">
+      OK
+    </button>
+  </div>
+</div>
+<app-footer></app-footer>

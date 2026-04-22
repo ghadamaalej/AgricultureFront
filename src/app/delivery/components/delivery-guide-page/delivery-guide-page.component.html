@@ -1,0 +1,13 @@
+<section class="delivery-guide">
+  <header class="delivery-guide-header">
+    <h2><i class="fas fa-circle-info"></i> Delivery guide</h2>
+    <p>This page is 100% front-end to quickly guide you through the main actions.</p>
+  </header>
+
+  <div class="delivery-guide-grid">
+    <article class="guide-card" *ngFor="let item of highlights">
+      <h3>{{ item.title }}</h3>
+      <p>{{ item.text }}</p>
+    </article>
+  </div>
+</section>

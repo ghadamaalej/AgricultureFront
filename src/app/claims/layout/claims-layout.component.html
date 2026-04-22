@@ -1,0 +1,39 @@
+<div class="claims-shell">
+
+  <!-- ===== TOPBAR ===== -->
+  <header class="claims-topbar">
+    <div class="topbar-brand" routerLink="/">
+      <div class="brand-icon"><i class="fas fa-leaf"></i></div>
+      <span class="brand-name">Green<em>Roots</em></span>
+      <span class="brand-sep">|</span>
+      <span class="brand-module">Réclamations</span>
+    </div>
+
+    <nav class="topbar-nav">
+      <a *ngFor="let item of navItems"
+         class="nav-link"
+         [class.active]="isActive(item.route)"
+         (click)="goTo(item.route)">
+        <i [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <div class="topbar-actions">
+      <div class="user-pill" *ngIf="user">
+        <div class="user-avatar">{{ (user.username || user.email)[0].toUpperCase() }}</div>
+        <span class="user-name">{{ user.username || user.email }}</span>
+      </div>
+      <button class="logout-btn" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Déconnexion</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== CONTENT ===== -->
+  <main class="claims-content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

@@ -1,0 +1,252 @@
+<!-- ══════════ ANIMAL LIST VIEW ══════════ -->
+<ng-container *ngIf="!selectedAnimal">
+
+  <div class="page-header">
+    <div>
+      <h1 class="pt">Dossiers médicaux</h1>
+      <p class="ps">Gérez les dossiers de santé des animaux de vos patients</p>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <i class="fas fa-search si"></i>
+    <input [(ngModel)]="searchTerm" (ngModelChange)="search()"
+      placeholder="Rechercher par espèce, référence ou agriculteur…"
+      class="search-input">
+    <button *ngIf="searchTerm" class="search-clear" (click)="searchTerm='';search()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="sm"><div class="spinner"></div> Chargement…</div>
+  <div *ngIf="error"   class="sm err"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+
+  <div class="empty" *ngIf="!loading && !error && filtered.length === 0">
+    <i class="fas fa-file-medical"></i>
+    <p *ngIf="animalsWithRecords.length === 0">
+      Aucun animal trouvé. Les animaux apparaissent ici après qu'un rendez-vous soit accepté.
+    </p>
+    <p *ngIf="animalsWithRecords.length > 0">Aucun résultat pour "{{ searchTerm }}".</p>
+  </div>
+
+  <div class="animal-grid" *ngIf="!loading && filtered.length > 0">
+    <div class="animal-card" *ngFor="let item of filtered" (click)="selectAnimal(item)">
+
+      <div class="card-avatar">
+        <i class="fas fa-horse"></i>
+      </div>
+
+      <div class="card-info">
+        <div class="card-top-row">
+          <h3 class="animal-name">{{ item.animal.espece }}</h3>
+          <span class="ref-badge">{{ item.animal.reference }}</span>
+        </div>
+        <div class="card-meta">
+          <span><i class="fas fa-user"></i> {{ item.farmerName }}</span>
+          <span><i class="fas fa-weight"></i> {{ item.animal.poids }} kg</span>
+          <span><i class="fas fa-birthday-cake"></i> {{ age(item.animal.dateNaissance) }} ans</span>
+        </div>
+      </div>
+
+      <div class="card-records-count">
+        <span class="count-num">{{ item.records.length }}</span>
+        <span class="count-lbl">dossier{{ item.records.length !== 1 ? 's' : '' }}</span>
+      </div>
+
+      <i class="fas fa-chevron-right card-arrow"></i>
+
+    </div>
+  </div>
+
+</ng-container>
+
+<!-- ══════════ ANIMAL RECORDS VIEW ══════════ -->
+<ng-container *ngIf="selectedAnimal">
+
+  <!-- Header -->
+  <div class="detail-header">
+    <button class="back-btn" (click)="backToList()">
+      <i class="fas fa-arrow-left"></i> Retour
+    </button>
+    <div class="detail-title">
+      <div class="detail-avatar"><i class="fas fa-horse"></i></div>
+      <div>
+        <h2>{{ selectedAnimal.animal.espece }} — <span class="ref">{{ selectedAnimal.animal.reference }}</span></h2>
+        <p class="detail-sub">
+          <i class="fas fa-user"></i> {{ selectedAnimal.farmerName }}
+          &nbsp;·&nbsp;
+          <i class="fas fa-weight"></i> {{ selectedAnimal.animal.poids }} kg
+          &nbsp;·&nbsp;
+          <i class="fas fa-birthday-cake"></i> {{ age(selectedAnimal.animal.dateNaissance) }} ans
+        </p>
+      </div>
+    </div>
+    <button class="btn-add-record" (click)="openCreate()">
+      <i class="fas fa-plus"></i> Nouveau dossier
+    </button>
+  </div>
+
+  <!-- ── Inline Form (create / edit) ── -->
+  <div class="form-card" *ngIf="showForm">
+    <h3 class="form-title">
+      <i class="fas fa-file-medical-alt"></i>
+      {{ editRecord ? 'Modifier le dossier' : 'Nouveau dossier médical' }}
+    </h3>
+
+    <form [formGroup]="form" (ngSubmit)="submitForm()">
+      <div class="form-row">
+        <div class="fg">
+          <label><i class="fas fa-virus"></i> Maladie / Diagnostic *</label>
+          <input formControlName="maladie" placeholder="ex: Pneumonie, fracture…"
+                 [class.err]="invalid('maladie')">
+          <span class="em" *ngIf="invalid('maladie')">Requis</span>
+        </div>
+        <div class="fg">
+          <label><i class="fas fa-calendar-alt"></i> Date de consultation *</label>
+          <input type="date" formControlName="dateH" [class.err]="invalid('dateH')">
+          <span class="em" *ngIf="invalid('dateH')">Requise</span>
+        </div>
+      </div>
+
+      <div class="fg full">
+        <label><i class="fas fa-pills"></i> Traitement prescrit *</label>
+        <textarea formControlName="traitement" rows="3"
+          placeholder="Décrivez le traitement, les médicaments, les doses…"
+          [class.err]="invalid('traitement')"></textarea>
+        <span class="em" *ngIf="invalid('traitement')">Requis</span>
+      </div>
+
+      <div class="form-error" *ngIf="formError">
+        <i class="fas fa-exclamation-circle"></i> {{ formError }}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
+        <button type="submit" class="btn-save" [disabled]="formLoading">
+          <i class="fas fa-spinner fa-spin" *ngIf="formLoading"></i>
+          <i class="fas fa-save" *ngIf="!formLoading"></i>
+          {{ editRecord ? 'Enregistrer' : 'Créer le dossier' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ── Records list ── -->
+  <div class="records-section">
+
+    <div class="assistant-card">
+      <div class="assistant-head">
+        <div>
+          <h3><i class="fas fa-robot"></i> Assistant medical RAG</h3>
+          <p>Posez une question sur le dossier de cet animal: resume, derniere maladie, traitements, antecedents.</p>
+        </div>
+        <span class="assistant-badge" *ngIf="assistantResponse">
+          {{ assistantResponse.aiProvider | uppercase }}
+        </span>
+      </div>
+
+      <div class="assistant-quick-actions">
+        <button type="button" class="quick-btn" *ngFor="let q of suggestedQuestions" (click)="askAssistant(q)">
+          {{ q }}
+        </button>
+      </div>
+
+      <div class="assistant-ask">
+        <textarea
+          [(ngModel)]="assistantQuestion"
+          rows="3"
+          placeholder="Ex: Fais un resume du dossier medical. Quelle est la derniere maladie ? Quels traitements ont ete prescrits ?"></textarea>
+        <button type="button" class="assistant-send" (click)="askAssistant()" [disabled]="assistantLoading">
+          <i class="fas fa-spinner fa-spin" *ngIf="assistantLoading"></i>
+          <i class="fas fa-paper-plane" *ngIf="!assistantLoading"></i>
+          Poser la question
+        </button>
+      </div>
+
+      <div class="assistant-error" *ngIf="assistantError">
+        <i class="fas fa-exclamation-circle"></i> {{ assistantError }}
+      </div>
+
+      <div class="assistant-answer" *ngIf="assistantResponse">
+        <div class="assistant-summary">
+          <span><strong>Dossiers:</strong> {{ assistantResponse.recordCount }}</span>
+          <span><strong>Derniere maladie:</strong> {{ assistantResponse.lastDisease }}</span>
+          <span><strong>Modele:</strong> {{ assistantResponse.aiModel }}</span>
+        </div>
+
+        <div class="assistant-block">
+          <h4>Reponse</h4>
+          <p>{{ assistantResponse.answer }}</p>
+        </div>
+
+        <div class="assistant-block">
+          <h4>Resume du dossier</h4>
+          <p>{{ assistantResponse.medicalSummary }}</p>
+        </div>
+
+        <div class="assistant-block" *ngIf="assistantResponse.usedContext?.length">
+          <h4>Contexte utilise</h4>
+          <ul>
+            <li *ngFor="let ctx of assistantResponse.usedContext">{{ ctx }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="records-header">
+      <span class="records-count">
+        {{ selectedAnimal.records.length }} dossier{{ selectedAnimal.records.length !== 1 ? 's' : '' }} médical{{ selectedAnimal.records.length !== 1 ? 'aux' : '' }}
+      </span>
+    </div>
+
+    <div class="empty-records" *ngIf="selectedAnimal.records.length === 0 && !showForm">
+      <i class="fas fa-folder-open"></i>
+      <p>Aucun dossier médical. Cliquez sur "Nouveau dossier" pour en créer un.</p>
+    </div>
+
+    <div class="records-timeline" *ngIf="selectedAnimal.records.length > 0">
+      <div class="timeline-item" *ngFor="let rec of selectedAnimal.records">
+
+        <div class="timeline-dot"></div>
+
+        <div class="record-card">
+          <div class="record-card-header">
+            <div class="record-date">
+              <i class="fas fa-calendar-day"></i>
+              {{ rec.dateH | date:'dd MMMM yyyy' }}
+            </div>
+            <div class="record-actions">
+              <button class="ra-btn edit-btn" (click)="openEdit(rec)" title="Modifier">
+                <i class="fas fa-pen"></i>
+              </button>
+              <button class="ra-btn del-btn" (click)="deleteRecord(rec)" title="Supprimer">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="record-body">
+            <div class="record-field">
+              <span class="field-icon diagnosis-icon"><i class="fas fa-virus"></i></span>
+              <div>
+                <span class="field-label">Diagnostic</span>
+                <span class="field-value diagnosis">{{ rec.maladie }}</span>
+              </div>
+            </div>
+            <div class="record-field">
+              <span class="field-icon treatment-icon"><i class="fas fa-pills"></i></span>
+              <div>
+                <span class="field-label">Traitement</span>
+                <span class="field-value">{{ rec.traitement }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</ng-container>

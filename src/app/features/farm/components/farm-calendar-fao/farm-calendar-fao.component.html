@@ -1,0 +1,35 @@
+<h2>Périodes culturales (FAO)</h2>
+<p class="muted small">Données officielles FAO pour la Tunisie (TN). Recherche par nom de culture (ex. avoine, blé, olive…).</p>
+<div class="inline-form">
+  <input type="text" [(ngModel)]="selectedCrop" placeholder="Nom de culture" />
+  <button type="button" (click)="loadCropWindows()" [disabled]="faoLoading">
+    {{ faoLoading ? 'Chargement…' : 'Charger' }}
+  </button>
+</div>
+
+<div *ngIf="!faoLoading && cropWindows.length === 0" class="empty">Saisissez une culture et chargez les périodes.</div>
+<div class="table-wrap" *ngIf="cropWindows.length > 0">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Culture</th>
+        <th>Zone agro</th>
+        <th>Semis</th>
+        <th>Récolte</th>
+        <th>Remarques</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let w of cropWindows">
+        <td>
+          <strong>{{ w.crop }}</strong>
+          <span class="badge" [class.fao]="w.source === 'FAO'" [class.fallback]="w.source === 'Fallback'">{{ w.source }}</span>
+        </td>
+        <td>{{ w.aezName || '—' }}</td>
+        <td>{{ w.plantingStart }} → {{ w.plantingEnd }}</td>
+        <td>{{ w.harvestStart }} → {{ w.harvestEnd }}</td>
+        <td class="notes-cell">{{ w.sessionNotes || '—' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

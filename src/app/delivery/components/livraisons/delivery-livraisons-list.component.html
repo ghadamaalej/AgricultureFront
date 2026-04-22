@@ -1,0 +1,77 @@
+<div class="delivery-page">
+  <div class="page-title">
+    <h2><i class="fas fa-list"></i> History & complete list</h2>
+    <p>Filter by status/type, text search and contextual actions by role.</p>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter">
+      <label class="filter-label">Status</label>
+      <select [(ngModel)]="selectedStatus" class="filter-input" (change)="goFirst()">
+        <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+      </select>
+    </div>
+    <div class="filter">
+      <label class="filter-label">Type</label>
+      <select [(ngModel)]="selectedType" class="filter-input" (change)="goFirst()">
+        <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+    <div class="filter grow">
+      <label class="filter-label">Search</label>
+      <input class="filter-input" type="text" [(ngModel)]="searchText" placeholder="Reference, product, status..." (input)="goFirst()">
+    </div>
+  </div>
+
+  <div class="notification" *ngIf="notification">{{ notification }}</div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>Product</th>
+          <th>Weight</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of pagedDeliveries">
+          <td><strong>{{ d.reference }}</strong></td>
+          <td>{{ d.product }}</td>
+          <td>{{ d.weightKg }} kg</td>
+          <td>{{ d.type }}</td>
+          <td>
+            <span class="status-pill">{{ d.status }}</span>
+          </td>
+          <td>{{ d.createdAt }}</td>
+          <td class="actions-td">
+            <button class="btn btn-outline small" type="button" (click)="consult(d.id)">
+              <i class="fas fa-eye"></i> Detail
+            </button>
+            <button class="btn btn-secondary small" type="button" (click)="goTracking()">
+              <i class="fas fa-location-arrow"></i> Tracking
+            </button>
+            <ng-container *ngIf="isAdmin()">
+              <button class="btn btn-primary small" type="button" (click)="edit(d.id)">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="btn btn-outline small danger" type="button" (click)="delete(d.id)">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <button class="btn btn-outline small" type="button" (click)="prevPage()" [disabled]="page === 1">Previous</button>
+    <div class="page-info">Page {{ page }} / {{ totalPages }}</div>
+    <button class="btn btn-outline small" type="button" (click)="nextPage()" [disabled]="page === totalPages">Next</button>
+  </div>
+</div>

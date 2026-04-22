@@ -1,5 +1,6 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -12,7 +13,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
   showAuth = false;
   authMode: 'signin' | 'signup' = 'signin';
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     // Scroll vers la section si un fragment est passé dans l'URL
@@ -23,6 +27,21 @@ export class HomeComponent implements OnInit, AfterViewInit {
         }, 300);
       }
     });
+
+    this.route.queryParamMap
+      .pipe(filter((params) => params.has('openAuth')))
+      .subscribe((params) => {
+        const open = params.get('openAuth');
+        if (open === 'signin' || open === 'signup') {
+          this.openAuth(open);
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { openAuth: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+          });
+        }
+      });
   }
 
   ngAfterViewInit(): void {

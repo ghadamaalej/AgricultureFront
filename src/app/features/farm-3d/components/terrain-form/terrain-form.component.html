@@ -1,0 +1,208 @@
+<div class="terrain-form-container">
+  <div class="form-header">
+    <h3 class="form-title">
+      <i class="fas fa-plus-circle"></i>
+      Ajouter un nouveau terrain
+    </h3>
+    <p class="form-subtitle">Renseignez les informations de votre terrain agricole</p>
+  </div>
+
+  <form [formGroup]="terrainForm" (ngSubmit)="onSubmit()" class="terrain-form">
+
+    <!-- Nom du terrain -->
+    <div class="form-group">
+      <label for="nom" class="form-label">
+        <i class="fas fa-tag"></i>
+        Nom du terrain *
+      </label>
+      <input
+        type="text"
+        id="nom"
+        formControlName="nom"
+        class="form-control"
+        [class.error]="terrainForm.get('nom')?.invalid && terrainForm.get('nom')?.touched"
+        placeholder="Ex: Champ Nord, Parcelle A1"
+      />
+      <div class="error-message" *ngIf="terrainForm.get('nom')?.invalid && terrainForm.get('nom')?.touched">
+        {{ getErrorMessage('nom') }}
+      </div>
+    </div>
+
+    <!-- Superficie -->
+    <div class="form-group">
+      <label for="superficieHa" class="form-label">
+        <i class="fas fa-ruler-combined"></i>
+        Superficie (hectares) *
+      </label>
+      <input
+        type="number"
+        id="superficieHa"
+        formControlName="superficieHa"
+        class="form-control"
+        [class.error]="terrainForm.get('superficieHa')?.invalid && terrainForm.get('superficieHa')?.touched"
+        placeholder="Ex: 2.5"
+        step="0.01"
+        min="0.01"
+      />
+      <div class="error-message" *ngIf="terrainForm.get('superficieHa')?.invalid && terrainForm.get('superficieHa')?.touched">
+        {{ getErrorMessage('superficieHa') }}
+      </div>
+    </div>
+
+    <!-- Localisation -->
+    <div class="form-group">
+      <label for="localisation" class="form-label">
+        <i class="fas fa-map-marker-alt"></i>
+        Localisation *
+      </label>
+      <input
+        type="text"
+        id="localisation"
+        formControlName="localisation"
+        class="form-control"
+        [class.error]="terrainForm.get('localisation')?.invalid && terrainForm.get('localisation')?.touched"
+        placeholder="Ex: Commune de XYZ, Région ABC"
+      />
+      <div class="error-message" *ngIf="terrainForm.get('localisation')?.invalid && terrainForm.get('localisation')?.touched">
+        {{ getErrorMessage('localisation') }}
+      </div>
+    </div>
+
+    <!-- Coordonnées -->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="latitude" class="form-label">
+          <i class="fas fa-globe"></i>
+          Latitude *
+        </label>
+        <input
+          type="number"
+          id="latitude"
+          formControlName="latitude"
+          class="form-control"
+          [class.error]="terrainForm.get('latitude')?.invalid && terrainForm.get('latitude')?.touched"
+          placeholder="Ex: 36.7525"
+          step="0.0001"
+          min="-90"
+          max="90"
+        />
+        <div class="error-message" *ngIf="terrainForm.get('latitude')?.invalid && terrainForm.get('latitude')?.touched">
+          {{ getErrorMessage('latitude') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="longitude" class="form-label">
+          <i class="fas fa-globe"></i>
+          Longitude *
+        </label>
+        <input
+          type="number"
+          id="longitude"
+          formControlName="longitude"
+          class="form-control"
+          [class.error]="terrainForm.get('longitude')?.invalid && terrainForm.get('longitude')?.touched"
+          placeholder="Ex: 3.0420"
+          step="0.0001"
+          min="-180"
+          max="180"
+        />
+        <div class="error-message" *ngIf="terrainForm.get('longitude')?.invalid && terrainForm.get('longitude')?.touched">
+          {{ getErrorMessage('longitude') }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Type de sol -->
+    <div class="form-group">
+      <label for="typeSol" class="form-label">
+        <i class="fas fa-seedling"></i>
+        Type de sol *
+      </label>
+      <select
+        id="typeSol"
+        formControlName="typeSol"
+        class="form-control"
+        [class.error]="terrainForm.get('typeSol')?.invalid && terrainForm.get('typeSol')?.touched"
+      >
+        <option value="">Sélectionnez un type de sol</option>
+        <option *ngFor="let type of soilTypes" [value]="type.value">{{ type.label }}</option>
+      </select>
+      <div class="error-message" *ngIf="terrainForm.get('typeSol')?.invalid && terrainForm.get('typeSol')?.touched">
+        {{ getErrorMessage('typeSol') }}
+      </div>
+    </div>
+
+    <!-- Irrigation -->
+    <div class="form-group">
+      <label for="irrigation" class="form-label">
+        <i class="fas fa-tint"></i>
+        Système d'irrigation *
+      </label>
+      <select
+        id="irrigation"
+        formControlName="irrigation"
+        class="form-control"
+        [class.error]="terrainForm.get('irrigation')?.invalid && terrainForm.get('irrigation')?.touched"
+      >
+        <option value="">Sélectionnez un système d'irrigation</option>
+        <option *ngFor="let type of irrigationTypes" [value]="type.value">{{ type.label }}</option>
+      </select>
+      <div class="error-message" *ngIf="terrainForm.get('irrigation')?.invalid && terrainForm.get('irrigation')?.touched">
+        {{ getErrorMessage('irrigation') }}
+      </div>
+    </div>
+
+    <!-- Source d'eau -->
+    <div class="form-group">
+      <label for="sourceEau" class="form-label">
+        <i class="fas fa-water"></i>
+        Source d'eau *
+      </label>
+      <select
+        id="sourceEau"
+        formControlName="sourceEau"
+        class="form-control"
+        [class.error]="terrainForm.get('sourceEau')?.invalid && terrainForm.get('sourceEau')?.touched"
+      >
+        <option value="">Sélectionnez une source d'eau</option>
+        <option *ngFor="let source of waterSources" [value]="source">{{ source }}</option>
+      </select>
+      <div class="error-message" *ngIf="terrainForm.get('sourceEau')?.invalid && terrainForm.get('sourceEau')?.touched">
+        {{ getErrorMessage('sourceEau') }}
+      </div>
+    </div>
+
+    <!-- Remarque -->
+    <div class="form-group">
+      <label for="remarque" class="form-label">
+        <i class="fas fa-sticky-note"></i>
+        Remarque (optionnel)
+      </label>
+      <textarea
+        id="remarque"
+        formControlName="remarque"
+        class="form-control textarea"
+        [class.error]="terrainForm.get('remarque')?.invalid && terrainForm.get('remarque')?.touched"
+        placeholder="Informations supplémentaires sur le terrain..."
+        rows="3"
+      ></textarea>
+      <div class="error-message" *ngIf="terrainForm.get('remarque')?.invalid && terrainForm.get('remarque')?.touched">
+        {{ getErrorMessage('remarque') }}
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="form-actions">
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="isSubmitting || terrainForm.invalid"
+      >
+        <i class="fas fa-save"></i>
+        {{ isSubmitting ? 'Enregistrement...' : 'Enregistrer le terrain' }}
+      </button>
+    </div>
+
+  </form>
+</div>

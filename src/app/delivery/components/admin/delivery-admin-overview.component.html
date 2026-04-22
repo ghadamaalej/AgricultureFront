@@ -1,0 +1,187 @@
+<div class="delivery-page">
+  <div class="page-title">
+    <h2><i class="fas fa-user-shield"></i> Delivery admin center</h2>
+    <p>Global KPIs, status distribution, monthly trend and operational details for administrators.</p>
+  </div>
+
+  <div class="notification" *ngIf="isLoading">Loading data...</div>
+  <div class="notification" *ngIf="loadError">{{ loadError }}</div>
+
+  <section class="stats-grid" *ngIf="!isLoading">
+    <div class="stat-card"><span>Total requests</span><strong>{{ stats.total }}</strong></div>
+    <div class="stat-card"><span>Delivered</span><strong>{{ stats.delivered }}</strong></div>
+    <div class="stat-card"><span>Pending</span><strong>{{ stats.pending }}</strong></div>
+    <div class="stat-card"><span>In progress</span><strong>{{ stats.inProgress }}</strong></div>
+    <div class="stat-card"><span>Accepted</span><strong>{{ stats.accepted }}</strong></div>
+    <div class="stat-card"><span>Refused</span><strong>{{ stats.refused }}</strong></div>
+    <div class="stat-card"><span>Delivery rate</span><strong>{{ stats.deliveryRate | number:'1.0-2' }}%</strong></div>
+    <div class="stat-card"><span>Cancellation rate</span><strong>{{ stats.cancellationRate | number:'1.0-2' }}%</strong></div>
+    <div class="stat-card"><span>Revenue (delivered)</span><strong>{{ stats.revenue | number:'1.2-2' }} TND</strong></div>
+    <div class="stat-card"><span>Total amount</span><strong>{{ stats.totalAmount | number:'1.2-2' }} TND</strong></div>
+    <div class="stat-card"><span>Average basket</span><strong>{{ stats.avgPrice | number:'1.2-2' }} TND</strong></div>
+    <div class="stat-card"><span>Active transporters</span><strong>{{ stats.activeTransporters }}</strong></div>
+  </section>
+
+  <section class="panel" *ngIf="!isLoading">
+    <div class="panel-head">
+      <h3>All requests</h3>
+      <div class="actions-row">
+        <input
+          type="text"
+          class="filter-input"
+          placeholder="Search reference, product, farmer, transporter"
+          [(ngModel)]="searchTerm"
+        >
+        <select class="filter-select" [(ngModel)]="statusFilter">
+          <option value="ALL">All statuses</option>
+          <option value="En attente">Pending</option>
+          <option value="Acceptée">Accepted</option>
+          <option value="En cours">In progress</option>
+          <option value="Livrée">Delivered</option>
+          <option value="Refusée">Refused</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="periodFilter">
+          <option value="ALL">All periods</option>
+          <option value="7D">Last 7 days</option>
+          <option value="30D">Last 30 days</option>
+          <option value="90D">Last 90 days</option>
+        </select>
+        <button class="btn-refresh" type="button" (click)="reload()">Refresh</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Status</th>
+            <th>Product</th>
+            <th>Weight</th>
+            <th>Price</th>
+            <th>Farmer</th>
+            <th>Transporter</th>
+            <th>Created</th>
+            <th>Delivered</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of displayedRows">
+            <td>{{ row.reference }}</td>
+            <td>{{ row.status }}</td>
+            <td>{{ row.product }}</td>
+            <td>{{ row.weightKg }} kg</td>
+            <td>{{ row.price | number:'1.2-2' }} TND</td>
+            <td>{{ row.farmer }}</td>
+            <td>{{ row.transporter }}</td>
+            <td>{{ row.createdAt }}</td>
+            <td>{{ row.deliveredAt }}</td>
+          </tr>
+          <tr *ngIf="displayedRows.length === 0">
+            <td colspan="9">No requests available.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel split" *ngIf="!isLoading">
+    <div>
+      <h3>Status distribution</h3>
+      <div class="status-list" *ngIf="statusBreakdown.length > 0; else emptyBreakdown">
+        <div class="status-row" *ngFor="let item of statusBreakdown">
+          <div class="status-head">
+            <span>{{ item.label }}</span>
+            <span>{{ item.count }} ({{ item.percent | number:'1.0-2' }}%)</span>
+          </div>
+          <div class="status-bar">
+            <div class="status-fill" [ngClass]="item.className" [style.width.%]="item.percent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Monthly trend (6 months)</h3>
+      <div class="trend-table" *ngIf="monthlyTrend.length > 0; else emptyTrend">
+        <div class="trend-row trend-head">
+          <span>Month</span>
+          <span>Created</span>
+          <span>Delivered</span>
+          <span>Revenue</span>
+        </div>
+        <div class="trend-row" *ngFor="let item of monthlyTrend">
+          <span>{{ item.label }}</span>
+          <span>{{ item.created }}</span>
+          <span>{{ item.delivered }}</span>
+          <span>{{ item.revenue | number:'1.2-2' }} TND</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel split" *ngIf="!isLoading">
+    <div>
+      <h3>Top transporters</h3>
+      <div class="mini-table" *ngIf="topTransporters.length > 0; else emptyTransporters">
+        <div class="mini-row mini-head">
+          <span>Transporter</span>
+          <span>Handled</span>
+          <span>Delivered</span>
+          <span>Revenue</span>
+        </div>
+        <div class="mini-row" *ngFor="let item of topTransporters">
+          <span>{{ item.name }}</span>
+          <span>{{ item.handled }}</span>
+          <span>{{ item.delivered }}</span>
+          <span>{{ item.revenue | number:'1.2-2' }} TND</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Top products</h3>
+      <div class="mini-table" *ngIf="topProducts.length > 0; else emptyProducts">
+        <div class="mini-row mini-head">
+          <span>Product</span>
+          <span>Deliveries</span>
+          <span>Weight</span>
+          <span>Amount</span>
+        </div>
+        <div class="mini-row" *ngFor="let item of topProducts">
+          <span>{{ item.name }}</span>
+          <span>{{ item.deliveries }}</span>
+          <span>{{ item.totalWeight | number:'1.0-2' }} kg</span>
+          <span>{{ item.totalAmount | number:'1.2-2' }} TND</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="!isLoading">
+    <h3>Recent history</h3>
+    <div class="history-list" *ngIf="historyRows.length > 0; else emptyHistory">
+      <div class="history-item" *ngFor="let item of historyRows">
+        <strong>{{ item.reference }}</strong>
+        <span>{{ item.status }}</span>
+        <span>{{ item.createdAt }}</span>
+        <span>{{ item.transporter }}</span>
+      </div>
+    </div>
+    <ng-template #emptyHistory>
+      <div class="notification">No global history.</div>
+    </ng-template>
+  </section>
+
+  <ng-template #emptyBreakdown>
+    <div class="notification">No status data.</div>
+  </ng-template>
+  <ng-template #emptyTrend>
+    <div class="notification">No trend data.</div>
+  </ng-template>
+  <ng-template #emptyTransporters>
+    <div class="notification">No transporter ranking available.</div>
+  </ng-template>
+  <ng-template #emptyProducts>
+    <div class="notification">No product ranking available.</div>
+  </ng-template>
+</div>

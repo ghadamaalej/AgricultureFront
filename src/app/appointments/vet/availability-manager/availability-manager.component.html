@@ -1,0 +1,372 @@
+<div class="page-header">
+  <div>
+    <h1 class="pt">Mes disponibilités</h1>
+    <p class="ps">Gérez votre calendrier de consultation</p>
+  </div>
+</div>
+
+<!-- ── Sub-tabs ── -->
+<div class="sub-tabs">
+  <button class="stab" [class.active]="tab==='calendar'" (click)="setTab('calendar')">
+    <i class="fas fa-calendar-alt"></i> Calendrier
+  </button>
+  <button class="stab" [class.active]="tab==='block'" (click)="setTab('block')">
+    <i class="fas fa-lock"></i> Bloquer un jour
+  </button>
+  <button class="stab" [class.active]="tab==='unavailabilities'" (click)="setTab('unavailabilities')">
+    <i class="fas fa-calendar-times"></i> Indisponibilités
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- TAB: CALENDAR                                              -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<ng-container *ngIf="tab==='calendar'">
+
+  <div class="cal-wrapper">
+
+    <!-- Left: Calendar -->
+    <div class="cal-main">
+
+      <!-- Month nav -->
+      <div class="month-nav">
+        <button class="nav-btn" (click)="prevMonth()"><i class="fas fa-chevron-left"></i></button>
+        <h2 class="month-title">{{ monthLabel }}</h2>
+        <button class="nav-btn" (click)="nextMonth()"><i class="fas fa-chevron-right"></i></button>
+        <button class="btn-add-avail" (click)="openAddForm()">
+          <i class="fas fa-plus"></i> Nouvelle disponibilité
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loadingAvail" class="cal-loading">
+        <div class="spinner"></div> Chargement…
+      </div>
+
+      <!-- Grid -->
+      <div *ngIf="!loadingAvail" class="cal-grid-wrap">
+        <!-- Week headers -->
+        <div class="cal-head">
+          <div *ngFor="let d of weekDays" class="cal-wd">{{ d }}</div>
+        </div>
+        <!-- Days grid -->
+        <div class="cal-grid">
+          <div *ngFor="let day of calDays"
+            class="cal-cell"
+            [class.other-month]="!day.isCurrentMonth"
+            [class.today]="day.isToday"
+            [class.has-avail]="day.availability !== null"
+            [class.all-blocked]="day.totalSlots > 0 && day.freeSlots === 0"
+            [class.selected]="selectedDay?.iso === day.iso"
+            (click)="selectDay(day)">
+
+            <span class="cell-date">{{ day.date.getDate() }}</span>
+
+            <!-- Availability summary pills -->
+            <ng-container *ngIf="day.availability">
+              <div class="cell-pills">
+                <span class="pill pill-free" *ngIf="day.freeSlots > 0">
+                  {{ day.freeSlots }} libre{{ day.freeSlots > 1 ? 's' : '' }}
+                </span>
+                <span class="pill pill-booked" *ngIf="day.bookedSlots > 0">
+                  {{ day.bookedSlots }} réservé{{ day.bookedSlots > 1 ? 's' : '' }}
+                </span>
+                <span class="pill pill-blocked" *ngIf="day.blockedSlots > 0 && day.freeSlots === 0 && day.bookedSlots === 0">
+                  Bloqué
+                </span>
+              </div>
+              <!-- Mini slot dots -->
+              <div class="cell-dots">
+                <span *ngFor="let s of day.availability!.timeSlots"
+                  class="dot"
+                  [class.dot-free]="s.status==='AVAILABLE'"
+                  [class.dot-booked]="s.status==='BOOKED'"
+                  [class.dot-blocked]="s.status==='BLOCKED'"
+                  [title]="(s.startTime | slice:0:5) + ' – ' + (s.endTime | slice:0:5)">
+                </span>
+              </div>
+            </ng-container>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="cal-legend">
+        <div class="leg"><span class="leg-dot leg-free"></span> Créneaux disponibles</div>
+        <div class="leg"><span class="leg-dot leg-booked"></span> Réservé</div>
+        <div class="leg"><span class="leg-dot leg-blocked"></span> Bloqué</div>
+        <div class="leg"><span class="leg-dot leg-none"></span> Pas de disponibilité</div>
+      </div>
+    </div>
+
+    <!-- Right: Day detail panel -->
+    <div class="day-panel" [class.visible]="selectedDay !== null" *ngIf="selectedDay">
+      <div class="panel-header">
+        <div class="panel-date">
+          <span class="panel-day-num">{{ selectedDay.date.getDate() }}</span>
+          <div>
+            <strong>{{ selectedDay.date.toLocaleDateString('fr-FR', {weekday:'long'}) }}</strong>
+            <span>{{ selectedDay.date.toLocaleDateString('fr-FR', {month:'long', year:'numeric'}) }}</span>
+          </div>
+        </div>
+        <button class="panel-close" (click)="selectedDay = null">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- No availability for this day -->
+      <div class="panel-empty" *ngIf="!selectedDay.availability">
+        <i class="fas fa-calendar-plus"></i>
+        <p>Aucune disponibilité ce jour.</p>
+        <button class="btn-add-here" (click)="openAddForm()">
+          <i class="fas fa-plus"></i> Ajouter une disponibilité
+        </button>
+      </div>
+
+      <!-- Slots list -->
+      <div *ngIf="selectedDay.availability">
+        <div class="panel-stats">
+          <div class="pstat">
+            <span class="pstat-val">{{ selectedDay.freeSlots }}</span>
+            <span class="pstat-lbl">Libres</span>
+          </div>
+          <div class="pstat">
+            <span class="pstat-val pstat-booked">{{ selectedDay.bookedSlots }}</span>
+            <span class="pstat-lbl">Réservés</span>
+          </div>
+          <div class="pstat">
+            <span class="pstat-val pstat-blocked">{{ selectedDay.blockedSlots }}</span>
+            <span class="pstat-lbl">Bloqués</span>
+          </div>
+        </div>
+
+        <div class="slots-list">
+          <div *ngFor="let s of selectedDay.availability!.timeSlots" class="slot-row"
+            [class.slot-free]="s.status==='AVAILABLE'"
+            [class.slot-booked]="s.status==='BOOKED'"
+            [class.slot-blocked]="s.status==='BLOCKED'">
+            <span class="slot-time">
+              {{ s.startTime | slice:0:5 }} – {{ s.endTime | slice:0:5 }}
+            </span>
+            <span class="slot-status-badge"
+              [class.badge-free]="s.status==='AVAILABLE'"
+              [class.badge-booked]="s.status==='BOOKED'"
+              [class.badge-blocked]="s.status==='BLOCKED'">
+              {{ s.status === 'AVAILABLE' ? 'Libre' : s.status === 'BOOKED' ? 'Réservé' : 'Bloqué' }}
+            </span>
+          </div>
+        </div>
+
+        <button class="btn-add-here mt12" (click)="openAddForm()">
+          <i class="fas fa-plus"></i> Ajouter une plage
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</ng-container>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- TAB: BLOCK DAY                                             -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<ng-container *ngIf="tab==='block'">
+  <div class="form-card">
+    <h3 class="form-title"><i class="fas fa-lock"></i> Bloquer une journée</h3>
+    <p class="form-hint">Tous les créneaux disponibles de cette date seront bloqués.</p>
+    <div class="form-row">
+      <div class="fg">
+        <label>Date à bloquer *</label>
+        <input type="date" [(ngModel)]="blockDate">
+      </div>
+      <div class="fg align-end">
+        <button class="btn-submit" [disabled]="!blockDate || blockLoading" (click)="submitBlock()">
+          <i class="fas fa-spinner fa-spin" *ngIf="blockLoading"></i>
+          <i class="fas fa-lock" *ngIf="!blockLoading"></i>
+          Bloquer le jour
+        </button>
+      </div>
+    </div>
+    <div class="err-txt" *ngIf="blockError"><i class="fas fa-exclamation-circle"></i> {{ blockError }}</div>
+    <div class="success-txt" *ngIf="blockSuccess">
+      <i class="fas fa-check-circle"></i> Jour bloqué avec succès.
+    </div>
+  </div>
+</ng-container>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- TAB: UNAVAILABILITIES                                      -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<ng-container *ngIf="tab==='unavailabilities'">
+  <div class="section-header">
+    <span class="count-label">{{ unavailabilities.length }} indisponibilité(s)</span>
+    <button class="btn-add" (click)="showUnavailForm=!showUnavailForm">
+      <i class="fas" [ngClass]="showUnavailForm ? 'fa-times' : 'fa-plus'"></i>
+      {{ showUnavailForm ? 'Annuler' : 'Ajouter' }}
+    </button>
+  </div>
+
+  
+  <div class="form-card" *ngIf="showUnavailForm">
+  <h3 class="form-title">
+    <i class="fas fa-calendar-times"></i>
+    Créer une indisponibilité
+  </h3>
+
+  <form [formGroup]="unavailForm" (ngSubmit)="submitUnavail()">
+    <div class="form-row">
+      <div class="fg">
+        <label>Date début *</label>
+        <input
+          type="date"
+          formControlName="startDate"
+          [class.err]="invalid(unavailForm,'startDate')"
+        >
+      </div>
+
+      <div class="fg">
+        <label>Date fin *</label>
+        <input
+          type="date"
+          formControlName="endDate"
+          [class.err]="invalid(unavailForm,'endDate')"
+        >
+      </div>
+    </div>
+
+    <div class="form-row checks-row">
+      <label class="check-label">
+        <input type="checkbox" formControlName="fullDay">
+        <span>Journée entière</span>
+      </label>
+
+      <label class="check-label">
+        <input type="checkbox" formControlName="recurringWeekly">
+        <span>Récurrent chaque semaine</span>
+      </label>
+    </div>
+
+    <div class="form-row" *ngIf="isRecurringWeekly">
+      <div class="fg">
+        <label>Jour à bloquer *</label>
+        <select formControlName="dayOfWeek" [class.err]="invalid(unavailForm,'dayOfWeek')">
+          <option [ngValue]="null">-- Choisir un jour --</option>
+          <option *ngFor="let d of weekDays" [value]="d.value">
+            {{ d.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row" *ngIf="!isFullDay">
+      <div class="fg">
+        <label>Heure début *</label>
+        <input
+          type="time"
+          formControlName="startTime"
+          [class.err]="invalid(unavailForm,'startTime')"
+        >
+      </div>
+
+      <div class="fg">
+        <label>Heure fin *</label>
+        <input
+          type="time"
+          formControlName="endTime"
+          [class.err]="invalid(unavailForm,'endTime')"
+        >
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>Raison (optionnel)</label>
+      <input formControlName="reason" placeholder="Congé, séminaire…">
+    </div>
+
+    <div class="err-txt" *ngIf="unavailError">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ unavailError }}
+    </div>
+
+    <button type="submit" class="btn-submit mt12" [disabled]="unavailLoading">
+      <i class="fas fa-spinner fa-spin" *ngIf="unavailLoading"></i>
+      <i class="fas fa-save" *ngIf="!unavailLoading"></i>
+      Enregistrer
+    </button>
+  </form>
+</div>
+
+  <div *ngIf="loadingUnavail" class="sm"><i class="fas fa-spinner fa-spin"></i></div>
+  <div class="empty" *ngIf="!loadingUnavail && unavailabilities.length === 0">
+    <i class="fas fa-calendar-check"></i><p>Aucune indisponibilité enregistrée.</p>
+  </div>
+  <div class="unavail-list" *ngIf="!loadingUnavail && unavailabilities.length > 0">
+    <div class="unavail-row" *ngFor="let u of unavailabilities">
+      <div class="unavail-left">
+        <div class="unavail-dates">
+          {{ u.startDate | date:'dd/MM/yyyy' }}
+          <span *ngIf="u.startDate !== u.endDate"> → {{ u.endDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="unavail-chips">
+          <span class="uc uc-fullday" *ngIf="u.fullDay">Journée entière</span>
+          <span class="uc uc-recurring" *ngIf="u.recurringWeekly">Récurrent</span>
+          <span class="uc uc-time" *ngIf="!u.fullDay && u.startTime">
+            {{ u.startTime | slice:0:5 }} – {{ u.endTime | slice:0:5 }}
+          </span>
+        </div>
+        <span class="unavail-reason" *ngIf="u.reason">{{ u.reason }}</span>
+      </div>
+      <button class="btn-del" (click)="deleteUnavail(u.id)"><i class="fas fa-trash"></i></button>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL: Add Availability                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showAvailForm" (click)="showAvailForm=false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-hdr">
+      <h3><i class="fas fa-clock"></i> Créer une plage de disponibilité</h3>
+      <button class="modal-x" (click)="showAvailForm=false"><i class="fas fa-times"></i></button>
+    </div>
+    <form [formGroup]="availForm" (ngSubmit)="submitAvail()" class="modal-body">
+      <div class="form-row">
+        <div class="fg">
+          <label>Date *</label>
+          <input type="date" formControlName="date" [class.err]="invalid(availForm,'date')">
+          <span class="em" *ngIf="invalid(availForm,'date')">Requis</span>
+        </div>
+        <div class="fg">
+          <label>Durée créneau (min)</label>
+          <select formControlName="slotDurationMinutes">
+            <option [value]="15">15 min</option>
+            <option [value]="30">30 min</option>
+            <option [value]="45">45 min</option>
+            <option [value]="60">1 heure</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="fg">
+          <label>Heure début *</label>
+          <input type="time" formControlName="startTime" [class.err]="invalid(availForm,'startTime')">
+        </div>
+        <div class="fg">
+          <label>Heure fin *</label>
+          <input type="time" formControlName="endTime" [class.err]="invalid(availForm,'endTime')">
+        </div>
+      </div>
+      <div class="err-txt" *ngIf="availError"><i class="fas fa-exclamation-circle"></i> {{ availError }}</div>
+      <div class="modal-ftr">
+        <button type="button" class="btn-cancel-modal" (click)="showAvailForm=false">Annuler</button>
+        <button type="submit" class="btn-submit" [disabled]="availLoading">
+          <i class="fas fa-spinner fa-spin" *ngIf="availLoading"></i>
+          <i class="fas fa-check" *ngIf="!availLoading"></i>
+          Créer les créneaux
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

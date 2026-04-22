@@ -1,0 +1,244 @@
+<div class="calendar-container">
+  <!-- Header with navigation -->
+  <div class="calendar-header">
+    <div class="navigation">
+      <button class="nav-btn" (click)="navigateMonth('prev')" [disabled]="isLoading">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <h2>{{ getMonthName() }} {{ currentYear }}</h2>
+      <button class="nav-btn" (click)="navigateMonth('next')" [disabled]="isLoading">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Button to return to current month -->
+    <button class="current-month-btn" (click)="goToCurrentMonth()">
+      <i class="fas fa-calendar-day"></i>
+      Current month
+    </button>
+  </div>
+
+  <!-- Month statistics -->
+  <div class="month-stats" *ngIf="calendarSummary">
+    <div class="stat-card">
+      <div class="stat-value">{{ getTotalDeliveriesCount() }}</div>
+      <div class="stat-label">Deliveries</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ getDaysWithDeliveries() }}</div>
+      <div class="stat-label">Active days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ formatPrice(getTotalRevenue()) }}</div>
+      <div class="stat-label">Revenue</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ getCompletionRate().toFixed(1) }}%</div>
+      <div class="stat-label">Completion rate</div>
+    </div>
+    <div class="stat-card stat-card--alert" *ngIf="calendarSummary?.overloadedDays">
+      <div class="stat-value">{{ calendarSummary.overloadedDays }}</div>
+      <div class="stat-label">Conflict days</div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="isLoading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Loading calendar...</span>
+  </div>
+
+  <!-- Calendar grid -->
+  <div class="calendar-grid" *ngIf="!isLoading">
+    <div class="calendar-legend">
+      <span class="legend-item">
+        <span class="legend-dot legend-dot--delivery"></span>
+        Day with delivery
+      </span>
+      <span class="legend-item">
+        <span class="legend-dot legend-dot--conflict"></span>
+        Overload or scheduling conflict
+      </span>
+      <span class="legend-item" *ngIf="calendarSummary && calendarSummary.totalDeliveries === 0">
+        No delivery scheduled this month
+      </span>
+    </div>
+
+    <!-- Day headers -->
+    <div class="day-headers">
+      <div class="day-header" *ngFor="let day of weekDayLabels">
+        {{ day }}
+      </div>
+    </div>
+
+    <!-- Month days -->
+    <div class="calendar-days">
+      <div class="calendar-day"
+           *ngFor="let cell of calendarCells; trackBy: trackByCalendarCell"
+           [class.calendar-day--empty]="!cell.day"
+           [class.today]="cell.day && isToday(cell.day.date)"
+           [class.past]="cell.day && isPast(cell.day.date)"
+           [class.future]="cell.day && isFuture(cell.day.date)"
+           [class.selected]="cell.day && selectedDate === cell.day.date"
+           [class.has-deliveries]="cell.day && cell.day.hasDeliveries"
+           [class.has-conflict]="cell.day && hasPlanningConflict(cell.day)"
+           [style.--delivery-accent]="cell.day && cell.day.hasDeliveries ? getDayStatusColor(cell.day) : null"
+           (click)="cell.day && selectDate(cell.day)">
+
+        <ng-container *ngIf="cell.day as day">
+          <div class="day-top-row">
+            <div class="day-number">{{ getDayNumber(day.date) }}</div>
+            <div class="delivery-count-badge" *ngIf="day.hasDeliveries">{{ day.totalDeliveries }}</div>
+          </div>
+
+          <!-- Delivery indicators -->
+          <div class="delivery-indicators" *ngIf="day.hasDeliveries">
+            <div class="indicator-dot"
+                 *ngFor="let item of day.items.slice(0, 3)"
+                 [style.background]="getStatusColor(item.status)"
+                 [title]="item.reference + ' - ' + item.status">
+            </div>
+            <div class="more-indicator" *ngIf="day.items.length > 3" title="{{ day.items.length - 3 }} more deliveries">
+              +{{ day.items.length - 3 }}
+            </div>
+          </div>
+
+          <!-- Quick statistics -->
+          <div class="day-stats" *ngIf="day.hasDeliveries">
+            <div class="stat-item">
+              <span class="stat-count">{{ day.totalDeliveries }}</span>
+              <i class="fas fa-box"></i>
+            </div>
+            <div class="stat-item" *ngIf="getGroupsCount(day) > 0">
+              <span class="stat-count">{{ getGroupsCount(day) }}</span>
+              <i class="fas fa-layer-group"></i>
+            </div>
+            <div class="stat-item" *ngIf="day.livrees > 0">
+              <span class="stat-count">{{ day.livrees }}</span>
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+
+          <div class="day-load" *ngIf="day.hasDeliveries">
+            <div class="day-load-text">{{ getLoadLabel(day) }}</div>
+            <div class="day-load-bar">
+              <span [style.width.%]="getLoadRatio(day)"></span>
+            </div>
+          </div>
+
+          <div class="day-conflict-pill" *ngIf="day.hasConflict">
+            <i class="fas fa-triangle-exclamation"></i>
+            Conflict
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Selected day details -->
+  <div class="day-details" *ngIf="selectedDayDetails as day">
+    <div class="details-header">
+      <h3>{{ formatDate(day.date) }}</h3>
+      <button class="close-btn" (click)="selectedDayDetails = null; selectedDate = null;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="details-content">
+      <!-- Day statistics -->
+      <div class="day-summary">
+        <div class="summary-item">
+          <span class="label">Total deliveries:</span>
+          <span class="value">{{ day.totalDeliveries }}</span>
+        </div>
+        <div class="summary-item" *ngIf="getGroupsCount(day) > 0">
+          <span class="label">Groups:</span>
+          <span class="value">{{ getGroupsCount(day) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Estimated load:</span>
+          <span class="value">{{ formatDuration(day.totalEstimatedMinutes) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Time between deliveries:</span>
+          <span class="value">{{ formatDuration(day.totalTransitionMinutes) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">In progress:</span>
+          <span class="value">{{ day.enCours }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Accepted:</span>
+          <span class="value">{{ day.acceptees }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Delivered:</span>
+          <span class="value">{{ day.livrees }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Revenue:</span>
+          <span class="value">{{ formatPrice(day.revenueJour) }}</span>
+        </div>
+      </div>
+
+      <div class="planning-warning" *ngIf="day.hasConflict">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>{{ day.warningMessage }}</span>
+      </div>
+
+      <!-- Deliveries list -->
+      <div class="deliveries-list" *ngIf="day.items.length > 0">
+        <h4>Deliveries of the day</h4>
+        <div class="delivery-item"
+             *ngFor="let item of day.items"
+             [class.priority-high]="getDeliveryPriority(item.priority) === 'high'"
+             [class.priority-medium]="getDeliveryPriority(item.priority) === 'medium'"
+             (click)="selectDelivery(item)">
+
+          <!-- Icon and status -->
+          <div class="delivery-icon">
+            <i class="fas" [class]="'fa-' + getStatusIcon(item.status)" [style.color]="getStatusColor(item.status)"></i>
+          </div>
+
+          <!-- Main information -->
+          <div class="delivery-info">
+            <div class="delivery-ref">{{ item.reference }}</div>
+            <div class="delivery-group-badge" *ngIf="item.groupReference">
+              <i class="fas fa-layer-group"></i>
+              Group {{ item.groupReference }}
+            </div>
+            <div class="delivery-address">{{ item.adresseArrivee }}</div>
+            <div class="delivery-product">{{ item.typeProduit }}</div>
+            <div class="delivery-timing">
+              <span><i class="fas fa-clock"></i> Scheduled start: {{ formatTime(item.scheduledDateTime) }}</span>
+              <span><i class="fas fa-hourglass-half"></i> Load: {{ formatDuration(item.estimatedTotalMinutes) }}</span>
+              <span><i class="fas fa-flag-checkered"></i> Estimated end: {{ formatTime(item.estimatedEndTime) }}</span>
+            </div>
+            <div class="delivery-breakdown">
+              <span>Pickup {{ formatDuration(item.estimatedPickupMinutes) }}</span>
+              <span>Transit {{ formatDuration(item.estimatedDriveMinutes) }}</span>
+              <span>Delivery {{ formatDuration(item.estimatedDropoffMinutes) }}</span>
+              <span *ngIf="item.transitionFromPreviousMinutes">To next stop {{ formatDuration(item.transitionFromPreviousMinutes) }}</span>
+            </div>
+            <div class="delivery-conflict-note" *ngIf="item.overlapMinutes">
+              Estimated delay: {{ formatDuration(item.overlapMinutes) }} due to previous deliveries.
+            </div>
+          </div>
+
+          <!-- Price and actions -->
+          <div class="delivery-actions">
+            <div class="delivery-price">{{ formatPrice(item.prix) }}</div>
+            <button class="view-btn" title="View details">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="no-deliveries" *ngIf="selectedDayDetails.items.length === 0">
+        <i class="fas fa-inbox"></i>
+        <span>No delivery on this day</span>
+      </div>
+    </div>
+  </div>
+</div>

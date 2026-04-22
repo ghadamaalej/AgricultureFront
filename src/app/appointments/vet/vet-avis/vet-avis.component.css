@@ -1,0 +1,339 @@
+/* ============================================================
+   VARIABLES
+   ============================================================ */
+:root {
+  --primary: #0f5c3f;
+  --primary-dark: #0a3d28;
+  --primary-light: #e6f4ed;
+  --primary-soft: #d1e8df;
+  --gold: #f59e0b;
+  --gold-light: #fef3c7;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --error: #ef4444;
+  --error-light: #fee2e2;
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+}
+
+/* ============================================================
+   PAGE
+   ============================================================ */
+.vet-avis-page { max-width: 900px; }
+
+.page-header { margin-bottom: 28px; }
+.pt {
+  font-size: 1.5rem; font-weight: 800; color: var(--gray-800);
+  display: flex; align-items: center; gap: 10px;
+}
+.pt i { color: var(--gold); }
+.ps { color: var(--gray-500); font-size: 0.9rem; margin-top: 4px; }
+
+/* ============================================================
+   RÉSUMÉ
+   ============================================================ */
+.summary-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.summary-score {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-width: 120px;
+}
+.score-number {
+  font-size: 3.5rem; font-weight: 800; color: var(--gray-800); line-height: 1;
+}
+.score-stars { display: flex; gap: 4px; }
+.star-gold  { color: var(--gold); }
+.star-empty { color: var(--gray-300); }
+.score-label { font-size: 0.75rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: .5px; }
+.score-total { font-size: 0.8rem; color: var(--gray-400); }
+
+/* Distribution */
+.summary-dist { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 180px; }
+.dist-row { display: flex; align-items: center; gap: 10px; }
+.dist-label { display: flex; align-items: center; gap: 4px; font-size: 0.8rem; color: var(--gray-600); min-width: 34px; }
+.star-gold-sm  { color: var(--gold); font-size: 0.75rem; }
+.star-empty-sm { color: var(--gray-300); font-size: 0.75rem; }
+.dist-bar-wrap { flex: 1; height: 10px; background: var(--gray-200); border-radius: 999px; overflow: hidden; }
+.dist-bar { height: 100%; background: var(--gold); border-radius: 999px; transition: width .4s ease; }
+.dist-count { font-size: 0.75rem; color: var(--gray-500); min-width: 18px; text-align: right; }
+
+/* Mini stats par catégorie */
+.summary-stats { display: flex; flex-direction: column; gap: 6px; min-width: 140px; }
+.sstat {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--gray-50); border-radius: var(--radius-md);
+  padding: 6px 12px;
+}
+.sstat-val { font-size: 1.1rem; font-weight: 700; color: var(--gray-800); min-width: 18px; }
+.sstat-stars { display: flex; gap: 2px; }
+.sstat-lbl { font-size: 0.75rem; color: var(--gray-500); font-weight: 500; }
+
+/* No avis */
+.no-avis-summary {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 48px 32px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 28px;
+  color: var(--gray-500);
+}
+.empty-icon { font-size: 3rem; color: var(--gold); margin-bottom: 16px; }
+.no-avis-summary h3 { font-size: 1.25rem; font-weight: 700; color: var(--gray-700); margin-bottom: 8px; }
+.no-avis-summary p  { font-size: 0.9rem; }
+
+/* ============================================================
+   FILTRES
+   ============================================================ */
+.filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--gray-300);
+  background: white;
+  color: var(--gray-600);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+}
+.filter-chip:hover { border-color: var(--primary); color: var(--primary); }
+.filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+.filter-chip.active .chip-badge { background: rgba(255,255,255,.3); color: white; }
+
+.chip-badge {
+  background: var(--gray-100);
+  color: var(--gray-600);
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.chip-star { color: var(--gold); font-size: 0.75rem; }
+.filter-chip.active .chip-star { color: var(--gold-light); }
+
+/* ============================================================
+   CHARGEMENT / ERREUR
+   ============================================================ */
+.loading-box {
+  display: flex; align-items: center; gap: 14px;
+  color: var(--gray-500); padding: 32px 0; font-size: 0.9rem;
+}
+.loader {
+  width: 24px; height: 24px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.err-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--error-light); color: var(--error);
+  padding: 12px 16px; border-radius: var(--radius-md); font-size: .875rem;
+}
+
+/* ============================================================
+   LISTE DES AVIS
+   ============================================================ */
+.avis-list { display: flex; flex-direction: column; gap: 20px; }
+
+.avis-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  border-left: 4px solid var(--gray-200);
+  transition: box-shadow .2s, border-color .2s;
+}
+.avis-card:hover { box-shadow: var(--shadow-lg); }
+.avis-card.has-reply { border-left-color: var(--primary); }
+
+/* En-tête de la carte */
+.card-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+}
+
+.farmer-info { display: flex; align-items: center; gap: 12px; }
+
+.farmer-av { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+.farmer-av img { width: 100%; height: 100%; object-fit: cover; }
+.farmer-av-ph {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.875rem; font-weight: 700;
+}
+
+.farmer-meta { display: flex; flex-direction: column; gap: 3px; }
+.farmer-name { font-size: 0.95rem; font-weight: 700; color: var(--gray-800); }
+.avis-date   { font-size: 0.75rem; color: var(--gray-400); display: flex; align-items: center; gap: 4px; }
+
+.card-note { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.note-stars { display: flex; gap: 3px; }
+.note-num   { font-size: 0.875rem; font-weight: 700; color: var(--gray-700); }
+
+.note-badge {
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: .3px;
+}
+.badge-5 { background: #d1fae5; color: #065f46; }
+.badge-4 { background: #dbeafe; color: #1e40af; }
+.badge-3 { background: var(--gold-light); color: #92400e; }
+.badge-2 { background: #fde8d0; color: #9a3412; }
+.badge-1 { background: var(--error-light); color: #991b1b; }
+
+.avis-comment {
+  font-size: 0.9rem; color: var(--gray-700); line-height: 1.6;
+  margin-bottom: 12px;
+  background: var(--gray-50); border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+/* Meta réactions */
+.avis-meta { display: flex; gap: 14px; margin-bottom: 12px; }
+.meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--gray-500); }
+.meta-item i { color: var(--primary); }
+
+/* Commentaires agriculteurs */
+.farmer-comments {
+  border-left: 3px solid var(--gray-200);
+  padding-left: 14px;
+  margin-bottom: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.fc-item { display: flex; gap: 8px; }
+.fc-av { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+.fc-av img { width: 100%; height: 100%; object-fit: cover; }
+.fc-av-ph {
+  width: 100%; height: 100%;
+  background: var(--gray-200); color: var(--gray-600);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700;
+}
+.fc-body { flex: 1; }
+.fc-name { font-size: 0.78rem; font-weight: 600; color: var(--gray-700); }
+.fc-text { font-size: 0.82rem; color: var(--gray-600); line-height: 1.4; margin-top: 2px; }
+
+/* Réponse existante */
+.my-reply {
+  background: var(--primary-light);
+  border: 1px solid var(--primary-soft);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-top: 8px;
+}
+.my-reply-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.8rem; font-weight: 700; color: var(--primary);
+  margin-bottom: 8px;
+}
+.my-reply-date { margin-left: auto; font-size: 0.72rem; color: var(--gray-500); font-weight: 400; }
+.my-reply-text { font-size: 0.875rem; color: var(--gray-700); line-height: 1.6; }
+
+/* Formulaire réponse */
+.reply-section { margin-top: 12px; }
+
+.btn-reply {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary-soft);
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem; font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-reply:hover { background: var(--primary); color: white; }
+
+.reply-form { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.reply-ta {
+  width: 100%; padding: 12px 14px;
+  border: 1px solid var(--gray-300); border-radius: var(--radius-md);
+  font-size: 0.875rem; color: var(--gray-800); font-family: inherit;
+  resize: vertical; min-height: 90px;
+  transition: border-color .2s;
+}
+.reply-ta:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15,92,63,.1); }
+
+.reply-err {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--error-light); color: var(--error);
+  padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.82rem;
+}
+
+.reply-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+.btn-cancel-reply {
+  background: white; border: 1px solid var(--gray-300); color: var(--gray-600);
+  padding: 8px 16px; border-radius: var(--radius-md);
+  font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all .2s;
+}
+.btn-cancel-reply:hover:not(:disabled) { background: var(--gray-100); }
+.btn-cancel-reply:disabled { opacity: .5; cursor: not-allowed; }
+
+.btn-send-reply {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--primary); color: white;
+  border: none; padding: 9px 20px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem; font-weight: 600;
+  cursor: pointer; transition: all .2s; box-shadow: var(--shadow-sm);
+}
+.btn-send-reply:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+.btn-send-reply:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Empty filtre */
+.empty-filter {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 48px; color: var(--gray-400); text-align: center;
+}
+.empty-filter i { font-size: 2rem; color: var(--gray-300); }
+.empty-filter p { font-size: 0.9rem; }
+
+.btn-reset {
+  background: white; border: 1px solid var(--gray-300); color: var(--gray-600);
+  padding: 8px 18px; border-radius: var(--radius-md);
+  font-size: 0.875rem; cursor: pointer; transition: all .2s;
+}
+.btn-reset:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .summary-card { flex-direction: column; }
+  .card-header { flex-direction: column; }
+  .reply-actions { flex-direction: column; }
+}

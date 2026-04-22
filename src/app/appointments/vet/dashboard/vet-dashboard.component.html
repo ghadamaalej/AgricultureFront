@@ -1,0 +1,138 @@
+<div class="page-header">
+  
+  <div>
+    <h1 class="pt">Mes rendez-vous</h1>
+    <p class="ps">Gérez vos demandes de consultation</p>
+  </div>
+</div>
+<div class="stats-grid" *ngIf="stats && !loading">
+  <div class="stat-card">
+    <span class="stat-label">Total RDV</span>
+    <strong class="stat-value">{{ stats.totalAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">En attente</span>
+    <strong class="stat-value">{{ stats.pendingAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Acceptés</span>
+    <strong class="stat-value">{{ stats.acceptedAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Aujourd’hui</span>
+    <strong class="stat-value">{{ stats.todayAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">À venir</span>
+    <strong class="stat-value">{{ stats.upcomingAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Animaux suivis</span>
+    <strong class="stat-value">{{ stats.distinctAnimals }}</strong>
+  </div>
+</div>
+
+<!-- Filter tabs -->
+<div class="filter-tabs">
+  <button *ngFor="let f of filters"
+    class="ftab" [class.active]="filterStatus===f.value"
+    (click)="setFilter(f.value)">
+    {{ f.label }}
+    <span class="fbadge">{{ count(f.value) }}</span>
+  </button>
+</div>
+
+<div *ngIf="loading" class="sm"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>
+<div *ngIf="error"   class="sm err"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+
+<div class="empty" *ngIf="!loading && !error && filtered.length===0">
+  <i class="fas fa-calendar-check"></i>
+  <p>Aucun rendez-vous{{ filterStatus!=='ALL' ? ' avec ce statut' : '' }}.</p>
+</div>
+
+<div class="appt-list" *ngIf="!loading && filtered.length>0">
+  <div class="appt-card" *ngFor="let a of filtered; trackBy:trackById">
+
+    <div class="card-top">
+      <span class="status-badge" [ngClass]="statusClass(a.appointmentStatus)">
+        {{ statusLabel(a.appointmentStatus) }}
+      </span>
+      <span class="appt-date">
+        <i class="fas fa-calendar-alt"></i>
+        {{ a.dateHeure | date:'EEE dd MMM yyyy' }} · {{ a.dateHeure | date:'HH:mm' }}
+      </span>
+    </div>
+
+    <div class="card-body">
+      <div class="info-row">
+        <div class="info-item">
+          <span class="il">Agriculteur</span>
+          <span class="iv">{{ a.farmer?.prenom || '—' }} {{ a.farmer?.nom || '' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="il">Contact</span>
+          <span class="iv">{{ a.farmer?.telephone || a.farmer?.email || '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="il">Animal</span>
+          <span class="iv">{{ a.animal ? a.animal.espece + ' · ' + a.animal.reference : '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="il">Créneau</span>
+          <span class="iv">{{ a.timeSlot ? a.timeSlot.startTime + ' – ' + a.timeSlot.endTime : '—' }}</span>
+        </div>
+      </div>
+      <div class="motif-row">
+        <span class="il">Motif :</span>
+        <span class="iv">{{ a.motif }}</span>
+      </div>
+      <div class="refusal-reason" *ngIf="a.appointmentStatus==='REFUSEE' && a.refusalReason">
+        <i class="fas fa-times-circle"></i> Motif de refus : {{ a.refusalReason }}
+      </div>
+    </div>
+
+    <div class="card-footer" *ngIf="a.appointmentStatus==='EN_ATTENTE'">
+      <button class="btn-accept" (click)="accept(a)" [disabled]="actionLoading===a.id">
+        <i class="fas fa-check"></i> Accepter
+      </button>
+      <button class="btn-refuse" (click)="openRefuse(a)" [disabled]="actionLoading===a.id">
+        <i class="fas fa-times"></i> Refuser
+      </button>
+      <button class="btn-cancel-sm" (click)="cancel(a)" [disabled]="actionLoading===a.id">
+        Annuler
+      </button>
+    </div>
+    <div class="card-footer single" *ngIf="a.appointmentStatus==='ACCEPTEE'">
+      <button class="btn-cancel-sm" (click)="cancel(a)" [disabled]="actionLoading===a.id">
+        <i class="fas fa-ban"></i> Annuler le RDV
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Refuse modal -->
+<div class="modal-overlay" *ngIf="showRefuseModal" (click)="closeRefuse()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Refuser le rendez-vous</h3>
+      <button class="modal-close" (click)="closeRefuse()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-desc">Veuillez indiquer la raison du refus :</p>
+      <textarea [(ngModel)]="refuseReason" rows="3" class="reason-ta"
+        placeholder="Ex: Absence, créneau incompatible…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel-modal" (click)="closeRefuse()">Annuler</button>
+      <button class="btn-refuse-confirm" (click)="confirmRefuse()" [disabled]="!refuseReason.trim()">
+        Confirmer le refus
+      </button>
+    </div>
+  </div>
+</div>

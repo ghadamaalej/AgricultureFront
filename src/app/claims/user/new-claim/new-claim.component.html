@@ -1,0 +1,137 @@
+<div class="page-wrap">
+
+  <!-- Success overlay -->
+  <div class="success-overlay" *ngIf="submitSuccess">
+    <div class="success-card">
+      <div class="success-icon"><i class="fas fa-check"></i></div>
+      <h2>Réclamation envoyée !</h2>
+      <p>Votre ticket a été créé avec succès. Redirection en cours…</p>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="page-header">
+    <button class="btn-back" (click)="cancel()">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <div class="page-header-info">
+      <div class="page-icon"><i class="fas fa-plus-circle"></i></div>
+      <div>
+        <h1 class="page-title">Nouvelle Réclamation</h1>
+        <p class="page-subtitle">Décrivez votre problème avec précision</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form card -->
+  <div class="form-card" [formGroup]="form">
+
+    <!-- Step indicator -->
+    <div class="steps">
+      <div class="step active">
+        <div class="step-num">1</div>
+        <span>Identification</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step active">
+        <div class="step-num">2</div>
+        <span>Description</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step active">
+        <div class="step-num">3</div>
+        <span>Priorité</span>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2 class="section-title"><span>1</span> Identification du problème</h2>
+
+      <!-- Subject -->
+      <div class="field-group">
+        <label class="field-label">Sujet <span class="required">*</span></label>
+        <input
+          class="field-input"
+          [class.invalid]="fieldInvalid('subject')"
+          type="text"
+          formControlName="subject"
+          placeholder="Ex: Problème de livraison de commande #1234">
+        <span class="field-error" *ngIf="fieldInvalid('subject')">
+          Le sujet doit contenir entre 5 et 100 caractères.
+        </span>
+      </div>
+
+      <!-- Category -->
+      <div class="field-group">
+        <label class="field-label">Catégorie <span class="required">*</span></label>
+        <div class="select-wrap">
+          <select class="field-input" [class.invalid]="fieldInvalid('category')" formControlName="category">
+            <option value="">-- Sélectionnez une catégorie --</option>
+            <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
+          </select>
+          <i class="fas fa-chevron-down select-arrow"></i>
+        </div>
+        <span class="field-error" *ngIf="fieldInvalid('category')">La catégorie est requise.</span>
+      </div>
+    </div>
+
+    <div class="form-divider"></div>
+
+    <div class="form-section">
+      <h2 class="section-title"><span>2</span> Description détaillée</h2>
+
+      <div class="field-group">
+        <label class="field-label">Description <span class="required">*</span></label>
+        <textarea
+          class="field-input field-textarea"
+          [class.invalid]="fieldInvalid('description')"
+          formControlName="description"
+          rows="5"
+          placeholder="Décrivez votre problème en détail : contexte, étapes pour reproduire, impact..."></textarea>
+        <div class="field-hint">
+          <span class="field-error" *ngIf="fieldInvalid('description')">La description doit contenir au moins 20 caractères.</span>
+          <span class="char-count" [class.warn]="form.get('description')?.value?.length > 800">
+            {{ form.get('description')?.value?.length || 0 }} / 1000
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-divider"></div>
+
+    <div class="form-section">
+      <h2 class="section-title"><span>3</span> Priorité</h2>
+
+      <div class="priority-group">
+        <button
+          type="button"
+          class="prio-btn"
+          *ngFor="let p of priorities"
+          [class.selected]="form.get('priority')?.value === p.value"
+          [class]="'prio-btn prio-' + p.value.toLowerCase()"
+          (click)="setPriority(p.value)">
+          <i [class]="p.icon"></i>
+          <span>{{ p.label }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="alert-error" *ngIf="submitError">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ submitError }}
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button class="btn-cancel" type="button" (click)="cancel()" [disabled]="submitting">
+        Annuler
+      </button>
+      <button class="btn-submit" type="button" (click)="submit()" [disabled]="submitting">
+        <span *ngIf="!submitting"><i class="fas fa-paper-plane"></i> Soumettre la réclamation</span>
+        <span *ngIf="submitting"><i class="fas fa-spinner fa-spin"></i> Envoi en cours...</span>
+      </button>
+    </div>
+
+  </div>
+</div>

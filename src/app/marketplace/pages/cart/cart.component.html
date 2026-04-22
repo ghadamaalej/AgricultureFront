@@ -1,0 +1,78 @@
+<app-navbar></app-navbar>
+
+<section class="section-padding marketplace-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">My Cart</span>
+      <h2 class="section-title">Your <span>Current Cart</span></h2>
+      <p class="section-desc">
+        Thank you for choosing Greenroots! Below is a summary of the items you've added to your cart. You can adjust quantities or remove items before proceeding to checkout.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section-padding cart-page">
+  <div class="container">
+
+    <div *ngIf="loading" class="empty-box">
+      Loading cart...
+    </div>
+
+    <div *ngIf="!loading && cartItems.length === 0" class="empty-box">
+      <i class="fas fa-shopping-cart"></i>
+      <h3>Your cart is empty</h3>
+      <p>Add products from the marketplace to see them here.</p>
+    </div>
+
+    <div *ngIf="!loading && cartItems.length > 0" class="cart-layout">
+
+      <div class="cart-items">
+        <div class="cart-item" *ngFor="let item of cartItems">
+          <img [src]="item.imageUrl" [alt]="item.nom">
+
+          <div class="item-info">
+            <h3>{{ item.nom }}</h3>
+            <p>{{ item.prixUnitaire }} DT / KG</p>
+            <p>Available stock: {{ item.stockDisponible }} KG</p>
+          </div>
+
+          <div class="item-actions">
+            <div class="qty-controls">
+              <button (click)="decrease(item)">-</button>
+              <span>{{ item.quantite }}</span>
+              <button
+                (click)="increase(item)"
+                [disabled]="item.quantite >= item.stockDisponible">
+                +
+              </button>
+            </div>
+
+            <div class="item-total">
+              {{ item.sousTotal | number:'1.2-2' }} DT
+            </div>
+
+            <button class="remove-btn" (click)="remove(item)">
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cart-summary">
+        <h3>Cart Summary</h3>
+        <div class="summary-row">
+          <span>Total</span>
+          <strong>{{ cart?.montantEstime | number:'1.2-2' }} DT</strong>
+        </div>
+
+        <button class="btn btn-primary checkout-btn" (click)="checkout()">
+          Checkout
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<app-footer></app-footer>

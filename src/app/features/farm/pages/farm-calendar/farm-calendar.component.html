@@ -1,0 +1,117 @@
+<div class="farm-calendar-shell">
+  <app-navbar (onAuthOpen)="onNavbarAuth($event)"></app-navbar>
+
+  <div class="page-subnav-outer">
+    <div class="page-subnav-scroll">
+      <nav class="page-subnav" aria-label="Sections du calendrier">
+        <button type="button" class="subnav-btn" (click)="scrollToSection('section-calendar')">
+          <i class="fas fa-calendar-alt"></i> Calendrier
+        </button>
+        <button type="button" class="subnav-btn" (click)="scrollToSection('section-events')">
+          <i class="fas fa-list"></i> Mes dates
+        </button>
+        <button type="button" class="subnav-btn" (click)="scrollToSection('section-weather')">
+          <i class="fas fa-cloud-sun"></i> Météo
+        </button>
+        <button type="button" class="subnav-btn" (click)="scrollToSection('section-fao')">
+          <i class="fas fa-seedling"></i> FAO
+        </button>
+        <button type="button" class="subnav-btn" (click)="scrollToSection('section-climate')">
+          <i class="fas fa-temperature-high"></i> Climat
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <main class="calendar-main">
+    <section class="calendar-page">
+      <header class="page-intro">
+        <h1>Calendrier agricole</h1>
+        <p class="subtitle">Ajoutez vos événements par jour. Météo, périodes FAO (Tunisie) et climat local sont sur cette page.</p>
+      </header>
+
+      <div class="calendar-stack">
+        <div id="section-calendar" class="card calendar-card jump-section">
+          <app-farm-calendar-month
+            [monthLabel]="monthLabel"
+            [weekDays]="weekDays"
+            [calendarDays]="calendarDays"
+            [events]="events"
+            [selectedDateKey]="selectedDateKey"
+            (monthPrevious)="previousMonth()"
+            (monthNext)="nextMonth()"
+            (daySelect)="selectDay($event)"
+            (editEvent)="editEvent($event)"
+            (deleteEvent)="deleteEvent($event)">
+          </app-farm-calendar-month>
+        </div>
+
+        <div id="section-events" class="card jump-section">
+          <app-farm-calendar-events-list
+            [events]="events"
+            (editEvent)="editEvent($event)"
+            (deleteEvent)="deleteEvent($event)">
+          </app-farm-calendar-events-list>
+        </div>
+
+        <div id="section-weather" class="card jump-section">
+          <app-farm-calendar-weather
+            [terrains]="terrains"
+            [selectedTerrainId]="selectedTerrainId"
+            [loading]="loading"
+            [error]="error"
+            [weather]="weather"
+            [irrigationAdvice]="irrigationAdvice"
+            (terrainIdChange)="onTerrainIdChange($event)">
+          </app-farm-calendar-weather>
+        </div>
+
+        <div id="section-fao" class="card jump-section">
+          <app-farm-calendar-fao></app-farm-calendar-fao>
+        </div>
+
+        <div id="section-climate" class="card jump-section">
+          <app-farm-calendar-climate
+            [climateYear]="climateYear"
+            [climateLoading]="climateLoading"
+            [climateMonthly]="climateMonthly">
+          </app-farm-calendar-climate>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()" role="dialog" aria-modal="true">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <h3>{{ editingEventId ? 'Modifier l’événement' : 'Nouvel événement' }}</h3>
+      <div class="form-grid">
+        <label>
+          Date
+          <input type="date" [(ngModel)]="newEvent.date" />
+        </label>
+        <label>
+          Titre
+          <input type="text" [(ngModel)]="newEvent.title" placeholder="ex. Irrigation parcelle nord" />
+        </label>
+        <label>
+          Type
+          <select [(ngModel)]="newEvent.crop" name="eventType">
+            <option *ngFor="let opt of eventTypeOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+          </select>
+        </label>
+        <label>
+          Rappel (minutes avant)
+          <input type="number" min="0" [(ngModel)]="reminderMinutes" />
+        </label>
+        <label class="full">
+          Notes
+          <textarea rows="3" [(ngModel)]="newEvent.notes" placeholder="Optionnel"></textarea>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="button" (click)="saveEvent()">{{ editingEventId ? 'Enregistrer' : 'Créer' }}</button>
+        <button type="button" class="secondary" (click)="closeModal()">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>

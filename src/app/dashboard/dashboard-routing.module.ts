@@ -2,18 +2,25 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DashboardLayoutComponent } from './dashboard-layout/dashboard-layout.component';
 import { DashboardComponent }       from './dashboard/dashboard.component';
+import { UsersComponent } from './users/users.component';
+
 
 const routes: Routes = [
   {
     path: '',component: DashboardLayoutComponent,
     children: [
       { path: '',            component: DashboardComponent, pathMatch: 'full' },
+        {
+        path: 'claims',
+        loadChildren: () =>
+          import('../claims/claims-admin.module').then(m => m.ClaimsAdminModule)
+      },
+     
       // ↓ Décommente au fur et à mesure que tu crées les modules
-      // {
-      //   path: 'users',
-      //   loadChildren: () =>
-      //     import('./users-admin/users-admin.module').then(m => m.UsersAdminModule)
-      // },
+       {
+          path: 'users',component: UsersComponent
+
+        },
       // {
       //   path: 'deliveries',
       //   loadChildren: () =>

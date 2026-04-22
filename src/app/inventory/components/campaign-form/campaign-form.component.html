@@ -1,0 +1,104 @@
+<div class="modal-overlay" (click)="cancelled.emit()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>
+        <i class="fas fa-calendar-plus" style="color:#7b2cbf;margin-right:8px;"></i>
+        Planifier une campagne de vaccination
+      </h2>
+      <button class="close-btn" (click)="cancelled.emit()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="modal-body">
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Espèce ciblée *</label>
+          <select formControlName="espece" [class.err]="invalid('espece')">
+            <option value="">-- sélectionner une espèce --</option>
+            <option *ngFor="let e of speciesOptions" [value]="e">{{ e }}</option>
+          </select>
+          <span class="err-msg" *ngIf="invalid('espece')">Champ requis</span>
+
+          <div class="hint" *ngIf="!loadingSpecies && speciesOptions.length === 0">
+            Aucune espèce disponible. Ajoutez d'abord des animaux.
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Âge min (ans) *</label>
+          <input
+            type="number"
+            formControlName="ageMin"
+            min="0"
+            [class.err]="invalid('ageMin')">
+          <span class="err-msg" *ngIf="invalid('ageMin')">Valeur invalide</span>
+        </div>
+
+        <div class="form-group">
+          <label>Âge max (ans) *</label>
+          <input
+            type="number"
+            formControlName="ageMax"
+            min="0"
+            [class.err]="invalid('ageMax')">
+          <span class="err-msg" *ngIf="invalid('ageMax')">Valeur invalide</span>
+        </div>
+
+        <div class="form-group">
+          <label>Date planifiée *</label>
+          <input
+            type="date"
+            formControlName="plannedDate"
+            [class.err]="invalid('plannedDate')">
+          <span class="err-msg" *ngIf="invalid('plannedDate')">Champ requis</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Produit vaccin *</label>
+          <select formControlName="productId" [class.err]="invalid('productId')">
+            <option [ngValue]="null">-- sélectionner --</option>
+            <option *ngFor="let p of products" [ngValue]="p.id">{{ p.nom }}</option>
+          </select>
+          <span class="err-msg" *ngIf="invalid('productId')">Champ requis</span>
+        </div>
+
+        <div class="form-group">
+          <label>Dose par animal *</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0.01"
+            formControlName="dose"
+            placeholder="ex: 2.5"
+            [class.err]="invalid('dose')">
+          <span class="err-msg" *ngIf="invalid('dose')">Valeur invalide</span>
+        </div>
+      </div>
+
+      <div class="err-msg" *ngIf="error" style="margin-top:12px;">
+        {{ error }}
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="cancelled.emit()">
+          Annuler
+        </button>
+        <button
+          type="submit"
+          class="btn btn-save"
+          [disabled]="loading || loadingSpecies || speciesOptions.length === 0">
+          <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+          Planifier
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

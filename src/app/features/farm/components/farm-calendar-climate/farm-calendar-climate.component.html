@@ -1,0 +1,27 @@
+<h2>Climat local (station proche)</h2>
+<p class="muted small">
+  Moyennes mensuelles sur l’année {{ climateYear }} à partir des coordonnées du terrain (Open-Meteo Archive).
+  Les bulletins officiels de l’INM (meteo.tn) ne sont pas exposés en API publique depuis le navigateur ; cette section résume le climat au point choisi.
+</p>
+
+<div *ngIf="climateLoading" class="muted">Chargement climat…</div>
+<div class="table-wrap" *ngIf="!climateLoading && climateMonthly.length > 0">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Mois</th>
+        <th>T° min moy.</th>
+        <th>T° max moy.</th>
+        <th>Pluie totale</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of climateMonthly">
+        <td>{{ row.month }}</td>
+        <td>{{ row.avgTempMin }}°C</td>
+        <td>{{ row.avgTempMax }}°C</td>
+        <td>{{ row.totalRainMm }} mm</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

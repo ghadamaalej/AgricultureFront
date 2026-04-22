@@ -1,0 +1,151 @@
+<div class="delivery-page history-page">
+  <div class="page-title">
+    <h2><i class="fas fa-clock-rotate-left"></i> {{ pageTitle }}</h2>
+    <p>{{ pageSubtitle }}</p>
+  </div>
+
+  <div class="history-shortcuts">
+    <button class="btn btn-secondary small" type="button" (click)="goTo('/delivery/livraisons')">
+      <i class="fas fa-list"></i>
+      All deliveries
+    </button>
+    <button class="btn btn-secondary small" type="button" *ngIf="!isFarmer" (click)="goTo('/delivery/active')">
+      <i class="fas fa-truck-fast"></i>
+      In progress
+    </button>
+    <button class="btn btn-secondary small" type="button" *ngIf="isFarmer" (click)="goTo('/delivery/tracking')">
+      <i class="fas fa-route"></i>
+      Tracking
+    </button>
+    <button class="btn btn-secondary small" type="button" *ngIf="!isFarmer" (click)="goTo('/delivery/calendar')">
+      <i class="fas fa-calendar-days"></i>
+      Calendar
+    </button>
+    <button class="btn btn-secondary small" type="button" *ngIf="isFarmer" (click)="goTo('/delivery/create')">
+      <i class="fas fa-plus"></i>
+      New request
+    </button>
+  </div>
+
+  <div class="history-overview" *ngIf="hasAnyRequest(); else emptyState">
+    <div class="overview-card overview-card--active">
+      <span class="overview-label">In progress</span>
+      <strong>{{ getSectionCount('inProgress') }}</strong>
+      <small>Immediate priority</small>
+    </div>
+    <div class="overview-card overview-card--planned">
+      <span class="overview-label">Accepted</span>
+      <strong>{{ getSectionCount('accepted') }}</strong>
+      <small>Departures to prepare</small>
+    </div>
+    <div class="overview-card overview-card--done">
+      <span class="overview-label">Delivered</span>
+      <strong>{{ getSectionCount('delivered') }}</strong>
+      <small>Closed missions</small>
+    </div>
+  </div>
+
+  <div class="history-sections" *ngIf="hasAnyRequest(); else emptyState">
+    <section class="history-section" *ngFor="let section of sections" [class.history-section--empty]="!section.requests.length">
+      <div class="section-header">
+        <div>
+          <h3><i class="fas" [class]="section.icon"></i> {{ section.title }}</h3>
+          <p>{{ section.subtitle }}</p>
+        </div>
+        <span class="section-count">{{ section.requests.length }}</span>
+      </div>
+
+      <div class="section-empty" *ngIf="!section.requests.length">
+        <i class="fas fa-inbox"></i>
+        <span>No mission in this section.</span>
+      </div>
+
+      <div class="history-list" *ngIf="section.requests.length">
+        <article class="history-card" *ngFor="let req of getPagedRequests(section)" [ngClass]="getCardClass(req)">
+          <div class="card-top">
+            <div>
+              <div class="ref">{{ req.reference }}</div>
+              <div class="meta">{{ req.product }} • {{ req.weightKg }} kg</div>
+            </div>
+            <div class="card-top-right">
+              <span class="signature-badge" *ngIf="needsSignature(req)">
+                <i class="fas fa-pen-nib"></i> Signature required
+              </span>
+              <span class="status-pill">{{ getStatusLabel(req.status) }}</span>
+            </div>
+          </div>
+
+          <div class="route-line">
+            <div class="route-stop route-stop--start">{{ req.pickupLabel }}</div>
+            <div class="route-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="route-stop route-stop--end">{{ req.dropoffLabel }}</div>
+          </div>
+
+          <div class="journey-meta">
+            <div class="journey-chip">
+              <i class="fas fa-clock"></i>
+              <span>{{ getJourneyMoment(req) }}</span>
+            </div>
+            <div class="journey-chip" *ngIf="req.groupReference">
+              <i class="fas fa-layer-group"></i>
+              <span>{{ req.groupReference }}</span>
+            </div>
+          </div>
+
+          <div class="progress-panel">
+            <div class="progress-header">
+              <span class="progress-value">{{ getProgressPercent(req) }}%</span>
+              <span class="progress-label">{{ getProgressLabel(req) }}</span>
+            </div>
+            <div class="progress-bar">
+              <span [style.width.%]="getProgressPercent(req)"></span>
+            </div>
+          </div>
+
+          <div class="innovation-panel">
+            <div class="innovation-metric">
+              <span class="innovation-label">{{ getInsightLabel(req) }}</span>
+              <strong>{{ getInsightValue(req) }}</strong>
+            </div>
+            <div class="innovation-text">
+              <span class="innovation-title">{{ getHighlightTitle(req) }}</span>
+              <p>{{ getHighlightText(req) }}</p>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button class="btn btn-sign small" type="button" *ngIf="needsSignature(req)" (click)="openDetail(req.id)">
+              <i class="fas fa-pen-nib"></i>
+              Sign delivery
+            </button>
+            <button class="btn btn-secondary small" type="button" (click)="openDetail(req.id)">
+              <i class="fas fa-eye"></i>
+              View detail
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <div class="section-pagination" *ngIf="section.requests.length > sectionPageSize">
+        <button class="btn btn-secondary small" type="button" (click)="goPrev(section.key)" [disabled]="!canGoPrev(section.key)">
+          <i class="fas fa-chevron-left"></i>
+          Previous
+        </button>
+        <span class="page-indicator">
+          Page {{ getSectionCurrentPage(section.key) }} / {{ getSectionPageCount(section) }}
+        </span>
+        <button class="btn btn-secondary small" type="button" (click)="goNext(section)" [disabled]="!canGoNext(section)">
+          Next
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="empty-box">
+      <i class="fas fa-box-open"></i>
+      <p>{{ emptyStateMessage }}</p>
+    </div>
+  </ng-template>
+</div>

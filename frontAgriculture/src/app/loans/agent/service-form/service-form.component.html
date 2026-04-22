@@ -1,0 +1,124 @@
+<div class="modal-overlay">
+  <div class="modal-box">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">Loan Service</h2>
+      <button class="modal-close" type="button" (click)="onCancel()">✕</button>
+    </div>
+
+    <form [formGroup]="serviceForm" (ngSubmit)="onSubmit()">
+
+      <!-- Row 1: Name (full width) -->
+      <div class="form-group">
+        <label>Service Name</label>
+        <input type="text" formControlName="nom">
+        <div class="text-danger" *ngIf="f['nom'].touched && f['nom'].invalid">
+          <div *ngIf="f['nom'].errors?.['required']">Name is required</div>
+          <div *ngIf="f['nom'].errors?.['minlength']">Minimum 3 characters</div>
+        </div>
+      </div>
+
+      <!-- Row 2: Description -->
+      <div class="form-group">
+        <label>Description</label>
+        <textarea formControlName="description" rows="3"></textarea>
+        <div class="text-danger" *ngIf="f['description'].touched && f['description'].invalid">
+          <div *ngIf="f['description'].errors?.['required']">Description is required</div>
+          <div *ngIf="f['description'].errors?.['minlength']">Minimum 10 characters</div>
+        </div>
+      </div>
+
+      <!-- Row 3: Amounts -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Minimum Amount (DT)</label>
+          <input type="number" formControlName="montantMin">
+          <div class="text-danger" *ngIf="f['montantMin'].touched && f['montantMin'].invalid">
+            <div *ngIf="f['montantMin'].errors?.['required']">Required</div>
+            <div *ngIf="f['montantMin'].errors?.['min']">Must be ≥ 0</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Maximum Amount (DT)</label>
+          <input type="number" formControlName="montantMax">
+          <div class="text-danger" *ngIf="f['montantMax'].touched && f['montantMax'].invalid">
+            <div *ngIf="f['montantMax'].errors?.['required']">Required</div>
+            <div *ngIf="f['montantMax'].errors?.['min']">Must be ≥ 0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-danger" *ngIf="serviceForm.errors?.['amountError']">
+        Minimum amount must be less than maximum amount
+      </div>
+
+      <!-- Row 4: Duration + Interest -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Duration (months)</label>
+          <input type="number" formControlName="dureeMaxMois">
+          <div class="text-danger" *ngIf="f['dureeMaxMois'].touched && f['dureeMaxMois'].invalid">
+            Minimum 1 month
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Interest Rate (%)</label>
+          <input type="number" formControlName="tauxInteret">
+          <div class="text-danger" *ngIf="f['tauxInteret'].touched && f['tauxInteret'].invalid">
+            Between 0 and 100
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 5: Penalty -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Penalty Rate (%)</label>
+          <input type="number" formControlName="tauxPenalite">
+        </div>
+      </div>
+
+      <hr class="form-divider">
+
+      <!-- Criteria / Documents / Processing -->
+      <div class="form-group">
+        <label>Eligibility Criteria</label>
+        <textarea formControlName="criteresEligibilite" rows="2"></textarea>
+        <div class="text-danger" *ngIf="f['criteresEligibilite'].touched && f['criteresEligibilite'].invalid">
+          Required field
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Required Documents</label>
+        <textarea formControlName="documentsRequis" rows="2"></textarea>
+        <div class="text-danger" *ngIf="f['documentsRequis'].touched && f['documentsRequis'].invalid">
+          Required field
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Processing Time</label>
+        <textarea formControlName="delaiTraitement" rows="2"></textarea>
+        <div class="text-danger" *ngIf="f['delaiTraitement'].touched && f['delaiTraitement'].invalid">
+          Required field
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div *ngIf="successMessage" class="alert alert-success">✔ {{ successMessage }}</div>
+      <div *ngIf="errorMessage" class="alert alert-danger">✖ {{ errorMessage }}</div>
+
+      <!-- Footer buttons -->
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="onCancel()">Cancel</button>
+        <button type="submit" class="btn-submit"
+          [disabled]="serviceForm.invalid || serviceForm.errors?.['amountError']">
+          ✓ Confirm Service
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

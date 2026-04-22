@@ -1,0 +1,212 @@
+
+.hero {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(20,50,30,0.6), rgba(20,50,30,0.4));
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  color: white;
+}
+
+.hero-label {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: #a7f3d0;
+  margin-bottom: 12px;
+}
+
+.hero-title {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: white;
+}
+
+.hero-accent {
+  color: #86efac;
+}
+
+.hero-sub {
+  font-size: 16px;
+  color: #d1fae5;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2rem 2rem 0;
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: #2d6a4f;
+}
+
+.section-tag {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #2d6a4f;
+}
+.app-wrap {
+  font-family: sans-serif;
+  padding: 1rem 0;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.search-bar, .filter {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+}
+
+.search-bar { flex: 1; }
+
+.app-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #2d6a4f;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.card-id {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.card-name {
+  font-size: 17px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.card-service {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-weight: 500;
+}
+
+.badge-pending  { background: #fef9c3; color: #854d0e; }
+.badge-accepted { background: #dcfce7; color: #166534; }
+.badge-rejected { background: #fee2e2; color: #991b1b; }
+
+.card-stats {
+  display: flex;
+  gap: 2rem;
+  margin: 1rem 0;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.stat-val {
+  font-size: 20px;
+  font-weight: 500;
+  color: #2d6a4f;
+}
+
+.score-bar-wrap { flex: 1; }
+
+.score-bar-bg {
+  background: #f3f4f6;
+  border-radius: 99px;
+  height: 8px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.score-bar {
+  height: 8px;
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.score-num {
+  font-size: 14px;
+  font-weight: 500;
+  float: right;
+  margin-top: -2px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-accept { background: #2d6a4f; color: white; }
+.btn-accept:hover { background: #1b4332; }
+
+.btn-refuse { background: #fee2e2; color: #991b1b; }
+.btn-refuse:hover { background: #fecaca; }
+
+.btn-docs { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+.btn-docs:hover { background: #e5e7eb; }
+
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+  font-size: 15px;
+}

@@ -1,0 +1,207 @@
+.farm-calendar-shell {
+  min-height: 100vh;
+  background: #f3f4f6;
+  padding-top: 80px;
+}
+
+.calendar-main {
+  padding-top: 0;
+}
+
+.page-subnav-outer {
+  position: sticky;
+  top: 80px;
+  z-index: 999;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.page-subnav-scroll {
+  display: flex;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  padding: 0 12px;
+}
+
+.page-subnav-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.page-subnav-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+.page-subnav {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 4px;
+  margin: 0 auto;
+  flex: 0 0 auto;
+}
+
+@media (min-width: 960px) {
+  .page-subnav-scroll {
+    justify-content: center;
+    overflow-x: visible;
+  }
+
+  .page-subnav {
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 1280px;
+  }
+}
+
+.subnav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.subnav-btn:hover {
+  border-color: #15803d;
+  color: #15803d;
+}
+
+.subnav-btn i {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.page-intro {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 16px 8px;
+}
+
+.page-intro h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: #111827;
+}
+
+.calendar-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+  display: grid;
+  gap: 20px;
+}
+
+.calendar-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.jump-section {
+  scroll-margin-top: 148px;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  color: #4b5563;
+  max-width: 720px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.calendar-card h2 {
+  margin: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+input,
+textarea,
+select {
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.modal-card select {
+  width: 100%;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.modal-backdrop button {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #15803d;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+
+.modal-backdrop button.secondary {
+  background: #374151;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 1100;
+  padding: 20px;
+}
+
+.modal-card {
+  width: min(760px, 100%);
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+}
+
+.modal-card h3 {
+  margin: 0 0 12px;
+}

@@ -1,0 +1,103 @@
+<section class="diagnostic-shell">
+  <div class="intro-card">
+    <div>
+      <p class="eyebrow">Assistant veterinaire</p>
+      <h2>Diagnostic IA pour vos animaux</h2>
+      <p class="intro-copy">
+        Cette interface contient uniquement le modele ML classique de prediction. Elle envoie la requete vers l endpoint local `/predict`.
+      </p>
+    </div>
+
+    <div class="quick-actions">
+      <button type="button" (click)="quickFill('respiratory')">Exemple respiratoire</button>
+      <button type="button" (click)="quickFill('digestive')">Exemple digestif</button>
+      <button type="button" (click)="quickFill('skin')">Exemple cutane</button>
+    </div>
+  </div>
+
+  <div class="diagnostic-grid">
+    <form class="diagnostic-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field">
+        <label>Animal concerne</label>
+        <select formControlName="animalId">
+          <option [ngValue]="null">Choisir un animal</option>
+          <option *ngFor="let animal of animals" [ngValue]="animal.id">
+            {{ animal.reference }} · {{ animal.espece }}
+          </option>
+        </select>
+        <small *ngIf="loadingAnimals">Chargement des animaux...</small>
+        <small class="error" *ngIf="hasError('animalId')">Veuillez selectionner un animal.</small>
+      </div>
+
+      <div class="field">
+        <label>Symptome principal</label>
+        <input type="text" formControlName="symptom1" placeholder="ex: loss of appetite">
+        <small class="error" *ngIf="hasError('symptom1')">Le symptome principal est requis.</small>
+      </div>
+
+      <div class="field">
+        <label>Symptome 2</label>
+        <input type="text" formControlName="symptom2" placeholder="ex: coughing">
+      </div>
+
+      <div class="field">
+        <label>Symptome 3</label>
+        <input type="text" formControlName="symptom3" placeholder="ex: depression">
+      </div>
+
+      <div class="field">
+        <label>Duree d'evolution</label>
+        <input type="text" formControlName="duration" placeholder="ex: 3 days">
+        <small class="error" *ngIf="hasError('duration')">La duree est requise.</small>
+      </div>
+
+      <div class="field">
+        <label>Temperature corporelle</label>
+        <input type="text" formControlName="bodyTemperature" placeholder="39.5C">
+      </div>
+
+      <div class="actions full">
+        <button type="submit" [disabled]="diagnosing || loadingAnimals">
+          {{ diagnosing ? 'Analyse en cours...' : 'Lancer le diagnostic' }}
+        </button>
+      </div>
+
+      <p class="error full" *ngIf="error">{{ error }}</p>
+    </form>
+
+    <section class="result-panel">
+      <div class="placeholder" *ngIf="!result">
+        <h3>Resultat attendu</h3>
+        <p>Le systeme affichera ici les maladies les plus probables, une analyse redigee et un avertissement medical.</p>
+      </div>
+
+      <div class="result-card" *ngIf="result">
+        <p class="eyebrow">Animal {{ result.animalReference }}</p>
+        <h3>{{ result.animalEspece | titlecase }}</h3>
+
+        <div class="prediction-list" *ngIf="result.predictions?.length; else noPrediction">
+          <article class="prediction" *ngFor="let prediction of result.predictions">
+            <div>
+              <span class="rank">#{{ prediction.rank }}</span>
+              <strong>{{ prediction.disease | titlecase }}</strong>
+            </div>
+            <span class="score">{{ prediction.probability }}%</span>
+          </article>
+        </div>
+
+        <ng-template #noPrediction>
+          <p class="muted">Aucune prediction ML disponible pour ce cas.</p>
+        </ng-template>
+
+        <div class="analysis">
+          <h4>Analyse du resultat ML</h4>
+          <p>{{ result.assistantAnalysis || result.geminiAnalysis }}</p>
+        </div>
+
+        <div class="disclaimer">
+          {{ result.disclaimer }}
+        </div>
+      </div>
+    </section>
+  </div>
+</section>

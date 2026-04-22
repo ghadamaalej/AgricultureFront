@@ -1,0 +1,120 @@
+<div class="negotiation-container">
+  <!-- Header with status -->
+  <div class="negotiation-header">
+    <h3>Price Negotiation</h3>
+    <div class="price-display">
+      <span class="current-price">Current price: {{ formatPrice(livraison?.prix || 0) }}</span>
+      <span *ngIf="negotiationStatus"
+            class="status-badge"
+            [style.color]="getNegotiationStatusColor()">
+        {{ getNegotiationStatusText() }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Button to show/hide the negotiation bar -->
+  <div class="negotiation-actions" *ngIf="userRole === 'transporteur' && livraison?.status === 'EN_ATTENTE'">
+    <button class="btn-negotiate" (click)="toggleNegotiationBar()" [disabled]="isNegotiating">
+      <i class="fas fa-handshake"></i>
+      {{ showNegotiationBar ? 'Hide negotiation' : 'Negotiate price' }}
+    </button>
+  </div>
+
+  <!-- Actions for the farmer -->
+  <div class="negotiation-actions" *ngIf="userRole === 'agriculteur' && negotiationStatus === 'EN_NEGOCIATION'">
+    <button class="btn-accept" (click)="acceptNegotiation()" [disabled]="isNegotiating">
+      <i class="fas fa-check"></i>
+      Accept the proposal
+    </button>
+    <button class="btn-refuse" (click)="refuseNegotiation()" [disabled]="isNegotiating">
+      <i class="fas fa-times"></i>
+      Refuse the proposal
+    </button>
+  </div>
+
+  <!-- Interactive negotiation bar -->
+  <div class="negotiation-bar" *ngIf="showNegotiationBar && negotiationRange">
+    <div class="range-info">
+      <div class="range-item">
+        <span class="label">Base price:</span>
+        <span class="value">{{ formatPrice(negotiationRange.prixBase) }}</span>
+      </div>
+      <div class="range-item">
+        <span class="label">Allowed range:</span>
+        <span class="value">±{{ negotiationRange.variationPourcent }}%</span>
+      </div>
+      <div class="range-limits">
+        <span class="min">Min: {{ formatPrice(negotiationRange.prixMin) }}</span>
+        <span class="max">Max: {{ formatPrice(negotiationRange.prixMax) }}</span>
+      </div>
+    </div>
+
+    <!-- Price slider -->
+    <div class="price-slider-container">
+      <div class="slider-track">
+        <div class="slider-fill"
+             [style.width.%]="((proposedPrice - negotiationRange.prixMin) / (negotiationRange.prixMax - negotiationRange.prixMin)) * 100"
+             [style.background]="getPriceBarColor()">
+        </div>
+        <input type="range"
+               class="price-slider"
+               [min]="negotiationRange.prixMin"
+               [max]="negotiationRange.prixMax"
+               [step]="0.1"
+               [(ngModel)]="proposedPrice"
+               (input)="onPriceChange($event)">
+      </div>
+
+      <!-- Visual indicators -->
+      <div class="slider-markers">
+        <div class="marker min-marker" [style.left.%]="0">-5%</div>
+        <div class="marker base-marker" [style.left.%]="50">0%</div>
+        <div class="marker max-marker" [style.left.%]="100">+5%</div>
+      </div>
+    </div>
+
+    <!-- Proposed price display -->
+    <div class="proposed-price-display">
+      <div class="price-amount" [style.color]="getPriceBarColor()">
+        {{ formatPrice(proposedPrice) }}
+      </div>
+      <div class="price-diff" [class.negative]="calculatePricePercentage() < 0"
+                           [class.positive]="calculatePricePercentage() > 0">
+        {{ calculatePricePercentage() > 0 ? '+' : '' }}{{ calculatePricePercentage().toFixed(1) }}%
+      </div>
+    </div>
+
+    <!-- Validation and submission -->
+    <div class="negotiation-submit">
+      <div class="validation-message" *ngIf="!isPriceValid() && proposedPrice !== negotiationRange.prixBase">
+        <i class="fas fa-exclamation-triangle"></i>
+        The price must be within the allowed range (±5%)
+      </div>
+      <button class="btn-submit"
+              (click)="submitNegotiation()"
+              [disabled]="!isPriceValid() || isNegotiating || proposedPrice === negotiationRange.prixBase">
+        <i class="fas fa-paper-plane" *ngIf="!isNegotiating"></i>
+        <i class="fas fa-spinner fa-spin" *ngIf="isNegotiating"></i>
+        {{ isNegotiating ? 'Sending...' : 'Propose this price' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Error messages -->
+  <div class="error-message" *ngIf="negotiationError">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ negotiationError }}
+  </div>
+
+  <!-- Additional information -->
+  <div class="negotiation-info" *ngIf="negotiationRange">
+    <div class="info-item">
+      <i class="fas fa-info-circle"></i>
+      <span>Negotiation is limited to ±5% of the base price to ensure fairness.</span>
+    </div>
+    <div class="info-item">
+      <i class="fas fa-clock"></i>
+      <span>The farmer will receive a notification and can accept or refuse your proposal.</span>
+    </div>
+  </div>
+</div>

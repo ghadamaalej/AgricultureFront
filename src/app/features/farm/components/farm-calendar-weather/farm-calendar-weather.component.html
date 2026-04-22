@@ -1,0 +1,24 @@
+<h2>Prévision + irrigation</h2>
+<p class="muted small">Open-Meteo (7 jours) selon votre terrain.</p>
+<label class="field-label">
+  Terrain
+  <select
+    [ngModel]="selectedTerrainId"
+    (ngModelChange)="onTerrainChange($event)">
+    <option *ngFor="let t of terrains" [ngValue]="t.idTerrain">{{ t.nom }} ({{ t.localisation }})</option>
+  </select>
+</label>
+
+<div *ngIf="loading" class="muted">Chargement météo…</div>
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<div class="weather-grid" *ngIf="!loading && weather.length > 0">
+  <article class="weather-day" *ngFor="let day of weather; let i = index">
+    <h4>{{ day.date }}</h4>
+    <p>{{ day.tempMin }}°C – {{ day.tempMax }}°C</p>
+    <p>Pluie {{ day.precipitation }} mm · ET₀ {{ day.evapotranspiration }}</p>
+    <p class="advice">
+      <strong>{{ irrigationAdvice[i].advice }}</strong> — {{ irrigationAdvice[i].reason }}
+    </p>
+  </article>
+</div>

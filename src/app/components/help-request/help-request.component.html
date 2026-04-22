@@ -1,0 +1,178 @@
+<app-navbar></app-navbar>
+
+<main class="help-page">
+  <section class="help-hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Help request</span>
+      <h1>Ask about a farm problem</h1>
+      <p>
+        Describe what you see in your field, herd, irrigation system, fertilizer plan, or equipment.
+      </p>
+    </div>
+
+    <div class="hero-note">
+      <i class="fas fa-shield-alt"></i>
+      <span>AI suggestion only. Contact an engineer or veterinarian for urgent cases.</span>
+    </div>
+  </section>
+
+  <section class="request-layout">
+    <form class="request-form" [formGroup]="requestForm" (ngSubmit)="submitRequest()">
+      <div class="form-header">
+        <h2>New assistance request</h2>
+        <p>Use simple words. Add symptoms, timing, weather, and actions already taken.</p>
+      </div>
+
+      <label class="field">
+        <span>Problem type</span>
+        <select formControlName="typeProbleme">
+          <option *ngFor="let type of problemTypes" [value]="type.value">{{ type.label }}</option>
+        </select>
+      </label>
+
+      <div class="channel-group">
+        <span class="field-label">Response mode</span>
+        <div class="channel-options">
+          <button
+            *ngFor="let channel of channels"
+            type="button"
+            class="channel-option"
+            [class.selected]="requestForm.value.canal === channel.value"
+            (click)="selectChannel(channel.value)"
+          >
+            <strong>{{ channel.title }}</strong>
+            <small>{{ channel.description }}</small>
+          </button>
+        </div>
+      </div>
+
+      <label class="field">
+        <span>Your question</span>
+        <textarea
+          rows="7"
+          formControlName="description"
+          placeholder="Example: Tomato leaves have yellow spots and dark edges after two rainy days. What should I do?"
+        ></textarea>
+        <small class="field-error" *ngIf="hasFieldError('description')">
+          Please write at least 12 characters.
+        </small>
+      </label>
+
+      <div class="two-fields">
+        <label class="field">
+          <span>Location</span>
+          <input type="text" formControlName="localisation" placeholder="Example: Sfax, Tunisia" />
+        </label>
+
+        <label class="field">
+          <span>Media URL</span>
+          <input type="url" formControlName="mediaUrl" placeholder="Image or video link" />
+        </label>
+      </div>
+
+      <div class="action-row">
+        <button type="submit" class="submit-button" [disabled]="isSubmitting">
+          <i class="fas" [class.fa-paper-plane]="!isSubmitting" [class.fa-spinner]="isSubmitting" [class.fa-spin]="isSubmitting"></i>
+          {{ isSubmitting ? 'Sending request...' : 'Send help request' }}
+        </button>
+      </div>
+    </form>
+
+    <aside class="response-panel">
+      <div *ngIf="!createdDemande && !errorMessage" class="empty-panel">
+        <i class="fas fa-comments"></i>
+        <h2>What happens next</h2>
+        <p>AI requests get a first response automatically. Mixed requests stay available for expert follow-up.</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-panel">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <div *ngIf="createdDemande" class="created-panel">
+        <div class="result-top">
+          <span class="status-pill">{{ createdDemande.statut }}</span>
+          <button type="button" class="details-button" (click)="viewDetails()">Open details</button>
+        </div>
+
+        <h2>Request sent</h2>
+        <p class="request-summary">{{ createdDemande.description }}</p>
+
+        <ng-container *ngIf="createdDemande.reponseIA; else pendingAi">
+          <div class="confidence-box">
+            <span>{{ confidencePercent(createdDemande.reponseIA.probabilite) }}%</span>
+            <small>confidence</small>
+          </div>
+
+          <div class="ai-block">
+            <h3>Probable diagnosis</h3>
+            <p>{{ createdDemande.reponseIA.diagnostic }}</p>
+          </div>
+
+          <div class="ai-block">
+            <h3>Recommendations</h3>
+            <p>{{ createdDemande.reponseIA.recommandations }}</p>
+          </div>
+        </ng-container>
+
+        <ng-template #pendingAi>
+          <p class="pending-text">
+            {{ pendingMessage() }}
+          </p>
+        </ng-template>
+      </div>
+    </aside>
+  </section>
+
+  <section class="history-section">
+    <div class="history-heading">
+      <div>
+        <span class="eyebrow">Previous requests</span>
+        <h2>Your assistance history</h2>
+      </div>
+      <button type="button" class="details-button" (click)="refreshPreviousDemandes()" [disabled]="isLoadingHistory">
+        {{ isLoadingHistory ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+
+    <div *ngIf="historyErrorMessage" class="history-error">{{ historyErrorMessage }}</div>
+    <div *ngIf="isLoadingHistory" class="history-state">Loading previous requests...</div>
+
+    <div *ngIf="!isLoadingHistory && previousDemandes.length === 0 && !historyErrorMessage" class="history-state">
+      No previous requests yet.
+    </div>
+
+    <div *ngIf="!isLoadingHistory && previousDemandes.length > 0" class="history-grid">
+      <article *ngFor="let demande of previousDemandes" class="history-card">
+        <div class="history-top">
+          <span class="status-pill">{{ demande.statut || 'OUVERTE' }}</span>
+          <span>{{ demande.dateCreation | date:'medium' }}</span>
+        </div>
+
+        <h3>{{ demande.typeProbleme }}</h3>
+        <p class="request-summary">{{ demande.description }}</p>
+
+        <div class="history-response" *ngIf="hasAnyResponse(demande); else waitingResponse">
+          <div *ngIf="demande.reponseIA" class="ai-block compact">
+            <h4>AI response</h4>
+            <p>{{ demande.reponseIA.recommandations || demande.reponseIA.diagnostic }}</p>
+          </div>
+
+          <div *ngIf="getLatestExpertResponse(demande) as expertResponse" class="expert-block">
+            <h4>Expert response</h4>
+            <p>{{ expertResponse }}</p>
+          </div>
+        </div>
+
+        <ng-template #waitingResponse>
+          <p class="pending-text">{{ historyPendingMessage(demande) }}</p>
+        </ng-template>
+
+        <button type="button" class="details-button open-history-button" (click)="openRequest(demande)">
+          Open details
+        </button>
+      </article>
+    </div>
+  </section>
+</main>

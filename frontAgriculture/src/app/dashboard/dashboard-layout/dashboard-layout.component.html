@@ -1,0 +1,76 @@
+<div class="dashboard-wrap" [class.sidebar-closed]="!sidebarOpen">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="dash-sidebar">
+    <div class="sidebar-logo">
+      <img src="assets/images/logo.png" alt="GreenRoots" class="sidebar-logo-img">
+      <span class="sidebar-logo-text">Green<em>Roots</em></span>
+    </div>
+
+    <div class="sidebar-section-label">Main Menu</div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item"
+         *ngFor="let item of menuItems"
+         [class.active]="activeMenu === item.key"
+         (click)="setActive(item.key, item.route)">
+        <i [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-section-label">Account</div>
+    <a class="sidebar-item" (click)="goHome()">
+      <i class="fas fa-globe"></i>
+      <span>Visit Website</span>
+    </a>
+    <a class="sidebar-item" (click)="logout()">
+      <i class="fas fa-sign-out-alt"></i>
+      <span>Logout</span>
+    </a>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="dash-main">
+
+    <!-- Top Bar -->
+    <header class="dash-topbar">
+      <div class="topbar-left">
+        <button class="toggle-btn" (click)="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="topbar-breadcrumb">
+          <i class="fas fa-home"></i>
+          <span>/</span>
+          <span class="active-page">{{ activeMenu | titlecase }}</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search...">
+        </div>
+        <button class="topbar-icon-btn">
+          <i class="fas fa-bell"></i>
+          <span class="badge">4</span>
+        </button>
+        <button class="topbar-icon-btn">
+          <i class="fas fa-envelope"></i>
+          <span class="badge">9</span>
+        </button>
+        <div class="topbar-user">
+          <div class="topbar-avatar">A</div>
+          <div class="topbar-user-info">
+            <strong>Admin</strong>
+            <span>Super Admin</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ← Router outlet — chaque module s'affiche ici -->
+    <div class="dash-content-wrap">
+      <router-outlet></router-outlet>
+    </div>
+
+  </div>
+</div>

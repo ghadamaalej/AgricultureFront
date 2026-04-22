@@ -1,0 +1,26 @@
+<div class="farm-add-page">
+  <div class="page-header">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">
+          <i class="fas fa-plus-circle"></i> Ajouter un terrain
+        </div>
+        <h1 class="section-title">
+          Nouveau <span>Terrain</span>
+        </h1>
+        <p class="section-desc">
+          Ajoutez un nouveau terrain agricole à votre exploitation.
+          Renseignez les informations détaillées pour une gestion optimale.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="form-container">
+      <app-terrain-form
+        (terrainCreated)="onTerrainCreated($event)">
+      </app-terrain-form>
+    </div>
+  </div>
+</div>

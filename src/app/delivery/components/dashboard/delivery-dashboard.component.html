@@ -1,0 +1,58 @@
+<div class="delivery-page">
+  <div class="page-title">
+    <h2><i class="fas fa-chart-line"></i> Statistics</h2>
+    <p>Analytical view of deliveries and module performance.</p>
+  </div>
+
+  <div class="map-help" *ngIf="isLoading">
+    <i class="fas fa-spinner fa-spin"></i> Loading backend statistics...
+  </div>
+
+  <div class="search-error" *ngIf="loadError">
+    <i class="fas fa-triangle-exclamation"></i> {{ loadError }}
+  </div>
+
+  <section class="summary-grid">
+    <div class="stat-card" *ngFor="let s of summary">
+      <div class="stat-icon" [style.background]="s.color">
+        <i [class]="s.icon"></i>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ s.value }}</div>
+        <div class="stat-label">{{ s.label }}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="distribution">
+    <div class="panel-title">
+      <i class="fas fa-tasks"></i> Distribution by status
+    </div>
+    <div class="progress-list">
+      <div class="progress-item" *ngFor="let p of statusProgress">
+        <div class="progress-head">
+          <span class="p-label">{{ p.status }}</span>
+          <span class="p-percent">{{ p.percent }}%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" [style.width.%]="p.percent" [style.background]="p.color"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="backend-metrics">
+    <div class="panel-title">
+      <i class="fas fa-database"></i> Additional indicators
+    </div>
+    <div class="metric-grid" *ngIf="backendMetrics.length > 0; else noBackendMetrics">
+      <div class="metric" *ngFor="let m of backendMetrics">
+        <div class="metric-value">{{ m.value }}</div>
+        <div class="metric-label">{{ m.label }}</div>
+      </div>
+    </div>
+    <ng-template #noBackendMetrics>
+      <p class="map-help">No additional indicators returned by the backend.</p>
+    </ng-template>
+  </section>
+</div>

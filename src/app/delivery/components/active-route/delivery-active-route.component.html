@@ -1,0 +1,65 @@
+<div class="delivery-page route-workflow-page" *ngIf="request; else missingRequest">
+  <div class="page-title">
+    <h2><i class="fas fa-route"></i> {{ phaseTitle }}</h2>
+    <p>{{ phaseSubtitle }}</p>
+  </div>
+
+  <div class="notification" *ngIf="notification">{{ notification }}</div>
+
+  <div class="workflow-actions-top">
+    <button class="btn btn-secondary" type="button" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+      Back to active deliveries
+    </button>
+    <span class="live-badge" [class.offline]="!livePositionEnabled">
+      <i class="fas" [class.fa-satellite-dish]="livePositionEnabled" [class.fa-location-crosshairs]="!livePositionEnabled"></i>
+      {{ livePositionEnabled ? 'Live position active' : 'Limited GPS position (local fallback)' }}
+    </span>
+  </div>
+
+  <div class="route-kpis" *ngIf="guidance">
+    <div><strong>Distance:</strong> {{ guidance.distanceKm }} km</div>
+    <div><strong>Estimated time:</strong> {{ guidance.durationMinutes }} min</div>
+    <div><strong>ETA:</strong> {{ guidance.etaMinutes }} min</div>
+  </div>
+
+  <div class="route-loading" *ngIf="loadingRoute">
+    <i class="fas fa-spinner fa-spin"></i>
+    Calculating route...
+  </div>
+  <div class="route-error" *ngIf="error">{{ error }}</div>
+
+  <div #mapContainer class="route-map"></div>
+
+  <div class="phase-actions">
+    <button
+      class="btn btn-primary"
+      type="button"
+      *ngIf="phase === 'pickup'"
+      (click)="confirmPickupAndStartDelivery()"
+      [disabled]="switchingPhase">
+      <i class="fas fa-box-open"></i>
+      {{ switchingPhase ? 'Updating...' : 'Package received - Start delivery' }}
+    </button>
+
+    <button
+      class="btn btn-success"
+      type="button"
+      *ngIf="phase === 'dropoff'"
+      (click)="markAsDelivered()"
+      [disabled]="finishing">
+      <i class="fas fa-circle-check"></i>
+      {{ finishing ? 'Finalizing...' : 'Mark as delivered' }}
+    </button>
+  </div>
+
+</div>
+
+<ng-template #missingRequest>
+  <div class="empty-box">
+    <i class="fas fa-inbox"></i>
+    <p>{{ error || 'Unable to load this delivery.' }}</p>
+    <button class="btn btn-secondary" type="button" (click)="goBack()">Back</button>
+  </div>
+</ng-template>
+

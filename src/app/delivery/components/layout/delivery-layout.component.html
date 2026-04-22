@@ -1,0 +1,58 @@
+<div class="delivery-wrap" [class.sidebar-closed]="!sidebarOpen">
+  <aside class="delivery-sidebar">
+    <a class="sidebar-logo" routerLink="/" title="Back to home">
+      <img src="assets/images/logo.png" alt="GreenRoots" class="sidebar-logo-img">
+      <span class="sidebar-logo-text">Green<em>Roots</em></span>
+    </a>
+
+    <div class="sidebar-section-label">Delivery Menu</div>
+    <nav class="sidebar-nav">
+      <button
+        type="button"
+        class="sidebar-item"
+        *ngFor="let item of menuItems"
+        [class.active]="activeKey === item.key"
+        (click)="onMenuItemClick(item.route)"
+      >
+        <i [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-section-label">Account</div>
+    <div class="sidebar-role">
+      <i class="fas fa-user"></i>
+      <span class="sidebar-role-value">{{ role }}</span>
+    </div>
+  </aside>
+
+  <div class="delivery-main">
+    <header class="delivery-topbar">
+      <div class="topbar-left">
+        <button class="toggle-btn" (click)="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="topbar-breadcrumb">
+          <i class="fas fa-truck"></i>
+          <span>/</span>
+          <span class="active-page">{{ activeLabel }}</span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="topbar-search" title="Search (placeholder)">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search...">
+        </div>
+        <app-notifications
+          [userId]="currentUserId"
+          (deliverySelected)="onNotificationDeliverySelected($event)">
+        </app-notifications>
+      </div>
+    </header>
+
+    <div class="delivery-content-wrap">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

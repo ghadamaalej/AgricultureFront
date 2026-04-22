@@ -1,0 +1,69 @@
+<section class="testimonials section-padding" id="testimonials">
+  <div class="testi-bg-pattern"></div>
+
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">
+        <i class="fas fa-quote-right"></i> Testimonials
+      </div>
+      <h2 class="section-title">
+        What Our <span>Customers</span> Say
+      </h2>
+      <p class="section-desc">
+        Discover how GreenRoots is helping Tunisian farmers grow and connect with buyers.
+      </p>
+    </div>
+
+    <div class="testi-layout">
+
+      <!-- Side thumbnails left -->
+      <div class="testi-thumbs left">
+        <div class="thumb"
+             [class.active]="activeIndex === prevIndex"
+             (click)="goTo(prevIndex)">
+          <img [src]="testimonials[prevIndex].avatar" [alt]="testimonials[prevIndex].name">
+        </div>
+      </div>
+
+      <!-- Main card -->
+      <div class="testi-main">
+        <div class="testi-card" *ngFor="let t of testimonials; let i = index" [class.active]="activeIndex === i">
+          <div class="quote-icon">"</div>
+          <p class="testi-text">{{ t.text }}</p>
+          <div class="testi-stars">
+            <span *ngFor="let s of getStars(t.rating)" class="star">★</span>
+          </div>
+          <div class="testi-author">
+            <img [src]="t.avatar" [alt]="t.name" class="author-avatar">
+            <div>
+              <strong>{{ t.name }}</strong>
+              <span>{{ t.role }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation dots -->
+        <div class="testi-dots">
+          <span class="dot" *ngFor="let t of testimonials; let i = index"
+                [class.active]="activeIndex === i" (click)="goTo(i)"></span>
+        </div>
+
+        <!-- Arrows -->
+        <div class="testi-arrows">
+          <button class="arrow-btn" (click)="prev()"><i class="fas fa-chevron-left"></i></button>
+          <button class="arrow-btn" (click)="next()"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Side thumbnails right -->
+      <div class="testi-thumbs right">
+        <div class="thumb"
+             [class.active]="activeIndex === nextIndex"
+             (click)="goTo(nextIndex)">
+          <img [src]="testimonials[nextIndex].avatar" [alt]="testimonials[nextIndex].name">
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

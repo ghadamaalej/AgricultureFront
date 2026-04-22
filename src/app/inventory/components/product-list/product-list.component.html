@@ -1,0 +1,107 @@
+<ng-container *ngIf="view === 'movements'">
+  <app-movement-list (back)="backToList()"></app-movement-list>
+</ng-container>
+
+<ng-container *ngIf="view === 'batches' && selectedProduct">
+  <app-batch-list
+    [product]="selectedProduct"
+    [batches]="batches"
+    (back)="backToList()"
+    (consume)="openConsume(selectedProduct!)"
+    (adjust)="openAdjust(selectedProduct!)"
+    (stockAdded)="onStockAdded()">
+  </app-batch-list>
+</ng-container>
+
+<ng-container *ngIf="view === 'list'">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Inventaire</h1>
+      <p class="page-sub">Gérez vos produits agricoles</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="openMovements()">
+        <i class="fas fa-exchange-alt"></i> Mes mouvements
+      </button>
+      <button class="btn btn-primary" (click)="openAdd()">
+        <i class="fas fa-plus"></i> Ajouter un produit
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="state-msg"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>
+  <div *ngIf="error" class="state-msg error">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  </div>
+
+  <div *ngIf="!loading && products.length === 0 && !error" class="empty-state">
+    <i class="fas fa-box-open"></i>
+    <p>Aucun produit. Ajoutez votre premier produit !</p>
+  </div>
+
+  <div class="product-grid" *ngIf="!loading && products.length > 0">
+    <div class="product-card" *ngFor="let p of products" [class.low-stock]="isLowStock(p)">
+
+      <div class="card-top">
+        <span class="cat-badge cat-{{ p.categorie | lowercase }}">{{ categoryLabel(p.categorie) }}</span>
+        <span class="low-alert" *ngIf="isLowStock(p)"><i class="fas fa-exclamation-triangle"></i> Stock bas</span>
+      </div>
+
+      <h3 class="card-name">{{ p.nom }}</h3>
+
+      <div class="card-stats">
+        <div class="stat">
+          <span class="stat-val">{{ p.currentQuantity }}</span>
+          <span class="stat-lbl">{{ p.unit }}</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-val">{{ p.minThreshold }}</span>
+          <span class="stat-lbl">seuil min</span>
+        </div>
+      </div>
+
+      <div class="card-meta">
+        <i class="fas" [ngClass]="p.isPerishable ? 'fa-clock' : 'fa-box'"></i>
+        {{ p.isPerishable ? 'Produit périssable' : 'Produit non périssable' }}
+      </div>
+
+      <div class="card-actions">
+        <button class="act-btn act-batches" (click)="openBatches(p)" title="Lots">
+          <i class="fas fa-layer-group"></i> Lots
+        </button>
+        <button class="act-btn act-edit" (click)="openEdit(p)" title="Modifier">
+          <i class="fas fa-pen"></i>
+        </button>
+        <button class="act-btn act-delete" (click)="delete(p)" title="Supprimer">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</ng-container>
+
+<app-product-form
+  *ngIf="showProductForm"
+  [product]="editingProduct"
+  (saved)="onProductSaved()"
+  (cancelled)="showProductForm = false">
+</app-product-form>
+
+<app-consume-modal
+  *ngIf="showConsumeModal && selectedProduct"
+  [product]="selectedProduct"
+  [currentStock]="currentStock"
+  (consumed)="onConsumed()"
+  (cancelled)="showConsumeModal = false">
+</app-consume-modal>
+
+<app-adjust-modal
+  *ngIf="showAdjustModal && selectedProduct"
+  [product]="selectedProduct"
+  (adjusted)="onAdjusted()"
+  (cancelled)="showAdjustModal = false">
+</app-adjust-modal>

@@ -1,0 +1,207 @@
+.delivery-with-negotiation {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin: 16px 0;
+}
+
+.delivery-info {
+  margin-bottom: 24px;
+}
+
+.delivery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.delivery-header h3 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.delivery-status {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+}
+
+.status-en_attente {
+  background: #f59e0b;
+}
+
+.status-acceptée,
+.status-acceptee {
+  background: #10b981;
+}
+
+.status-en_cours,
+.status-encours {
+  background: #3b82f6;
+}
+
+.status-livrée,
+.status-livree {
+  background: #8bc34a;
+}
+
+.status-refusée,
+.status-annulee {
+  background: #ef4444;
+}
+
+.delivery-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.detail-row .label {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.detail-row .value {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.875rem;
+}
+
+.detail-row .price {
+  color: #059669;
+  font-size: 1rem;
+}
+
+.detail-row .negotiated-price {
+  color: #8b5cf6;
+  font-size: 1rem;
+}
+
+.detail-row .route {
+  text-align: right;
+  max-width: 300px;
+  line-height: 1.3;
+}
+
+.negotiation-section {
+  margin: 24px 0;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.action-btn i {
+  font-size: 16px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #ef4444;
+  font-size: 0.875rem;
+}
+
+.error-message i {
+  color: #f87171;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .delivery-with-negotiation {
+    padding: 16px;
+  }
+  
+  .delivery-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .detail-row .value {
+    text-align: left;
+  }
+  
+  .detail-row .route {
+    max-width: none;
+    text-align: left;
+  }
+  
+  .quick-actions {
+    flex-direction: column;
+  }
+  
+  .action-btn {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .delivery-header h3 {
+    font-size: 1.125rem;
+  }
+  
+  .delivery-status {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+  
+  .detail-row .label,
+  .detail-row .value {
+    font-size: 0.813rem;
+  }
+}

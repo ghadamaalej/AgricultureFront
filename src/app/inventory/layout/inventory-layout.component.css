@@ -1,0 +1,87 @@
+/* ─── Shell layout ─────────────────────────────────────────────── */
+.inv-shell {
+  display: flex;
+  height: 100vh;
+  background: #f0f4f0;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* ─── Sidebar ──────────────────────────────────────────────────── */
+.inv-sidebar {
+  width: 220px;
+  background: #1a2e1a;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  flex-shrink: 0;
+  box-shadow: 2px 0 12px rgba(0,0,0,.18);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sidebar-logo { width: 32px; height: 32px; object-fit: contain; }
+.sidebar-title { color: #7ec67e; font-size: 1.1rem; font-weight: 700; letter-spacing: .5px; }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,.55);
+  font-size: .95rem;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: left;
+  width: 100%;
+}
+.nav-item i { width: 18px; text-align: center; font-size: 1rem; }
+.nav-item:hover { background: rgba(126,198,126,.12); color: #7ec67e; }
+.nav-item.active { background: rgba(126,198,126,.2); color: #7ec67e; font-weight: 600; }
+
+.sidebar-footer {
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding: 14px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.user-pill { display: flex; align-items: center; gap: 10px; flex: 1; overflow: hidden; }
+.user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: #3d7a3d; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .9rem; flex-shrink: 0;
+}
+.user-info { display: flex; flex-direction: column; overflow: hidden; }
+.user-name { color: #fff; font-size: .82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role { color: rgba(255,255,255,.4); font-size: .72rem; }
+
+.logout-btn {
+  background: transparent; border: none; color: rgba(255,255,255,.4);
+  cursor: pointer; padding: 6px; border-radius: 6px; transition: all .2s;
+  font-size: 1rem;
+}
+.logout-btn:hover { color: #e06060; background: rgba(224,96,96,.12); }
+
+/* ─── Main ─────────────────────────────────────────────────────── */
+.inv-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 32px;
+}

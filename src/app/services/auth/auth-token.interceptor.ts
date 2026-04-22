@@ -17,7 +17,9 @@ export class AuthTokenInterceptor implements HttpInterceptor {
 
     const isApiRequest = req.url.startsWith('http://localhost:8089/')
       || req.url.startsWith('/forums/')
-      || req.url.startsWith('/user/');
+      || req.url.startsWith('/user/')
+      || req.url.startsWith('/livraison/')
+      || req.url.startsWith('/osrm/');
 
     if (!isApiRequest) {
       return next.handle(req);

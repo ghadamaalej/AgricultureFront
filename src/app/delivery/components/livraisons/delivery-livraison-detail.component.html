@@ -1,0 +1,103 @@
+<div class="delivery-page">
+  <div class="page-title">
+    <h2><i class="fas fa-eye"></i> Delivery detail</h2>
+    <p>Complete record: product, status, addresses, price and route map.</p>
+  </div>
+
+  <div class="detail-grid">
+    <section class="info-panel">
+      <div class="info-head">
+        <div>
+          <div class="ref-line">
+            <strong>{{ reference }}</strong>
+          </div>
+          <div class="meta-line">
+            <span class="pill">{{ status }}</span>
+            <span class="meta-sep">•</span>
+            <span>{{ product }} • {{ weightKg }} kg</span>
+          </div>
+        </div>
+
+        <div class="price">
+          <div class="price-label">Price</div>
+          <div class="price-value">{{ priceTnd }} TND</div>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="field">
+          <div class="label">Departure</div>
+          <div class="value">{{ pickupAddress }}</div>
+        </div>
+        <div class="field">
+          <div class="label">Arrival</div>
+          <div class="value">{{ dropoffAddress }}</div>
+        </div>
+        <div class="field">
+          <div class="label">Requester</div>
+          <div class="value">Farmer</div>
+        </div>
+        <div class="field">
+          <div class="label">Transporter</div>
+          <div class="value">{{ transporterName }}</div>
+        </div>
+        <div class="field">
+          <div class="label">Departure date</div>
+          <div class="value">{{ departureDate }}</div>
+        </div>
+        <div class="field">
+          <div class="label">Planned delivery</div>
+          <div class="value">{{ expectedDeliveryDate }}</div>
+        </div>
+        <div class="field full">
+          <div class="label">Free details</div>
+          <div class="value note">{{ details }}</div>
+        </div>
+      </div>
+
+      <div class="notification" *ngIf="notification">{{ notification }}</div>
+
+      <!-- Signature pad: shown when delivery is marked as delivered and farmer hasn't signed yet -->
+      <app-delivery-signature
+        *ngIf="shouldShowSignaturePad"
+        (signatureConfirmed)="onSignatureConfirmed($event)">
+      </app-delivery-signature>
+
+      <!-- Delivery receipt (shown after signing) -->
+      <app-delivery-receipt
+        *ngIf="isAlreadySigned && receiptData"
+        [data]="receiptData">
+      </app-delivery-receipt>
+
+      <div class="actions-bottom">
+        <button class="btn btn-secondary" type="button" (click)="goTracking()">
+          <i class="fas fa-map"></i> View tracking
+        </button>
+      </div>
+    </section>
+
+    <section class="map-panel">
+      <div class="panel-title">
+        <i class="fas fa-map"></i> Route map
+      </div>
+      <div class="map-card">
+        <div class="map-metrics">
+          <div class="metric">
+            <div class="metric-label">Distance</div>
+            <div class="metric-value">{{ distanceKm }} km</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Duration</div>
+            <div class="metric-value">{{ durationHours }} h</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">ETA</div>
+            <div class="metric-value">{{ eta }}</div>
+          </div>
+        </div>
+
+        <div #mapContainer class="leaflet-map"></div>
+      </div>
+    </section>
+  </div>
+</div>

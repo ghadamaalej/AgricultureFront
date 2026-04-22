@@ -1,10 +1,12 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
+import { DomSanitizer } from '@angular/platform-browser';
+import { CartService } from './services/cart/cart.service';
 
 @Component({
-  selector: 'app-root',
-  standalone: false,
-  template: `
+    selector: 'app-root',
+    standalone: false,
+    template: `
     <!-- Preloader -->
     <div class="preloader" [class.hidden]="preloaderHidden">
       <div class="preloader-inner">
@@ -16,7 +18,7 @@ import { NavigationEnd, Router } from '@angular/router';
       </div>
     </div>
 
-    <!-- Floating Action -->
+    <!-- Floating Action Button (scroll-to-top / jump-to-reply) -->
     <button
       class="back-to-top"
       [class.visible]="showBackTop"
@@ -33,10 +35,33 @@ import { NavigationEnd, Router } from '@angular/router';
       </span>
     </button>
 
+    <!-- Floating Cart -->
+    <button class="floating-cart" routerLink="/marketplace/cart">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="cart-badge" *ngIf="cartCount > 0">
+        {{ cartCount }}
+      </span>
+    </button>
+
+    <app-toast></app-toast>
+
     <!-- Router outlet — gère tout -->
     <router-outlet></router-outlet>
+
+    <!-- Persistent 3D Explorer — never destroyed, CSS-toggled to preserve state -->
+    <div class="explorer-overlay" [class.explorer-active]="isExplorerRoute">
+      <button class="explorer-back-btn" type="button" (click)="closeExplorer()">
+        <i class="fas fa-arrow-left"></i> Back to Site
+      </button>
+      <iframe
+        #explorerFrame
+        class="explorer-frame"
+        title="GreenRoots Explorer 3D"
+        allowfullscreen>
+      </iframe>
+    </div>
   `,
-  styles: [`
+    styles: [`
     .preloader {
       position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
@@ -83,118 +108,267 @@ import { NavigationEnd, Router } from '@angular/router';
       transition: opacity 0.22s ease, transform 0.22s ease;
       position: absolute;
     }
-
     .fab-icon.active,
     .fab-label.active {
       opacity: 1;
       transform: translateY(0);
       position: static;
     }
-
     .fab-label {
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.3px;
       text-transform: uppercase;
     }
-
     .top-icon i,
-    .fab-icon i {
-      font-size: 16px;
+    .fab-icon i { font-size: 16px; }
+
+    .floating-cart {
+      position: fixed;
+      bottom: 95px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 20px rgba(76,175,80,0.4);
+    }
+    .floating-cart:hover {
+      background: var(--primary-dark);
+      transform: translateY(-3px);
+    }
+    .cart-badge {
+      position: absolute;
+      top: -6px;
+      right: -4px;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: #dc3545;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+    }
+
+    /* ===== PERSISTENT 3D EXPLORER ===== */
+    .explorer-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      background: #000;
+    }
+    .explorer-overlay.explorer-active { display: flex; }
+    .explorer-back-btn {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: background 0.2s;
+    }
+    .explorer-back-btn:hover { background: rgba(0,0,0,0.8); }
+    .explorer-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
     }
   `]
 })
-export class AppComponent implements OnInit {
-  preloaderHidden = false;
-  showBackTop     = false;
-  fabMode: 'jump-reply' | 'scroll-top' = 'scroll-top';
-  isForumsPostPage = false;
+export class AppComponent implements OnInit, AfterViewInit {
+    preloaderHidden  = false;
+    showBackTop      = false;
+    fabMode: 'jump-reply' | 'scroll-top' = 'scroll-top';
+    isForumsPostPage = false;
+    isExplorerRoute  = false;
+    cartCount        = 0;
 
-  constructor(private router: Router) {}
+    @ViewChild('explorerFrame') private explorerFrame?: ElementRef<HTMLIFrameElement>;
+    private explorerLoaded = false;
 
-  ngOnInit() {
-    setTimeout(() => {
-      this.preloaderHidden = true;
-      this.initScrollAnimations();
-    }, 3000);
+    private readonly explorerOrigins = new Set([
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:8089',
+        'http://127.0.0.1:8089',
+    ]);
 
-    this.isForumsPostPage = this.router.url.startsWith('/forums/post/');
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this.isForumsPostPage = event.urlAfterRedirects.startsWith('/forums/post/');
+    /** Maps folio routes → Angular routes. Add entries as modules go live. */
+    private readonly folioRouteMap: Record<string, string> = {
+        '/delivery':     '/delivery',
+        '/forum':        '/forums',
+        '/forums':       '/forums',
+        '/inventory':    '/inventory',
+        '/marketplace':  '/marketplace',
+        '/loans':        '/loans',
+        '/events':       '/events',
+        '/training':     '/training',
+        '/formations':   '/training',
+        '/appointments': '/',
+        '/animals':      '/',
+        '/help-request': '/',
+    };
+
+    constructor(
+        private router: Router,
+        private sanitizer: DomSanitizer,
+        private cartService: CartService
+    ) {}
+
+    ngOnInit() {
+        setTimeout(() => {
+            this.preloaderHidden = true;
+            this.initScrollAnimations();
+        }, 3000);
+
+        this.cartService.cartCount$.subscribe(count => {
+            this.cartCount = count;
+        });
+        this.cartService.refreshCartCount();
+
+        this.isForumsPostPage = this.router.url.startsWith('/forums/post/');
+        this.isExplorerRoute  = this.router.url.startsWith('/explorer');
+
+        this.router.events.subscribe((event) => {
+            if (event instanceof NavigationEnd) {
+                this.isForumsPostPage = event.urlAfterRedirects.startsWith('/forums/post/');
+                this.isExplorerRoute  = event.urlAfterRedirects.startsWith('/explorer');
+                this.updateFabState();
+                window.setTimeout(() => this.updateFabState(), 120);
+            }
+        });
+
         this.updateFabState();
-        window.setTimeout(() => this.updateFabState(), 120);
-      }
-    });
-
-    this.updateFabState();
-  }
-
-  @HostListener('window:scroll', [])
-  onScroll() {
-    this.updateFabState();
-    this.checkReveal();
-  }
-
-  onFabClick() {
-    if (this.fabMode === 'jump-reply') {
-      this.scrollToReplyComposer();
-      return;
     }
 
-    this.scrollTop();
-  }
-
-  scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-  initScrollAnimations() { setTimeout(() => this.checkReveal(), 100); }
-
-  updateFabState() {
-    const hasReplies = this.hasVisibleReplies();
-
-    if (this.isForumsPostPage && hasReplies) {
-      this.showBackTop = true;
-    } else {
-      this.showBackTop = window.scrollY > 400;
+    ngAfterViewInit(): void {
+        // Set iframe src exactly once — never touch it again so the 3D state is never reset.
+        if (this.explorerFrame && !this.explorerLoaded) {
+            const token = localStorage.getItem('authToken');
+            const base  = 'http://localhost:5173/explorer/';
+            this.explorerFrame.nativeElement.src = token
+                ? `${base}?token=${encodeURIComponent(token)}`
+                : base;
+            this.explorerLoaded = true;
+        }
     }
 
-    if (!this.isForumsPostPage) {
-      this.fabMode = 'scroll-top';
-      return;
+    closeExplorer(): void {
+        this.router.navigate(['/']);
     }
 
-    const composer = document.getElementById('reply-composer');
-    if (!composer) {
-      this.fabMode = 'scroll-top';
-      return;
+    @HostListener('window:message', ['$event'])
+    onExplorerMessage(event: MessageEvent): void {
+        if (!this.explorerOrigins.has(event.origin)) return;
+
+        const payload = event.data as { type?: string; route?: string; path?: string; href?: string } | null;
+        const isNav   = payload?.type === 'greenroots:navigate' || payload?.type === 'navigate';
+        const target  = payload?.route || payload?.path || payload?.href;
+        if (!payload || !isNav || typeof target !== 'string') return;
+
+        const angular = this.resolveAngularRoute(target);
+        this.router.navigateByUrl(angular);
     }
 
-    const composerTop = window.scrollY + composer.getBoundingClientRect().top;
-    const viewportBottom = window.scrollY + window.innerHeight;
-    this.fabMode = viewportBottom < composerTop ? 'jump-reply' : 'scroll-top';
-  }
-
-  hasVisibleReplies(): boolean {
-    return document.querySelectorAll('.replies-tree .reply-branch').length > 0;
-  }
-
-  scrollToReplyComposer() {
-    const composer = document.getElementById('reply-composer');
-    if (!composer) {
-      this.scrollTop();
-      return;
+    private resolveAngularRoute(raw: string): string {
+        let path = raw.trim();
+        if (/^https?:\/\//i.test(path)) {
+            try { path = new URL(path).pathname; } catch { path = '/'; }
+        }
+        path = path.split('#')[0].split('?')[0] || '/';
+        if (!path.startsWith('/')) path = `/${path}`;
+        return this.folioRouteMap[path] ?? '/';
     }
 
-    composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    const textarea = composer.querySelector('textarea');
-    if (textarea instanceof HTMLTextAreaElement) {
-      window.setTimeout(() => textarea.focus(), 280);
+    @HostListener('window:scroll', [])
+    onScroll() {
+        this.updateFabState();
+        this.checkReveal();
     }
-  }
 
-  checkReveal() {
-    document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => {
-      if (el.getBoundingClientRect().top < window.innerHeight - 80)
-        el.classList.add('visible');
-    });
-  }
+    onFabClick() {
+        if (this.fabMode === 'jump-reply') {
+            this.scrollToReplyComposer();
+            return;
+        }
+        this.scrollTop();
+    }
+
+    scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    initScrollAnimations() { setTimeout(() => this.checkReveal(), 100); }
+
+    updateFabState() {
+        const hasReplies = this.hasVisibleReplies();
+
+        if (this.isForumsPostPage && hasReplies) {
+            this.showBackTop = true;
+        } else {
+            this.showBackTop = window.scrollY > 400;
+        }
+
+        if (!this.isForumsPostPage) {
+            this.fabMode = 'scroll-top';
+            return;
+        }
+
+        const composer = document.getElementById('reply-composer');
+        if (!composer) {
+            this.fabMode = 'scroll-top';
+            return;
+        }
+
+        const composerTop    = window.scrollY + composer.getBoundingClientRect().top;
+        const viewportBottom = window.scrollY + window.innerHeight;
+        this.fabMode = viewportBottom < composerTop ? 'jump-reply' : 'scroll-top';
+    }
+
+    hasVisibleReplies(): boolean {
+        return document.querySelectorAll('.replies-tree .reply-branch').length > 0;
+    }
+
+    scrollToReplyComposer() {
+        const composer = document.getElementById('reply-composer');
+        if (!composer) {
+            this.scrollTop();
+            return;
+        }
+        composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const textarea = composer.querySelector('textarea');
+        if (textarea instanceof HTMLTextAreaElement) {
+            window.setTimeout(() => textarea.focus(), 280);
+        }
+    }
+
+    checkReveal() {
+        document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => {
+            if (el.getBoundingClientRect().top < window.innerHeight - 80)
+                el.classList.add('visible');
+        });
+    }
 }

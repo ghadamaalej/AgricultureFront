@@ -1,0 +1,156 @@
+<div class="delivery-page" *ngIf="!isTransporter; else transporterHome">
+  <div class="delivery-hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="section-label">
+            <i class="fas fa-truck"></i> Transport & Delivery
+          </div>
+          <h1 class="section-title">
+            Delivery requests,<span> optimized</span>
+          </h1>
+          <p class="section-desc">
+            Create a delivery, track its route in real time and enable automatic grouping to reduce your costs.
+          </p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" (click)="goCreate()">
+              <i class="fas fa-plus"></i> Create a new delivery
+            </button>
+            <button class="btn btn-secondary" (click)="goTracking()">
+              <i class="fas fa-location-arrow"></i> Access tracking
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-card">
+            <div class="hero-card-title">
+              <i class="fas fa-route"></i> Quick overview
+            </div>
+            <div class="hero-card-row">
+              <div class="hero-badge">
+                <i class="fas fa-circle-check"></i> Automatic estimation
+              </div>
+              <div class="hero-badge">
+                <i class="fas fa-users"></i> Grouping possible
+              </div>
+              <div class="hero-badge">
+                <i class="fas fa-map"></i> Full route
+              </div>
+            </div>
+            <div class="hero-card-sub">
+              <span>Latest deliveries</span>
+            </div>
+            <div class="hero-last-list" *ngIf="lastDeliveries.length > 0; else noLastDeliveries">
+              <div class="hero-last-item" *ngFor="let d of lastDeliveries">
+                <div class="last-left">
+                  <div class="last-ref">{{ d.reference }}</div>
+                  <div class="last-meta">{{ d.product }} • {{ d.weightKg }}kg</div>
+                </div>
+                <div class="last-right">
+                  <span class="status-pill" [class]="statusToClass(d.status)">
+                    {{ d.status }}
+                  </span>
+                  <div class="last-date">{{ d.date }}</div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noLastDeliveries>
+              <div class="hero-last-list">
+                <div class="hero-last-item">
+                  <div class="last-left">
+                    <div class="last-ref">No delivery</div>
+                    <div class="last-meta">Data will come from the backend after creation.</div>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <section class="delivery-stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let s of stats">
+          <div class="stat-icon" [style.background]="s.accent">
+            <i [class]="s.icon"></i>
+          </div>
+          <div class="stat-body">
+            <div class="stat-value">{{ s.value }}</div>
+            <div class="stat-label">{{ s.label }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<ng-template #transporterHome>
+  <div class="delivery-page transporter-page">
+    <div class="delivery-hero">
+      <div class="container">
+        <div class="transporter-head">
+          <div>
+            <div class="section-label">
+              <i class="fas fa-truck"></i> Transporter space
+            </div>
+            <h1 class="section-title">Pending requests from farmers</h1>
+            <p class="section-desc">
+              Only <strong>Pending</strong> requests are displayed here.
+            </p>
+          </div>
+          <div class="section-desc">View requests, accept them then open the detail to see the map and the route.</div>
+        </div>
+
+        <div class="transporter-notification" *ngIf="notification">
+          <i class="fas fa-circle-info"></i> {{ notification }}
+        </div>
+
+        <div class="request-list" *ngIf="pendingRequests.length > 0; else emptyPending">
+          <article class="request-card" *ngFor="let req of pendingRequests">
+            <div class="request-top">
+              <div>
+                <div class="last-ref">{{ req.reference }}</div>
+                <div class="last-meta">{{ req.product }} • {{ req.weightKg }}kg</div>
+              </div>
+              <span class="status-pill status-en-attente">{{ req.status }}</span>
+            </div>
+
+            <div class="request-grid">
+              <div><strong>Departure:</strong> {{ req.pickupLabel }}</div>
+              <div><strong>Arrival:</strong> {{ req.dropoffLabel }}</div>
+              <div><strong>Estimated price:</strong> {{ req.estimatedPrice }} TND</div>
+              <div><strong>Details:</strong> {{ req.details || 'No details' }}</div>
+            </div>
+
+            <div class="request-actions">
+              <button class="btn btn-secondary" type="button" (click)="goDetail(req.id)">
+                <i class="fas fa-eye"></i> Detail
+              </button>
+              <button class="btn btn-primary" type="button" (click)="acceptRequest(req)" [disabled]="isAccepting(req.id)">
+                <i class="fas fa-check"></i> {{ isAccepting(req.id) ? 'Accepting...' : 'Accept' }}
+              </button>
+              <button class="btn btn-outline" type="button" (click)="ignoreRequest(req)">
+                <i class="fas fa-eye-slash"></i> Ignore
+              </button>
+              <button class="btn btn-outline" type="button" (click)="negotiateRequest(req)">
+                <i class="fas fa-comments-dollar"></i> Negotiate
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <ng-template #emptyPending>
+          <div class="empty-box">
+            <i class="fas fa-inbox"></i>
+            <p>No pending requests at the moment.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</ng-template>

@@ -1,0 +1,31 @@
+<div class="delivery-page">
+  <div class="page-title">
+    <h2><i class="fas fa-calendar-days"></i> Delivery calendar</h2>
+    <p>Day-by-day view of your accepted/in-progress/delivered deliveries.</p>
+  </div>
+
+  <div class="calendar-list" *ngIf="days.length; else emptyState">
+    <section class="calendar-day" *ngFor="let day of days">
+      <div class="day-head">{{ day.date }}</div>
+      <article class="day-item" *ngFor="let item of day.items">
+        <div>
+          <div class="ref">{{ item.reference }}</div>
+          <div class="route">{{ item.pickupLabel }} - {{ item.dropoffLabel }}</div>
+        </div>
+        <div class="right">
+          <span class="status-pill">{{ item.status }}</span>
+          <button class="btn btn-secondary small" type="button" (click)="openDetail(item.id)">
+            <i class="fas fa-eye"></i> Detail
+          </button>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="empty-box">
+      <i class="fas fa-calendar-xmark"></i>
+      <p>No scheduled delivery.</p>
+    </div>
+  </ng-template>
+</div>

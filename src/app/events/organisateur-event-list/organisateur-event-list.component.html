@@ -1,0 +1,131 @@
+<app-navbar></app-navbar>
+
+<section class="hero-events">
+  <div class="hero-overlay"></div>
+  <div class="hero-leaves">
+    <span class="leaf leaf-1">🌿</span>
+    <span class="leaf leaf-2">🍃</span>
+    <span class="leaf leaf-3">🌱</span>
+  </div>
+  <div class="hero-content">
+    <span class="hero-badge">Discover & Participate</span>
+    <h1>Our <span class="h1-accent">Events</span></h1>
+    <p class="hero-sub">Explore agriculture events and unlock new learning opportunities.</p>
+    <nav class="breadcrumb" aria-label="breadcrumb">
+      <a href="/">Home</a>
+      <span class="sep"> › </span>
+      <span style="color:#31b600;font-weight:bold;">Events</span>
+    </nav>
+  </div>
+</section>
+
+
+<div class="org-page">
+
+  <!-- HEADER -->
+  <div class="org-header">
+    <div class="org-header-left">
+      <h1 class="org-title">My Events</h1>
+      <span class="org-count">{{ events.length }} event{{ events.length !== 1 ? 's' : '' }}</span>
+    </div>
+    <button class="btn-add" (click)="goToAdd()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Event
+    </button>
+  </div>
+
+  <!-- SUCCESS TOAST -->
+  <div class="toast toast-success" *ngIf="showSuccess">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+    <path d="M20 6L9 17l-5-5"/>
+  </svg>
+  {{ message }}
+</div>
+
+  <!-- EVENTS GRID -->
+  <div class="events-grid" *ngIf="events.length > 0">
+    <div class="event-card" *ngFor="let ev of events">
+
+      <div class="card-img-wrap">
+        <img [src]="ev.image ? 'assets/images/' + ev.image : 'assets/images/placeholder.jpg'"
+             [alt]="ev.titre" class="card-img" />
+        <div class="card-img-overlay"></div>
+        <span class="card-type-pill">{{ ev.type }}</span>
+        <span class="card-statut" [ngClass]="{
+          'statut-planned':   ev.statut === 'PLANNED',
+          'statut-ongoing':   ev.statut === 'ONGOING',
+          'statut-completed': ev.statut === 'COMPLETED',
+          'statut-cancelled': ev.statut === 'CANCELLED',
+          'statut-postponed': ev.statut === 'POSTPONED'
+        }">{{ ev.statut }}</span>
+      </div>
+
+      <div class="card-body">
+        <h3 class="card-title">{{ ev.titre }}</h3>
+        <p class="card-desc">{{ ev.description | slice:0:90 }}{{ ev.description.length > 90 ? '…' : '' }}</p>
+
+        <div class="card-meta">
+          <div class="meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+              <line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
+            </svg>
+            <span>{{ ev.dateDebut | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>{{ ev.lieu }}, {{ ev.region }}</span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="card-seats">
+            <div class="seats-track">
+              <div class="seats-fill" [style.width.%]="(ev.inscrits / ev.capaciteMax) * 100"></div>
+            </div>
+            <span class="seats-txt">{{ ev.inscrits }}/{{ ev.capaciteMax }} registered</span>
+          </div>
+          <span *ngIf="ev.montant === 0" class="free-badge">Free</span>
+          <span *ngIf="ev.montant > 0"  class="price-badge">{{ ev.montant }} DT</span>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn-edit" (click)="goToEdit(ev)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Edit
+          </button>
+          <button class="btn-delete" (click)="onDelete(ev.id)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+            </svg>
+            Delete
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div class="empty-state" *ngIf="events.length === 0">
+    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+      <line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
+    </svg>
+    <p>No events yet.</p>
+  </div>
+
+</div>
+<app-footer></app-footer>

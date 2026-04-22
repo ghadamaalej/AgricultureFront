@@ -1,0 +1,50 @@
+<div class="delivery-page">
+  <div class="page-title">
+	<h2><i class="fas fa-truck-fast"></i> Accepted deliveries in progress</h2>
+	<p>Requests already accepted by you and not yet completed.</p>
+  </div>
+
+  <div class="notification" *ngIf="notification">{{ notification }}</div>
+
+  <div class="active-list" *ngIf="activeRequests.length; else emptyState">
+	<article class="active-card" *ngFor="let req of activeRequests">
+	  <div class="head-row">
+		<div>
+		  <div class="ref">{{ req.reference }}</div>
+		  <div class="meta">{{ req.product }} - {{ req.weightKg }} kg</div>
+		</div>
+		<span class="status-pill">{{ req.status }}</span>
+	  </div>
+
+	  <div class="grid">
+		<div><strong>Departure:</strong> {{ req.pickupLabel }}</div>
+		<div><strong>Arrival:</strong> {{ req.dropoffLabel }}</div>
+		<div><strong>Price:</strong> {{ req.estimatedPrice }} TND</div>
+		<div><strong>Farmer:</strong> {{ req.createdByEmail }}</div>
+	  </div>
+
+	  <div class="actions">
+		<button class="btn btn-secondary" type="button" (click)="openDetail(req.id)">
+		  <i class="fas fa-eye"></i> View detail
+		</button>
+		<button
+		  class="btn btn-primary"
+		  type="button"
+		  (click)="openRouteWorkflow(req)"
+		  [disabled]="isStartingRoute(req.id) || !canStartRequest(req)"
+		  [title]="getStartBlockedReason(req)">
+		  <i class="fas fa-route"></i>
+		  {{ isStartingRoute(req.id) ? 'Opening...' : (req.status === 'Acceptée' ? 'Start pickup' : 'Follow route') }}
+		</button>
+	  </div>
+	</article>
+  </div>
+
+  <ng-template #emptyState>
+	<div class="empty-box">
+	  <i class="fas fa-inbox"></i>
+	  <p>No active delivery at the moment.</p>
+	</div>
+  </ng-template>
+</div>
+

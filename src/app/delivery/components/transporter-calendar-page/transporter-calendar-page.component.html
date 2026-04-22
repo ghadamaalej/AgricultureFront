@@ -1,0 +1,14 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Delivery Calendar</h1>
+    <p class="page-description">View and manage your monthly delivery schedule</p>
+  </div>
+
+  <div class="page-content">
+    <app-transporter-calendar
+      [transporteurId]="currentUserId"
+      (dateSelected)="onDateSelected($event)"
+      (deliverySelected)="onDeliverySelected($event)">
+    </app-transporter-calendar>
+  </div>
+</div>

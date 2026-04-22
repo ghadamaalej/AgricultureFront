@@ -1,0 +1,45 @@
+<div class="modal-overlay" (click)="cancelled.emit()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><i class="fas fa-minus-circle" style="color:#e65c00;margin-right:8px;"></i>Consommer — {{ product.nom }}</h2>
+      <button class="close-btn" (click)="cancelled.emit()"><i class="fas fa-times"></i></button>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="modal-body">
+     <div class="stock-info">
+  Stock actuel : <strong>{{ stock }} {{ product.unit }}</strong>
+</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantité à consommer *</label>
+          <input type="number" formControlName="quantity" min="0.01" step="0.01"
+                 placeholder="0" [class.err]="invalid('quantity')">
+          <span class="err-msg" *ngIf="invalid('quantity')">Quantité > 0 requise</span>
+        </div>
+        <div class="form-group">
+          <label>Raison *</label>
+          <select formControlName="reason" [class.err]="invalid('reason')">
+            <option *ngFor="let r of reasons" [value]="r">{{ reasonLabels[r] }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Note (optionnel)</label>
+          <input formControlName="note" placeholder="Détail optionnel…">
+        </div>
+      </div>
+
+      <div class="err-msg" *ngIf="error">{{ error }}</div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="cancelled.emit()">Annuler</button>
+        <button type="submit" class="btn btn-danger" [disabled]="loading">
+          <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+          Confirmer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

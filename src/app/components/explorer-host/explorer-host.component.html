@@ -1,0 +1,12 @@
+<div class="explorer-host">
+  <button class="back-btn" type="button" (click)="goBack()">
+    <i class="fas fa-arrow-left"></i> Back to Site
+  </button>
+  <iframe
+    class="explorer-frame"
+    [src]="explorerUrl"
+    title="GreenRoots Explorer 3D"
+    loading="eager"
+    allowfullscreen>
+  </iframe>
+</div>
