@@ -23,6 +23,17 @@ interface ReportTargetContext {
   commentId?: number;
   label: string;
 }
+
+interface ModerationAssistantSummary {
+  recommendation: 'APPROVE' | 'REJECT' | 'REVIEW_CAREFULLY';
+  confidence: 'LOW' | 'MEDIUM' | 'HIGH';
+  rationale: string;
+  signals: string[];
+}
+
+interface ModerationCaseAnalysis extends ModerationAssistantSummary {
+  source: 'REPORTS' | 'POST_CONTENT';
+}
 import { AuthService } from 'src/app/services/auth/auth.service';
 
 @Component({
@@ -38,6 +49,20 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
   private readonly maxAiPollingAttempts = 8;
 
   private destroy$ = new Subject<void>();
+  
+  // Tag categorization with icons and colors
+  private tagCategories: Record<string, { icon: string; category: string; color: string }> = {
+    'irrigation': { icon: '💧', category: 'water', color: 'cyan' },
+    'fertilizer': { icon: '🌱', category: 'soil', color: 'brown' },
+    'pest': { icon: '🐛', category: 'disease', color: 'orange' },
+    'disease': { icon: '🦠', category: 'disease', color: 'orange' },
+    'wheat': { icon: '🌾', category: 'crop', color: 'green' },
+    'beans': { icon: '🫘', category: 'crop', color: 'green' },
+    'harvest': { icon: '✂️', category: 'crop', color: 'green' },
+    'soil': { icon: '🌍', category: 'soil', color: 'brown' },
+    'vegetables': { icon: '🥬', category: 'crop', color: 'green' }
+  };
+  
   post?: ForumPost;
   showAuthPrompt = false;
   authPromptAction = 'continue';
@@ -51,6 +76,7 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
   replySubmitError = '';
   reportingPost = false;
   moderatingPost = false;
+  moderatingMedia = false;
   reportingReplyIds = new Set<number>();
   reportingCommentKeys = new Set<string>();
   moderatingReplyIds = new Set<number>();
@@ -63,9 +89,17 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
   reportDialogError = '';
   activeReportTarget: ReportTargetContext | null = null;
   reportDetails: ForumReportDetail[] = [];
+  moderationAssistantSummary: ModerationAssistantSummary | null = null;
+  postModerationAnalysis: ModerationCaseAnalysis | null = null;
   reportScreenshotDataUrl: string | null = null;
   reportScreenshotName = '';
   currentUserId: number | null = null;
+  currentGroupId: number | null = null;
+  improvingReplyDraft = false;
+  replyAiImproveNotice = '';
+  replyAiImproveError = '';
+  replyMediaUrls: string[] = [];
+  replyMediaLinkInput = '';
 
   replyForm = this.fb.group({
     content: ['', [Validators.required, Validators.minLength(12)]]
@@ -89,9 +123,13 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
     this.route.paramMap
       .pipe(takeUntil(this.destroy$))
       .subscribe((params) => {
+        const groupIdParam = params.get('groupId');
+        const parsedGroupId = groupIdParam == null ? null : Number(groupIdParam);
+        this.currentGroupId = parsedGroupId != null && !Number.isNaN(parsedGroupId) ? parsedGroupId : null;
+
         const postId = Number(params.get('id'));
         if (!postId) {
-          this.router.navigate(['/forums']);
+          this.goBack();
           return;
         }
 
@@ -106,7 +144,15 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (post) => {
           if (!post) {
-            this.router.navigate(['/forums']);
+            this.goBack();
+            return;
+          }
+
+          if (post.groupId != null && this.currentGroupId !== post.groupId) {
+            this.router.navigate(['/forums/group', post.groupId, 'post', post.id], {
+              queryParams: this.route.snapshot.queryParams,
+              replaceUrl: true
+            });
             return;
           }
 
@@ -128,7 +174,14 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
             }
           }
 
-          this.forumsService.getPosts(this.currentUserId ?? undefined)
+          this.forumsService.getPosts(
+            this.currentUserId ?? undefined,
+            'newest',
+            'desc',
+            undefined,
+            undefined,
+            this.currentGroupId ?? undefined
+          )
             .pipe(takeUntil(this.destroy$))
             .subscribe({
               next: (posts) => {
@@ -141,7 +194,7 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
               }
             });
         },
-        error: () => this.router.navigate(['/forums'])
+        error: () => this.goBack()
       });
   }
 
@@ -165,12 +218,20 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
     return this.awaitingAiFromCreate && !this.aiReply;
   }
 
+  get isCommunityAwareAi(): boolean {
+    return this.aiReply != null && this.post?.groupId != null;
+  }
+
+  get aiContextTooltip(): string {
+    return 'This AI insight is tailored using this community\'s focus tags and rules.';
+  }
+
   get visibleReplyCount(): number {
     return this.humanReplies.length;
   }
 
   goBack(): void {
-    this.router.navigate(['/forums']);
+    this.navigateToForums();
   }
 
   getUser(userId: number): ForumUser | undefined {
@@ -448,7 +509,7 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
         next: () => {
           this.moderatingPost = false;
           this.closeReportDialog();
-          this.router.navigate(['/forums'], { queryParams: { notice: 'post-rejected' } });
+          this.navigateToForums({ notice: 'post-rejected' });
         },
         error: (err) => {
           this.moderatingPost = false;
@@ -634,6 +695,78 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
     return this.isCurrentUserAdmin() && (comment.isHiddenByReports || (comment.reportCount ?? 0) > 0);
   }
 
+  canReviewPostMedia(post: ForumPost): boolean {
+    return this.isCurrentUserAdmin() && !!post.mediaPendingReview;
+  }
+
+  approvePostMedia(): void {
+    if (!this.post || !this.canReviewPostMedia(this.post)) {
+      return;
+    }
+
+    this.moderatingMedia = true;
+    this.reportFeedback = '';
+    this.forumsService.approvePostMedia(this.post.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.moderatingMedia = false;
+          this.reportFeedback = 'Post media approved and now visible to all users.';
+          this.loadPost(this.post!.id);
+        },
+        error: (err) => {
+          this.moderatingMedia = false;
+          this.reportFeedback = err?.error?.error || 'Could not approve media right now.';
+        }
+      });
+  }
+
+  rejectPostMedia(): void {
+    if (!this.post || !this.canReviewPostMedia(this.post)) {
+      return;
+    }
+
+    this.moderatingMedia = true;
+    this.reportFeedback = '';
+    this.forumsService.rejectPostMedia(this.post.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.moderatingMedia = false;
+          this.reportFeedback = 'Post media rejected and removed.';
+          this.loadPost(this.post!.id);
+        },
+        error: (err) => {
+          this.moderatingMedia = false;
+          this.reportFeedback = err?.error?.error || 'Could not reject media right now.';
+        }
+      });
+  }
+
+  getModerationConfidenceLabel(confidence: 'LOW' | 'MEDIUM' | 'HIGH'): string {
+    if (confidence === 'HIGH') {
+      return 'High confidence';
+    }
+
+    if (confidence === 'MEDIUM') {
+      return 'Medium confidence';
+    }
+
+    return 'Low confidence';
+  }
+
+  getModerationConfidenceClass(confidence: 'LOW' | 'MEDIUM' | 'HIGH'): string {
+    if (confidence === 'HIGH') {
+      return 'moderation-confidence-high';
+    }
+
+    if (confidence === 'MEDIUM') {
+      return 'moderation-confidence-medium';
+    }
+
+    return 'moderation-confidence-low';
+  }
+
   get reportCaseSummary(): { totalReports: number; uniqueReporters: number; latestReason: string; previousReasons: string[] } {
     const reports = this.reportDetails ?? [];
     const uniqueReporters = new Set(reports.map((report) => report.reporterId)).size;
@@ -667,18 +800,114 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.forumsService.addReply(this.post.id, this.replyForm.value.content ?? '', currentUserId)
+    this.forumsService.addReply(this.post.id, this.replyForm.value.content ?? '', this.replyMediaUrls, currentUserId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.submittingReply = false;
           this.replyForm.reset();
+          this.replyMediaUrls = [];
+          this.replyMediaLinkInput = '';
           this.loadPost(this.post!.id);
         },
         error: (err) => {
           this.submittingReply = false;
           this.replySubmitError = err?.error?.error
             || 'Could not post reply. Check the text and try again.';
+        }
+      });
+  }
+
+  formatReplyContent(textarea: HTMLTextAreaElement, openTag: string, closeTag: string): void {
+    const start = textarea.selectionStart ?? 0;
+    const end = textarea.selectionEnd ?? 0;
+    const value = textarea.value ?? '';
+    const selected = value.substring(start, end);
+    const replacement = `${openTag}${selected}${closeTag}`;
+    const updated = `${value.substring(0, start)}${replacement}${value.substring(end)}`;
+    this.replyForm.patchValue({ content: updated });
+    textarea.focus();
+  }
+
+  onReplyMediaSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    if (files.length === 0) {
+      return;
+    }
+
+    files.slice(0, 4).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = typeof reader.result === 'string' ? reader.result : '';
+        if (result && !this.replyMediaUrls.includes(result) && this.replyMediaUrls.length < 6) {
+          this.replyMediaUrls.push(result);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    input.value = '';
+  }
+
+  addReplyMediaLink(): void {
+    const link = (this.replyMediaLinkInput ?? '').trim();
+    if (!link || !(link.startsWith('https://') || link.startsWith('http://'))) {
+      return;
+    }
+
+    if (!this.replyMediaUrls.includes(link) && this.replyMediaUrls.length < 6) {
+      this.replyMediaUrls.push(link);
+    }
+    this.replyMediaLinkInput = '';
+  }
+
+  removeReplyMedia(index: number): void {
+    this.replyMediaUrls.splice(index, 1);
+  }
+
+  isVideoMedia(url: string): boolean {
+    const lower = (url ?? '').toLowerCase();
+    return lower.startsWith('data:video/') || /(\.mp4|\.webm|\.mov|youtube\.com|youtu\.be|vimeo\.com)/.test(lower);
+  }
+
+  isImageMedia(url: string): boolean {
+    const lower = (url ?? '').toLowerCase();
+    return lower.startsWith('data:image/') || /(\.png|\.jpg|\.jpeg|\.gif|\.webp|tenor\.com|giphy\.com)/.test(lower);
+  }
+
+  improveReplyDraft(): void {
+    if (!this.post) {
+      return;
+    }
+
+    const draft = (this.replyForm.value.content ?? '').trim();
+    if (draft.length < 10) {
+      this.replyAiImproveError = 'Write a few lines first, then let AI improve the reply.';
+      return;
+    }
+
+    this.replyAiImproveError = '';
+    this.replyAiImproveNotice = '';
+    this.improvingReplyDraft = true;
+
+    const groupId = this.post.groupId ?? this.currentGroupId;
+    this.forumsService.improveReplyDraft({
+      draft,
+      postTitle: this.post.title,
+      postContent: this.post.content,
+      groupId
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (improvedDraft) => {
+          this.improvingReplyDraft = false;
+          this.replyForm.patchValue({ content: improvedDraft });
+          this.replyAiImproveNotice = 'AI improved your reply draft.';
+        },
+        error: () => {
+          this.improvingReplyDraft = false;
+          this.replyAiImproveError = 'Could not improve the reply right now.';
         }
       });
   }
@@ -727,6 +956,11 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
   }
 
   openSimilar(postId: number): void {
+    if (this.currentGroupId != null) {
+      this.router.navigate(['/forums/group', this.currentGroupId, 'post', postId]);
+      return;
+    }
+
     this.router.navigate(['/forums/post', postId]);
   }
 
@@ -848,6 +1082,29 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
     });
   }
 
+  getTagInfo(tag: string): { icon: string; category: string; color: string } {
+    return this.tagCategories[tag.toLowerCase()] || { icon: '🏷️', category: 'general', color: 'gray' };
+  }
+
+  getTagIcon(tag: string): string {
+    return this.getTagInfo(tag).icon;
+  }
+
+  getTagCategory(tag: string): string {
+    return this.getTagInfo(tag).category;
+  }
+
+  getTagColorClass(tag: string): string {
+    const colorMap: Record<string, string> = {
+      'cyan': 'tag-cyan',
+      'brown': 'tag-brown',
+      'orange': 'tag-orange',
+      'green': 'tag-green',
+      'gray': 'tag-gray'
+    };
+    return colorMap[this.getTagInfo(tag).color] || 'tag-gray';
+  }
+
   ngOnDestroy(): void {
     this.stopAiRefresh();
     this.destroy$.next();
@@ -888,11 +1145,24 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
 
     if (this.post) {
       if (targetLabel === 'post' && result.hidden) {
-        this.router.navigate(['/forums'], { queryParams: { notice: 'post-hidden' } });
+        this.navigateToForums({ notice: 'post-hidden' });
         return;
       }
       this.loadPost(this.post.id);
     }
+  }
+
+  private navigateToForums(queryParams?: Record<string, string>): void {
+    const target = this.currentGroupId != null
+      ? ['/forums/group', this.currentGroupId]
+      : ['/forums'];
+
+    if (queryParams) {
+      this.router.navigate(target, { queryParams });
+      return;
+    }
+
+    this.router.navigate(target);
   }
 
   openReportDialog(target: ReportTargetContext, mode: 'submit' | 'review' = 'submit'): void {
@@ -903,6 +1173,8 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
     this.reportScreenshotDataUrl = null;
     this.reportScreenshotName = '';
     this.reportDetails = [];
+    this.moderationAssistantSummary = null;
+    this.postModerationAnalysis = null;
     this.reportForm.reset();
     this.showReportDialog = true;
 
@@ -916,6 +1188,8 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
     this.activeReportTarget = null;
     this.reportDialogError = '';
     this.reportDetails = [];
+    this.moderationAssistantSummary = null;
+    this.postModerationAnalysis = null;
     this.reportForm.reset();
     this.reportScreenshotDataUrl = null;
     this.reportScreenshotName = '';
@@ -997,6 +1271,8 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (reports) => {
           this.reportDetails = reports;
+          this.moderationAssistantSummary = this.buildModerationAssistantSummary(reports);
+          this.loadPostModerationAnalysis(target);
           this.reportDialogLoading = false;
         },
         error: (err) => {
@@ -1004,6 +1280,109 @@ export class ForumsPostComponent implements OnInit, OnDestroy {
           this.reportDialogError = err?.error?.error || 'Could not load report details.';
         }
       });
+  }
+
+  private loadPostModerationAnalysis(target: ReportTargetContext): void {
+    if (target.targetType !== 'POST' || !this.post) {
+      this.postModerationAnalysis = null;
+      return;
+    }
+
+    this.forumsService.getModerationAnalysis({
+      targetType: 'POST',
+      title: this.post.title,
+      content: this.post.content,
+      tags: this.post.tags,
+      groupId: this.post.groupId ?? this.currentGroupId
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (analysis) => {
+          this.postModerationAnalysis = {
+            source: 'POST_CONTENT',
+            recommendation: analysis.recommendation,
+            confidence: analysis.confidence,
+            rationale: analysis.rationale,
+            signals: analysis.signals ?? []
+          };
+        },
+        error: () => {
+          this.postModerationAnalysis = null;
+        }
+      });
+  }
+
+  private buildModerationAssistantSummary(reports: ForumReportDetail[]): ModerationAssistantSummary | null {
+    if (!reports || reports.length === 0) {
+      return null;
+    }
+
+    const reasonText = reports.map((report) => (report.reason ?? '').toLowerCase()).join(' ');
+    const signals: string[] = [];
+    let rejectWeight = 0;
+    let reviewWeight = 0;
+    const hasExplicitHarmfulSignal = /(hate|hateful|racist|sexist|harass|harassment|abuse|abusive|violent|violence|threat|threaten|kill|die|attack)/.test(reasonText);
+
+    if (hasExplicitHarmfulSignal) {
+      rejectWeight += 6;
+      signals.push('Explicit hate, abuse, or violent language reported');
+    }
+
+    if (/(spam|scam|fake|fraud|phish|promotion|advert)/.test(reasonText)) {
+      rejectWeight += 2;
+      signals.push('Spam or fraudulent pattern reported');
+    }
+
+    if (/(offtopic|off-topic|irrelevant|non agriculture|non-agri)/.test(reasonText)) {
+      reviewWeight += 2;
+      signals.push('Possible off-topic content for this community');
+    }
+
+    if (/(misinformation|dangerous|unsafe|wrong dosage|toxic advice)/.test(reasonText)) {
+      rejectWeight += 2;
+      signals.push('Safety or misinformation concerns detected');
+    }
+
+    const withScreenshots = reports.filter((report) => !!report.screenshotDataUrl).length;
+    if (withScreenshots > 0) {
+      reviewWeight += 1;
+      signals.push(`${withScreenshots} report(s) include screenshot evidence`);
+    }
+
+    const uniqueReporters = new Set(reports.map((report) => report.reporterId)).size;
+    if (uniqueReporters >= 3) {
+      reviewWeight += 1;
+      signals.push('Multiple independent reporters flagged this content');
+    }
+
+    if (signals.length === 0) {
+      signals.push('No strong pattern detected from submitted reasons');
+    }
+
+    if (hasExplicitHarmfulSignal || rejectWeight >= 4) {
+      return {
+        recommendation: 'REJECT',
+        confidence: hasExplicitHarmfulSignal || rejectWeight >= 5 ? 'HIGH' : 'MEDIUM',
+        rationale: 'Reported reasons show strong policy-risk signals; removal is likely safer.',
+        signals
+      };
+    }
+
+    if (reviewWeight >= 2) {
+      return {
+        recommendation: 'REVIEW_CAREFULLY',
+        confidence: 'MEDIUM',
+        rationale: 'Signals are mixed; manual inspection is recommended before action.',
+        signals
+      };
+    }
+
+    return {
+      recommendation: 'APPROVE',
+      confidence: 'LOW',
+      rationale: 'Reports do not currently show clear high-risk patterns.',
+      signals
+    };
   }
 
   autoResizeCommentInput(event: Event): void {

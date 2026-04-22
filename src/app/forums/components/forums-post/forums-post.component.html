@@ -23,11 +23,24 @@
             [class.state-box]="isPostDeletedNotice(currentPost) || isPostHiddenNotice(currentPost)"
             [class.state-box--deleted]="isPostDeletedNotice(currentPost)"
             [class.state-box--hidden]="isPostHiddenNotice(currentPost)"
+            [innerHTML]="displayPostContent(currentPost)"
           >
-            {{ displayPostContent(currentPost) }}
           </p>
+          <div class="post-media-gallery" *ngIf="currentPost.mediaUrls?.length">
+            <ng-container *ngFor="let media of currentPost.mediaUrls">
+              <img *ngIf="isImageMedia(media)" [src]="media" alt="Post media" />
+              <video *ngIf="isVideoMedia(media)" [src]="media" controls></video>
+              <a *ngIf="!isImageMedia(media) && !isVideoMedia(media)" [href]="media" target="_blank" rel="noopener">Open media attachment</a>
+            </ng-container>
+          </div>
+          <small class="media-pending-note" *ngIf="currentPost.mediaPendingReview && !isCurrentUserAdmin()">
+            Media for this post is hidden until an admin approves it.
+          </small>
           <div class="story-tags">
-            <span *ngFor="let tag of currentPost.tags">{{ tag }}</span>
+            <span *ngFor="let tag of currentPost.tags" [ngClass]="getTagColorClass(tag)" class="tag-chip">
+              <span class="tag-icon">{{ getTagIcon(tag) }}</span>
+              <span class="tag-name">{{ tag }}</span>
+            </span>
           </div>
           <div class="story-author" *ngIf="getUser(currentPost.authorId) as author">
             <img class="user-avatar user-avatar--md" [src]="getAvatarUrl(author)" [alt]="author.name + ' profile image'" title="{{ getAvatarTitle(author) }}" />
@@ -43,6 +56,14 @@
           <div class="story-actions" *ngIf="isCurrentUserAdmin() && isThreadReported(currentPost)">
             <button type="button" class="moderation-btn moderation-btn--review" *ngIf="canReviewPost(currentPost)" (click)="reviewReportedPost()">
               Review report
+            </button>
+          </div>
+          <div class="story-actions" *ngIf="canReviewPostMedia(currentPost)">
+            <button type="button" class="moderation-btn moderation-btn--review" [disabled]="moderatingMedia" (click)="approvePostMedia()">
+              Approve media
+            </button>
+            <button type="button" class="moderation-btn moderation-btn--reject" [disabled]="moderatingMedia" (click)="rejectPostMedia()">
+              Reject media
             </button>
           </div>
           <div class="story-actions" *ngIf="!canDeletePost(currentPost)">
@@ -62,7 +83,16 @@
                 <small>Generated for this question</small>
               </div>
             </div>
-            <span class="ai-pill">Assistant</span>
+            <div class="ai-pill-group">
+              <span class="ai-pill">Assistant</span>
+              <span
+                class="ai-context-pill"
+                *ngIf="isCommunityAwareAi"
+                [attr.title]="aiContextTooltip"
+              >
+                Community-tuned
+              </span>
+            </div>
           </header>
           <div class="ai-body">
             <p>{{ insight.content }}</p>
@@ -160,9 +190,16 @@
                         [class.state-box]="isReplyDeletedNotice(reply) || isReplyHiddenNotice(reply)"
                         [class.state-box--deleted]="isReplyDeletedNotice(reply)"
                         [class.state-box--hidden]="isReplyHiddenNotice(reply)"
+                        [innerHTML]="displayReplyContent(reply)"
                       >
-                        {{ displayReplyContent(reply) }}
                       </p>
+                      <div class="reply-media-gallery" *ngIf="reply.mediaUrls?.length">
+                        <ng-container *ngFor="let media of reply.mediaUrls">
+                          <img *ngIf="isImageMedia(media)" [src]="media" alt="Reply media" />
+                          <video *ngIf="isVideoMedia(media)" [src]="media" controls></video>
+                          <a *ngIf="!isImageMedia(media) && !isVideoMedia(media)" [href]="media" target="_blank" rel="noopener">Open attachment</a>
+                        </ng-container>
+                      </div>
 
                       <div class="comment-thread-wrap" *ngIf="reply.comments.length > 0">
                         <button
@@ -262,10 +299,35 @@
         <section id="reply-composer" class="reply-studio glass-card">
           <h3>Write a reply</h3>
           <form [formGroup]="replyForm" (ngSubmit)="submitReply()">
-            <textarea rows="4" formControlName="content" placeholder="Share a clear and practical response..."></textarea>
+            <div class="rich-toolbar">
+              <button type="button" (click)="formatReplyContent(replyContentInput, '<strong>', '</strong>')">Bold</button>
+              <button type="button" (click)="formatReplyContent(replyContentInput, '<em>', '</em>')">Italic</button>
+              <button type="button" (click)="formatReplyContent(replyContentInput, '<ul><li>', '</li></ul>')">List</button>
+            </div>
+            <textarea #replyContentInput rows="5" formControlName="content" placeholder="Share a clear and practical response..."></textarea>
             <small class="form-error" *ngIf="replyForm.controls.content.touched && replyForm.controls.content.invalid">
               Reply must be at least 12 characters.
             </small>
+            <div class="media-input-row">
+              <input type="file" title="Upload reply media" accept="image/*,video/*,.gif" multiple (change)="onReplyMediaSelected($event)" />
+              <input type="text" [(ngModel)]="replyMediaLinkInput" [ngModelOptions]="{ standalone: true }" placeholder="Paste Tenor/GIF/video link" />
+              <button type="button" (click)="addReplyMediaLink()">Add link</button>
+            </div>
+            <div class="composer-media-preview" *ngIf="replyMediaUrls.length > 0">
+              <article class="composer-media-card" *ngFor="let mediaUrl of replyMediaUrls; let index = index">
+                <img *ngIf="isImageMedia(mediaUrl)" [src]="mediaUrl" alt="Reply media preview" />
+                <video *ngIf="isVideoMedia(mediaUrl)" [src]="mediaUrl" controls></video>
+                <a *ngIf="!isImageMedia(mediaUrl) && !isVideoMedia(mediaUrl)" [href]="mediaUrl" target="_blank" rel="noopener">Open media link</a>
+                <button type="button" (click)="removeReplyMedia(index)">Remove</button>
+              </article>
+            </div>
+            <div class="reply-ai-actions">
+              <button type="button" class="reply-ai-btn" (click)="improveReplyDraft()" [disabled]="improvingReplyDraft">
+                {{ improvingReplyDraft ? 'Improving...' : 'Improve with AI' }}
+              </button>
+            </div>
+            <small class="reply-ai-notice" *ngIf="replyAiImproveNotice">{{ replyAiImproveNotice }}</small>
+            <small class="form-error" *ngIf="replyAiImproveError">{{ replyAiImproveError }}</small>
             <small class="form-error" *ngIf="replySubmitError">{{ replySubmitError }}</small>
             <button class="btn btn-primary" type="submit" [disabled]="submittingReply">
               {{ submittingReply ? 'Posting...' : 'Post Reply' }}
@@ -367,6 +429,38 @@
           <li *ngFor="let reason of reportCaseSummary.previousReasons">{{ reason }}</li>
         </ul>
       </section>
+
+        <section class="report-ai-grid" *ngIf="reportDialogMode === 'review'">
+          <section *ngIf="postModerationAnalysis as contentAnalysis" class="report-ai-summary report-ai-summary--content">
+            <div class="report-ai-summary__head">
+              <h4>Direct Post Analysis</h4>
+              <span class="report-ai-summary__confidence" [ngClass]="getModerationConfidenceClass(contentAnalysis.confidence)">
+                {{ getModerationConfidenceLabel(contentAnalysis.confidence) }}
+              </span>
+            </div>
+            <small class="report-ai-summary__source">Evidence source: Post text and tags</small>
+            <div class="report-ai-summary__recommendation">{{ contentAnalysis.recommendation }}</div>
+            <p>{{ contentAnalysis.rationale }}</p>
+            <ul>
+              <li *ngFor="let signal of contentAnalysis.signals">{{ signal }}</li>
+            </ul>
+          </section>
+
+          <section *ngIf="moderationAssistantSummary as aiSummary" class="report-ai-summary report-ai-summary--reports">
+            <div class="report-ai-summary__head">
+              <h4>Report Signal Summary</h4>
+              <span class="report-ai-summary__confidence" [ngClass]="getModerationConfidenceClass(aiSummary.confidence)">
+                {{ getModerationConfidenceLabel(aiSummary.confidence) }}
+              </span>
+            </div>
+            <small class="report-ai-summary__source">Evidence source: Reporter reasons and metadata</small>
+            <div class="report-ai-summary__recommendation">{{ aiSummary.recommendation }}</div>
+            <p>{{ aiSummary.rationale }}</p>
+            <ul>
+              <li *ngFor="let signal of aiSummary.signals">{{ signal }}</li>
+            </ul>
+          </section>
+        </section>
 
       <section *ngIf="reportDialogMode === 'submit'" class="report-modal__form">
         <label for="report-reason">Reason</label>

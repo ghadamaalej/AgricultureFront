@@ -5,6 +5,8 @@ import { ForumsPostComponent } from './components/forums-post/forums-post.compon
 import { ForumsUserProfileComponent } from './components/forums-user-profile/forums-user-profile.component';
 
 const routes: Routes = [
+  { path: 'group/:groupId/post/:id', component: ForumsPostComponent },
+  { path: 'group/:groupId', component: ForumsHomeComponent },
   { path: '', component: ForumsHomeComponent },
   { path: 'post/:id', component: ForumsPostComponent },
   { path: 'profile/:userId', component: ForumsUserProfileComponent }

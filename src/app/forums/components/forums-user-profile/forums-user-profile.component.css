@@ -1,9 +1,10 @@
-.profile-container {
-  max-width: 900px;
+.profile-shell {
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 24px;
-  background: #ffffff;
-  border-radius: 12px;
+  padding: 28px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.96));
+  border: 1px solid rgba(148, 163, 184, 0.22);
 }
 
 .back-button {
@@ -22,13 +23,14 @@
   text-decoration: underline;
 }
 
-.profile-header {
+.profile-hero {
   display: flex;
-  gap: 24px;
-  margin-bottom: 40px;
-  padding-bottom: 24px;
-  border-bottom: 2px solid #f0f0f0;
+  gap: 20px;
   align-items: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(37, 99, 235, 0.08));
 }
 
 .profile-avatar {
@@ -45,10 +47,23 @@
   flex-shrink: 0;
 }
 
-.profile-info h1 {
+.profile-copy h1 {
   margin: 0 0 8px 0;
-  font-size: 28px;
+  font-size: 32px;
   color: #1f2937;
+}
+
+.profile-copy p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.hero-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
 }
 
 .profile-role {
@@ -66,37 +81,39 @@
   display: inline-block;
 }
 
-.profile-stats {
+.profile-metrics {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
-  margin-bottom: 40px;
+  margin-bottom: 28px;
 }
 
-.stat-card {
+.metric-card {
   background: #f9fafb;
-  padding: 16px;
-  border-radius: 8px;
+  padding: 18px;
+  border-radius: 12px;
   text-align: center;
   border: 1px solid #e5e7eb;
   transition: all 0.2s;
 }
 
-.stat-card:hover {
+.metric-card:hover {
   background: #f3f4f6;
   border-color: #d1d5db;
 }
 
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #1f2937;
-  margin-bottom: 8px;
-  word-break: break-word;
-  max-height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.metric-card strong {
+  display: block;
+  font-size: 28px;
+  color: #0f172a;
+}
+
+.metric-card span {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  font-weight: 700;
 }
 
 .stat-value.badge-bronze {
@@ -136,13 +153,25 @@
 }
 
 .posts-section {
-  margin-top: 40px;
+  margin-top: 18px;
+}
+
+.posts-section header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14px;
 }
 
 .posts-section h2 {
-  font-size: 20px;
-  margin: 0 0 16px 0;
-  color: #1f2937;
+  font-size: 22px;
+  margin: 0;
+  color: #0f172a;
+}
+
+.posts-section small {
+  color: #64748b;
+  font-size: 12px;
 }
 
 .posts-list {
@@ -153,8 +182,8 @@
 
 .post-item {
   background: #f9fafb;
-  padding: 16px;
-  border-radius: 8px;
+  padding: 18px;
+  border-radius: 12px;
   border-left: 4px solid #2563eb;
   cursor: pointer;
   transition: all 0.2s;
@@ -208,14 +237,17 @@
   font-size: 14px;
 }
 
-.grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+
+.tier-pill {
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 @media (max-width: 768px) {
-  .profile-header {
+  .profile-hero {
     flex-direction: column;
     align-items: flex-start;
     text-align: left;
@@ -227,15 +259,15 @@
     font-size: 36px;
   }
 
-  .profile-info h1 {
+  .profile-copy h1 {
     font-size: 24px;
   }
 
-  .grid-3 {
+  .profile-metrics {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .profile-stats {
-    grid-template-columns: repeat(2, 1fr);
+  .profile-shell {
+    padding: 18px;
   }
 }

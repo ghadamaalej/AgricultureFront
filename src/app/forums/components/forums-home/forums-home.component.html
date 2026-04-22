@@ -4,9 +4,13 @@
   <div class="container">
     <header class="home-hero glass-card">
       <div class="hero-copy">
-        <p class="hero-kicker">Community Exchange</p>
-        <h1>Ask once, grow smarter together.</h1>
-        <p>Practical field knowledge, documented solutions, and peer-reviewed replies in one place.</p>
+        <p class="hero-kicker">{{ isGroupSpaceView() ? 'Group Community' : 'Community Exchange' }}</p>
+        <h1>{{ activeGroup ? activeGroup.name : 'Ask once, grow smarter together.' }}</h1>
+        <p>{{ activeGroup ? activeGroup.description : 'Practical field knowledge, documented solutions, and peer-reviewed replies in one place.' }}</p>
+        <div class="group-hero-meta" *ngIf="activeGroup as group">
+          <span>{{ group.memberCount }} members</span>
+          <button type="button" (click)="changeGroupFilter(null)">Back to all forums</button>
+        </div>
       </div>
       <div class="hero-metrics">
         <article>
@@ -40,6 +44,75 @@
           </button>
         </section>
 
+        <section class="groups-hub glass-card">
+          <div class="groups-hub-head">
+            <div>
+              <h3>Field Groups</h3>
+              <p>Join focused circles and filter the river by each group's topics.</p>
+            </div>
+            <div class="groups-actions">
+              <button type="button" class="group-filter-chip" [class.active]="selectedGroupId === null" (click)="changeGroupFilter(null)">
+                All groups
+              </button>
+              <button type="button" class="ask-btn" (click)="toggleGroupComposer()">
+                {{ showGroupComposer ? 'Close Group Form' : 'Create Group' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="active-group-row" *ngIf="selectedGroupId !== null">
+            <span>Viewing:</span>
+            <strong>{{ getSelectedGroupName() }}</strong>
+            <button type="button" (click)="changeGroupFilter(null)">Clear</button>
+          </div>
+
+          <form class="group-form" [formGroup]="groupForm" (ngSubmit)="createGroup()" *ngIf="showGroupComposer">
+            <label>Group name</label>
+            <input type="text" formControlName="name" placeholder="Ex: Greenhouse Problem Solvers" />
+            <small class="form-error" *ngIf="groupForm.controls.name.touched && groupForm.controls.name.invalid">
+              Group name must be at least 4 characters.
+            </small>
+
+            <label>Description</label>
+            <textarea rows="3" formControlName="description" placeholder="What kind of field problems does this group solve?"></textarea>
+            <small class="form-error" *ngIf="groupForm.controls.description.touched && groupForm.controls.description.invalid">
+              Description must be at least 14 characters.
+            </small>
+
+            <label>Focus tags</label>
+            <input type="text" formControlName="focusTags" placeholder="Example: irrigation, soil, pest" />
+            <small class="form-error" *ngIf="groupForm.controls.focusTags.touched && groupForm.controls.focusTags.invalid">
+              Add at least one focus tag.
+            </small>
+
+            <small class="form-error" *ngIf="groupSubmitError">{{ groupSubmitError }}</small>
+            <button class="submit-btn" type="submit" [disabled]="creatingGroup">
+              {{ creatingGroup ? 'Creating Group...' : 'Create Group' }}
+            </button>
+          </form>
+
+          <div class="groups-grid" *ngIf="groups.length > 0">
+            <article class="group-card" *ngFor="let group of groups" [class.group-card--selected]="isGroupSelected(group.id)">
+              <div class="group-card-top">
+                <h4>{{ group.name }}</h4>
+                <span>{{ group.memberCount }} members</span>
+              </div>
+              <p>{{ group.description }}</p>
+              <div class="group-tags">
+                <span *ngFor="let tag of group.focusTags" [ngClass]="getTagColorClass(tag)">{{ getTagIcon(tag) }} {{ tag }}</span>
+              </div>
+              <div class="group-card-actions">
+                <button type="button" [class.active]="isGroupSelected(group.id)" (click)="openGroupSpace(group.id)">
+                  {{ isGroupSelected(group.id) ? 'Open now' : 'Open space' }}
+                </button>
+                <button type="button" *ngIf="!isGroupSelected(group.id)" (click)="changeGroupFilter(group.id)">Quick filter</button>
+                <button type="button" *ngIf="!group.joined" (click)="joinGroup(group.id)">Join</button>
+                <button type="button" *ngIf="group.joined" class="leave" (click)="leaveGroup(group.id)">Leave</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
         <section class="composer-box glass-card" *ngIf="showComposer">
           <h3>Create a New Thread</h3>
           <form [formGroup]="postForm" (ngSubmit)="createPost()">
@@ -50,16 +123,127 @@
             </small>
 
             <label>Details</label>
-            <textarea rows="4" formControlName="content" placeholder="Include context, what you already tried, and expected result"></textarea>
+            <div class="rich-toolbar">
+              <button type="button" (click)="formatPostContent(postContentInput, '<strong>', '</strong>')">Bold</button>
+              <button type="button" (click)="formatPostContent(postContentInput, '<em>', '</em>')">Italic</button>
+              <button type="button" (click)="formatPostContent(postContentInput, '<ul><li>', '</li></ul>')">List</button>
+            </div>
+            <textarea #postContentInput rows="6" formControlName="content" placeholder="Include context, what you already tried, and expected result"></textarea>
             <small class="form-error" *ngIf="postForm.controls.content.touched && postForm.controls.content.invalid">
               Details must be at least 30 characters.
             </small>
 
+            <label>Media attachments (images, videos, GIFs)</label>
+            <div class="media-input-row">
+              <input type="file" title="Upload post media" accept="image/*,video/*,.gif" multiple (change)="onPostMediaSelected($event)" />
+              <input type="text" [(ngModel)]="postMediaLinkInput" [ngModelOptions]="{ standalone: true }" placeholder="Paste Tenor/GIF/video link" />
+              <button type="button" (click)="addPostMediaLink()">Add link</button>
+            </div>
+
+            <div class="composer-media-preview" *ngIf="postMediaUrls.length > 0">
+              <article class="composer-media-card" *ngFor="let mediaUrl of postMediaUrls; let index = index">
+                <img *ngIf="isImageMedia(mediaUrl)" [src]="mediaUrl" alt="Post media preview" />
+                <video *ngIf="isVideoMedia(mediaUrl)" [src]="mediaUrl" controls></video>
+                <a *ngIf="!isImageMedia(mediaUrl) && !isVideoMedia(mediaUrl)" [href]="mediaUrl" target="_blank" rel="noopener">Open media link</a>
+                <button type="button" (click)="removePostMedia(index)">Remove</button>
+              </article>
+            </div>
+
             <label>Tags</label>
-            <input type="text" formControlName="tags" placeholder="Example: irrigation, hydroponic, disease" />
+            <div class="tag-input-container">
+              <div class="tag-input-field">
+                <input 
+                  type="text" 
+                  [(ngModel)]="tagInput" 
+                  [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="onTagInputChange($event)"
+                  (keydown.enter)="commitTypedTag($event)"
+                  (keydown.,)="commitTypedTag($event)"
+                  (blur)="commitTypedTag()"
+                  placeholder="Type to add tags..." 
+                  class="tag-autocomplete-input"
+                />
+                <div class="tag-suggestions" *ngIf="showTagSuggestions && tagSuggestions.length > 0">
+                  <button 
+                    *ngFor="let suggestion of tagSuggestions" 
+                    type="button" 
+                    class="suggestion-item"
+                    (click)="selectTagSuggestion(suggestion)"
+                  >
+                    <span class="suggestion-icon">{{ getTagIcon(suggestion) }}</span>
+                    <span class="suggestion-text">{{ suggestion }}</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="selected-tags" *ngIf="composerTags.size > 0">
+                <span *ngFor="let tag of composerTags" [ngClass]="getTagColorClass(tag)" class="composer-tag-chip">
+                  <span class="tag-icon">{{ getTagIcon(tag) }}</span>
+                  <span class="tag-name">{{ tag }}</span>
+                  <button 
+                    type="button" 
+                    class="remove-tag" 
+                    (click)="removeComposerTag(tag)"
+                    title="Remove tag"
+                  >×</button>
+                </span>
+              </div>
+            </div>
             <small class="form-error" *ngIf="postForm.controls.tags.touched && postForm.controls.tags.invalid">
               Add at least one tag.
             </small>
+
+            <div class="ai-tag-tools">
+              <button type="button" class="ai-tag-btn" (click)="suggestTagsWithAi()" [disabled]="suggestingTags">
+                {{ suggestingTags ? 'Suggesting tags...' : 'Suggest tags with AI' }}
+              </button>
+              <button
+                type="button"
+                class="ai-tag-btn ai-tag-btn--secondary"
+                *ngIf="aiTagSuggestions.length > 0"
+                (click)="applyAllAiTags()"
+              >
+                Apply all
+              </button>
+            </div>
+
+            <div class="ai-tag-suggestions" *ngIf="aiTagSuggestions.length > 0">
+              <span class="ai-tag-chip" *ngFor="let suggestedTag of aiTagSuggestions">
+                <span>{{ getTagIcon(suggestedTag) }} {{ suggestedTag }}</span>
+                <button type="button" (click)="applyAiTag(suggestedTag)">Use</button>
+              </span>
+            </div>
+
+            <small class="ai-tag-note" *ngIf="aiTagSuggestNotice">{{ aiTagSuggestNotice }}</small>
+            <small class="form-error" *ngIf="aiTagSuggestError">{{ aiTagSuggestError }}</small>
+
+            <section class="composer-quality" *ngIf="qualityChecklist.length > 0">
+              <div class="composer-quality-head">
+                <h4>Draft Quality Check</h4>
+                <span>{{ qualityReadinessScore }}%</span>
+              </div>
+              <p>{{ qualityNotice }}</p>
+              <div class="composer-quality-list">
+                <span *ngFor="let check of qualityChecklist" [class.passed]="check.passed" [class.failed]="!check.passed">
+                  {{ check.passed ? '✓' : '•' }} {{ check.label }}
+                </span>
+              </div>
+            </section>
+
+            <section class="composer-duplicates" *ngIf="duplicatePostCandidates.length > 0 || duplicateScanInProgress">
+              <div class="composer-duplicates-head">
+                <h4>Possible Duplicate Threads</h4>
+                <small *ngIf="duplicateScanInProgress">Scanning...</small>
+              </div>
+              <button type="button" *ngFor="let candidate of duplicatePostCandidates" (click)="openDuplicateCandidate(candidate.id)">
+                <span>{{ candidate.title }}</span>
+                <small>{{ candidate.score }}% match • {{ candidate.replies }} replies • {{ candidate.views }} views</small>
+                <small class="duplicate-confidence-chip" [ngClass]="getDuplicateConfidenceClass(candidate.score)">
+                  {{ getDuplicateConfidenceLabel(candidate.score) }}
+                </small>
+                <small *ngIf="candidate.reason">Why it matches: {{ candidate.reason }}</small>
+              </button>
+            </section>
 
             <label class="ai-toggle" for="generateAiReply">
               <input id="generateAiReply" type="checkbox" formControlName="generateAiReply" />
@@ -69,21 +253,87 @@
               </span>
             </label>
 
-            <small class="form-error" *ngIf="postSubmitError">{{ postSubmitError }}</small>
+            <div class="submission-banner submission-banner--danger" *ngIf="postSubmitError" role="alert">
+              <strong>Post blocked by guidelines</strong>
+              <span>{{ postSubmitError }}</span>
+            </div>
+            <small class="ai-create-notice" *ngIf="aiCreateNotice">
+              <span class="ai-create-spinner" *ngIf="aiCreateInProgress" aria-hidden="true"></span>
+              <span>{{ aiCreateNotice }}</span>
+            </small>
             <button class="submit-btn" type="submit" [disabled]="creatingPost">
               {{ creatingPost ? (postForm.value.generateAiReply !== false ? 'Publishing + generating AI...' : 'Publishing...') : 'Publish Question' }}
             </button>
           </form>
         </section>
 
-        <section class="sort-controls">
-          <label for="sort-select">Sort by:</label>
-          <select id="sort-select" [(ngModel)]="sortBy" (change)="changeSortBy(sortBy)">
-            <option value="newest">Newest</option>
-            <option value="votes">Most Voted</option>
-            <option value="commented">Most Discussed</option>
-            <option *ngIf="isCurrentUserAdmin()" value="reported">Reported Posts</option>
-          </select>
+        <section class="search-and-filters glass-card">
+          <div class="search-box">
+            <input
+              type="text"
+              placeholder="Search by title or content..."
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="onSearchChange($event)"
+              class="search-input"
+            />
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-group">
+              <label>Filter by tags:</label>
+              <div class="tag-filters">
+                <button
+                  *ngFor="let tag of allTags"
+                  type="button"
+                  class="tag-filter-btn"
+                  [class.active]="selectedTags.has(tag)"
+                  [ngClass]="getTagColorClass(tag)"
+                  (click)="toggleTag(tag)"
+                  [title]="getTagCategory(tag)"
+                >
+                  <span class="filter-icon">{{ getTagIcon(tag) }}</span>
+                  <span class="filter-label">{{ tag }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="sort-group">
+              <label for="sort-select">Sort by {{ isGroupSpaceView() ? '(this community)' : '(global feed)' }}:</label>
+              <select id="sort-select" [(ngModel)]="sortBy" (change)="changeSortBy(sortBy)">
+                <option value="newest">Newest</option>
+                <option value="votes">Most Voted</option>
+                <option value="commented">Most Discussed</option>
+                <option *ngIf="isCurrentUserAdmin()" value="reported">Reported Posts</option>
+              </select>
+            </div>
+
+            <button
+              *ngIf="hasActiveFilters()"
+              type="button"
+              class="clear-filters-btn"
+              (click)="clearFilters()"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </section>
+
+        <section class="trending-tags-widget glass-card" *ngIf="trendingTags.length > 0">
+          <h3 class="widget-title">🔥 Trending Tags</h3>
+          <div class="trending-tags-container">
+            <button 
+              *ngFor="let trendTag of trendingTags" 
+              type="button"
+              class="trending-tag-item"
+              [ngClass]="getTagColorClass(trendTag.tag)"
+              (click)="toggleTag(trendTag.tag)"
+              [class.active]="selectedTags.has(trendTag.tag)"
+            >
+              <span class="trending-icon">{{ trendTag.icon }}</span>
+              <span class="trending-name">{{ trendTag.tag }}</span>
+              <span class="trending-count">{{ trendTag.count }}</span>
+            </button>
+          </div>
         </section>
 
         <section class="river-list" *ngIf="posts.length > 0; else emptyState">
@@ -105,17 +355,37 @@
                 [class.state-box]="isPostDeletedNotice(post) || isPostHiddenNotice(post)"
                 [class.state-box--deleted]="isPostDeletedNotice(post)"
                 [class.state-box--hidden]="isPostHiddenNotice(post)"
+                [innerHTML]="displayPostContent(post)"
               >
-                {{ displayPostContent(post) }}
               </p>
+              <div class="post-media-strip" *ngIf="post.mediaUrls?.length">
+                <ng-container *ngFor="let media of (post.mediaUrls || []).slice(0, 2)">
+                  <img *ngIf="isImageMedia(media)" [src]="media" alt="Attached media" />
+                  <video *ngIf="isVideoMedia(media)" [src]="media" controls></video>
+                </ng-container>
+              </div>
+              <small class="media-pending-note" *ngIf="post.mediaPendingReview && !isCurrentUserAdmin()">
+                Media attached to this post is pending admin review.
+              </small>
               <div class="chip-row">
-                <span *ngFor="let tag of post.tags">{{ tag }}</span>
+                <span *ngFor="let tag of post.tags" [ngClass]="getTagColorClass(tag)" class="tag-chip">
+                  <span class="tag-icon">{{ getTagIcon(tag) }}</span>
+                  <span class="tag-name">{{ tag }}</span>
+                </span>
               </div>
             </div>
 
             <div class="item-meta" *ngIf="getUser(post.authorId) as user">
               <span class="solved-badge" *ngIf="isSolved(post)">Solved</span>
               <span class="admin-hidden-badge" *ngIf="isCurrentUserAdmin() && isThreadReported(post)" [attr.title]="getThreadReportTooltip(post)">{{ getThreadReportLabel(post) }}</span>
+              <div class="media-review-actions" *ngIf="canReviewPostMedia(post)">
+                <button type="button" class="media-review-btn media-review-btn--approve" [disabled]="isModeratingPostMedia(post.id)" (click)="approvePostMedia(post, $event)">
+                  Approve media
+                </button>
+                <button type="button" class="media-review-btn media-review-btn--reject" [disabled]="isModeratingPostMedia(post.id)" (click)="rejectPostMedia(post, $event)">
+                  Reject media
+                </button>
+              </div>
               <small>{{ post.views }} views</small>
               <div class="user-line">
                 <img class="user-avatar user-avatar--sm" [src]="getAvatarUrl(user)" [alt]="user.name + ' profile image'" title="{{ getAvatarTitle(user) }}" />
@@ -138,6 +408,49 @@
       </main>
 
       <aside class="context-column">
+        <section class="insight-card glass-card" *ngIf="isGroupSpaceView() && activeGroup as group">
+          <h4><span class="section-icon" aria-hidden="true">ℹ️</span>About This Community</h4>
+          <p class="group-sidebar-copy">{{ group.description }}</p>
+          <small class="group-sidebar-meta">{{ group.memberCount }} members • {{ group.focusTags.length }} focus topics</small>
+          <div class="group-tags">
+            <span *ngFor="let tag of group.focusTags" [ngClass]="getTagColorClass(tag)">{{ getTagIcon(tag) }} {{ tag }}</span>
+          </div>
+        </section>
+
+        <section class="insight-card glass-card" *ngIf="isGroupSpaceView() && activeGroupRules.length > 0">
+          <h4><span class="section-icon" aria-hidden="true">📜</span>Community Rules</h4>
+          <ol class="group-rule-list">
+            <li *ngFor="let rule of activeGroupRules">{{ rule }}</li>
+          </ol>
+        </section>
+
+        <section class="insight-card glass-card" *ngIf="isGroupSpaceView()">
+          <h4><span class="section-icon" aria-hidden="true">🛡️</span>Moderators</h4>
+          <div class="group-user-list" *ngIf="activeGroupModerators.length > 0; else emptyModerators">
+            <button *ngFor="let moderator of activeGroupModerators" type="button" class="group-user-row" (click)="openUserProfile(moderator.id)">
+              <img class="user-avatar user-avatar--sm" [src]="getAvatarUrl(moderator)" [alt]="moderator.name + ' profile image'" title="{{ moderator.name }} profile image" />
+              <span>{{ moderator.name }}</span>
+            </button>
+          </div>
+          <ng-template #emptyModerators>
+            <small class="group-sidebar-meta">No moderators listed.</small>
+          </ng-template>
+        </section>
+
+        <section class="insight-card glass-card" *ngIf="isGroupSpaceView()">
+          <h4><span class="section-icon" aria-hidden="true">👥</span>Members</h4>
+          <div class="group-user-list" *ngIf="activeGroupMembers.length > 0; else emptyMembers">
+            <button *ngFor="let member of activeGroupMembers" type="button" class="group-user-row" (click)="openUserProfile(member.id)">
+              <img class="user-avatar user-avatar--sm" [src]="getAvatarUrl(member)" [alt]="member.name + ' profile image'" title="{{ member.name }} profile image" />
+              <span>{{ member.name }}</span>
+            </button>
+          </div>
+          <ng-template #emptyMembers>
+            <small class="group-sidebar-meta" *ngIf="groupSidebarLoading">Loading members...</small>
+            <small class="group-sidebar-meta" *ngIf="!groupSidebarLoading">No members listed.</small>
+          </ng-template>
+        </section>
+
         <section class="insight-card glass-card">
           <h4><span class="section-icon" aria-hidden="true">❓</span>Top Questions</h4>
           <button *ngFor="let post of topQuestions" (click)="openPost(post.id)">
