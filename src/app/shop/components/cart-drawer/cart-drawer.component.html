@@ -1,0 +1,83 @@
+<div class="drawer-backdrop" (click)="close.emit()"></div>
+
+<div class="cart-drawer">
+  <!-- Header -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <i class="fas fa-shopping-cart"></i>
+      <div>
+        <h3>Mon Panier</h3>
+        <span class="item-count">{{ cartService.count }} article{{ cartService.count > 1 ? 's' : '' }}</span>
+      </div>
+    </div>
+    <div class="drawer-header-right">
+      <button class="btn-clear" *ngIf="cartService.items.length > 0" (click)="clearCart()" title="Vider le panier">
+        <i class="fas fa-trash"></i>
+      </button>
+      <button class="btn-close" (click)="close.emit()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="cartService.items.length === 0" class="drawer-empty">
+    <div class="empty-icon">🛒</div>
+    <h4>Votre panier est vide</h4>
+    <p>Ajoutez des produits depuis la boutique vétérinaire.</p>
+    <button class="btn-shop" (click)="close.emit()">Parcourir la boutique</button>
+  </div>
+
+  <!-- Items list -->
+  <div class="drawer-items" *ngIf="cartService.items.length > 0">
+    <div class="drawer-item" *ngFor="let item of cartService.items">
+
+      <!-- Thumb -->
+      <div class="item-thumb">
+        <img *ngIf="imageUrl(item)" [src]="imageUrl(item)" [alt]="item.product.nom">
+        <span *ngIf="!imageUrl(item)">{{ categoryEmoji(item.product.categorie) }}</span>
+      </div>
+
+      <!-- Info -->
+      <div class="item-info">
+        <p class="item-name">{{ item.product.nom }}</p>
+        <p class="item-vet">Dr. {{ item.vetNom }}</p>
+        <p class="item-region"><i class="fas fa-map-marker-alt"></i> {{ item.vetRegion || 'Non précisée' }}</p>
+        <div class="item-price-row">
+          <span class="item-unit-price">{{ item.product.prixVente | number:'1.2-2' }} DT / {{ item.product.unit }}</span>
+        </div>
+      </div>
+
+      <!-- Qty + Remove -->
+      <div class="item-controls">
+        <div class="qty-ctrl">
+          <button class="qty-btn" (click)="updateQty(item, -1)">−</button>
+          <span class="qty-val">{{ item.quantity }}</span>
+          <button class="qty-btn"
+                  (click)="updateQty(item, 1)"
+                  [disabled]="item.quantity >= (item.product.currentQuantity ?? 999)">+</button>
+        </div>
+        <span class="item-subtotal">{{ item.sousTotal | number:'1.2-2' }} DT</span>
+        <button class="btn-remove" (click)="remove(item)" title="Supprimer">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="drawer-footer" *ngIf="cartService.items.length > 0">
+    <div class="total-row">
+      <span class="total-label">Total</span>
+      <span class="total-val">{{ cartService.total | number:'1.2-2' }} DT</span>
+    </div>
+    <button class="btn-checkout" (click)="checkout.emit()">
+      <i class="fas fa-lock"></i>
+      Valider la commande — {{ cartService.total | number:'1.2-2' }} DT
+    </button>
+    <p class="checkout-note">
+      <i class="fas fa-shield-alt"></i> Paiement sécurisé par Stripe
+    </p>
+  </div>
+</div>

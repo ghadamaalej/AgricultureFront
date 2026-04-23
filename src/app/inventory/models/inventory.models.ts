@@ -6,7 +6,11 @@ export interface UserSummary {
   id: number;
   username: string;
   email: string;
+   nom?: string;
+  prenom?: string;
+  region?: string;
 }
+
 
 export interface InventoryProduct {
   id: number;
@@ -111,6 +115,12 @@ export interface ConsumeStockRequest {
   reason: Reason;
   note?: string;
 }
+export interface UpdateAnimalRequest {
+  espece: string;
+  poids: number;
+  dateNaissance: string;
+}
+
 
 export interface AdjustStockRequest {
   quantity: number;

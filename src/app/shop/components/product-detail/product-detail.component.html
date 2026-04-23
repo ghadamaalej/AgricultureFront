@@ -1,0 +1,99 @@
+<div class="detail-overlay" (click)="close.emit()">
+  <div class="detail-modal" (click)="$event.stopPropagation()">
+    <button class="btn-close-modal" (click)="close.emit()"><i class="fas fa-times"></i></button>
+
+    <!-- Image -->
+    <div class="detail-img-wrap">
+      <img *ngIf="imageUrl()" [src]="imageUrl()" [alt]="product.nom" class="detail-img">
+      <div *ngIf="!imageUrl()" class="detail-img-placeholder">{{ categoryEmoji(product.categorie) }}</div>
+      <div class="stock-badge" [class.in]="(product.currentQuantity??0)>0" [class.out]="!((product.currentQuantity??0)>0)">
+        {{ (product.currentQuantity??0)>0 ? '✔ En stock' : '✖ Rupture de stock' }}
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="detail-body">
+      <div class="detail-meta">
+        <span class="detail-cat">{{ categoryLabel(product.categorie) }}</span>
+        <span class="detail-vet">
+          <i class="fas fa-user-md"></i> Dr. {{ vetNom }}
+        </span>
+        <span class="detail-region" *ngIf="vetRegion">
+          <i class="fas fa-map-marker-alt"></i> {{ vetRegion }}
+        </span>
+      </div>
+
+      <h2 class="detail-name">{{ product.nom }}</h2>
+
+      <!-- Description -->
+      <div class="detail-section" *ngIf="product.description">
+        <h4><i class="fas fa-file-alt"></i> Description / Notice</h4>
+        <p>{{ product.description }}</p>
+      </div>
+
+      <!-- Details grid -->
+      <div class="detail-grid">
+        <div class="dg-item">
+          <span class="dg-label">Unité</span>
+          <span class="dg-val">{{ product.unit }}</span>
+        </div>
+        <div class="dg-item">
+          <span class="dg-label">Stock disponible</span>
+          <span class="dg-val" [class.green]="(product.currentQuantity??0)>0" [class.red]="!((product.currentQuantity??0)>0)">
+            {{ (product.currentQuantity??0)>0 ? (product.currentQuantity + ' ' + product.unit) : 'Rupture' }}
+          </span>
+        </div>
+        <div class="dg-item">
+          <span class="dg-label">Périssable</span>
+          <span class="dg-val">{{ product.isPerishable ? '⏱ Oui' : 'Non' }}</span>
+        </div>
+        <div class="dg-item">
+          <span class="dg-label">Catégorie</span>
+          <span class="dg-val">{{ categoryEmoji(product.categorie) }} {{ categoryLabel(product.categorie) }}</span>
+        </div>
+      </div>
+
+      <!-- Price -->
+      <div class="detail-price-box">
+        <span class="price-label">Prix unitaire</span>
+        <span class="price-val">{{ product.prixVente | number:'1.2-2' }} DT</span>
+        <span class="price-unit">/ {{ product.unit }}</span>
+      </div>
+
+      <!-- Quantity selector + Add to cart -->
+      <div class="detail-actions" *ngIf="canAdd">
+        <div class="qty-selector">
+          <span class="qty-label">Quantité</span>
+          <div class="qty-ctrl">
+            <button class="qty-btn" (click)="decrement()" [disabled]="quantity <= 1">−</button>
+            <span class="qty-val">{{ quantity }}</span>
+            <button class="qty-btn" (click)="increment()" [disabled]="quantity >= max">+</button>
+          </div>
+          <span class="qty-max">Max: {{ max }} {{ product.unit }}</span>
+        </div>
+
+        <div class="subtotal-preview">
+          Sous-total : <strong>{{ (quantity * (product.prixVente ?? 0)) | number:'1.2-2' }} DT</strong>
+        </div>
+
+        <button *ngIf="!addedToCart" class="btn-add-cart" (click)="addToCart()">
+          <i class="fas fa-cart-plus"></i> Ajouter au panier
+        </button>
+        <button *ngIf="addedToCart" class="btn-added" (click)="openCart.emit(); close.emit()">
+          <i class="fas fa-check"></i> Voir le panier →
+        </button>
+      </div>
+
+      <!-- Out of stock -->
+      <div class="out-of-stock-msg" *ngIf="!canAdd">
+        <i class="fas fa-exclamation-circle"></i>
+        Ce produit est actuellement en rupture de stock.
+      </div>
+
+      <p class="contact-hint">
+        <i class="fas fa-comments"></i>
+        Pour plus d'informations, contactez le vétérinaire via la messagerie.
+      </p>
+    </div>
+  </div>
+</div>

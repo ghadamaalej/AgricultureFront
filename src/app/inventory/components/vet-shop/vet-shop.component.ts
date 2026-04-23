@@ -47,7 +47,7 @@ export class VetShopComponent implements OnInit {
       description: p.description ?? '',
       enBoutique:  p.enBoutique ?? false,
     });
-    this.imagePreview = p.imageUrl ? 'http://localhost:8088' + p.imageUrl : null;
+    this.imagePreview = this.api.resolveMediaUrl(p.imageUrl) || null;
     this.selectedImage = null;
     this.showForm = true;
   }
@@ -101,7 +101,7 @@ export class VetShopComponent implements OnInit {
   }
 
   imageUrl(p: InventoryProduct): string {
-    return p.imageUrl ? 'http://localhost:8088' + p.imageUrl : '';
+    return this.api.resolveMediaUrl(p.imageUrl);
   }
 
   categoryLabel(c: string) {

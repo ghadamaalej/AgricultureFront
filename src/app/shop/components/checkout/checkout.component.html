@@ -1,0 +1,98 @@
+<div class="checkout-overlay" (click)="step !== 'processing' && close.emit()">
+  <div class="checkout-modal" (click)="$event.stopPropagation()">
+
+    <!-- Processing spinner -->
+    <div *ngIf="step === 'processing'" class="processing-screen">
+      <div class="proc-spinner"></div>
+      <h3>Traitement en cours...</h3>
+      <p>Veuillez patienter</p>
+    </div>
+
+    <!-- Success -->
+    <div *ngIf="step === 'success'" class="success-screen">
+      <div class="success-icon">✅</div>
+      <h3>Paiement réussi !</h3>
+      <p>Votre commande <strong>{{ orderRef }}</strong> a été validée.</p>
+      <p class="success-sub">Vous recevrez une confirmation par email.</p>
+      <button class="btn-close-success" (click)="success.emit()">Fermer</button>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="step === 'error'" class="error-screen">
+      <div class="error-icon">❌</div>
+      <h3>Paiement échoué</h3>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="retryPayment()">Réessayer</button>
+    </div>
+
+    <!-- Summary step -->
+    <ng-container *ngIf="step === 'summary'">
+      <div class="checkout-header">
+        <h3><i class="fas fa-receipt"></i> Récapitulatif de commande</h3>
+        <button class="btn-close" (click)="close.emit()"><i class="fas fa-times"></i></button>
+      </div>
+
+      <div class="checkout-body">
+        <!-- Items list -->
+        <div class="summary-items">
+          <div class="summary-item" *ngFor="let item of cartService.items">
+            <div class="si-info">
+              <span class="si-name">{{ item.product.nom }}</span>
+              <span class="si-vet">Dr. {{ item.vetNom }} — {{ item.vetRegion }}</span>
+            </div>
+            <div class="si-right">
+              <span class="si-qty">× {{ item.quantity }}</span>
+              <span class="si-price">{{ item.sousTotal | number:'1.2-2' }} DT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total -->
+        <div class="summary-total">
+          <span>Total à payer</span>
+          <span class="total-amount">{{ cartService.total | number:'1.2-2' }} DT</span>
+        </div>
+
+        <div class="stripe-badge">
+          <i class="fas fa-lock"></i> Paiement sécurisé par <strong>Stripe</strong>
+        </div>
+      </div>
+
+      <div class="checkout-footer">
+        <button class="btn-cancel" (click)="close.emit()">Annuler</button>
+        <button class="btn-pay" (click)="proceedToPayment()">
+          <i class="fas fa-credit-card"></i>
+          Payer {{ cartService.total | number:'1.2-2' }} DT
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Payment step -->
+    <ng-container *ngIf="step === 'payment'">
+      <div class="checkout-header">
+        <h3><i class="fas fa-credit-card"></i> Paiement Stripe</h3>
+        <button class="btn-close" (click)="close.emit()"><i class="fas fa-times"></i></button>
+      </div>
+
+      <div class="checkout-body">
+        <div class="order-ref-badge">
+          <i class="fas fa-tag"></i> Commande : {{ orderRef }}
+        </div>
+        <div class="amount-to-pay">
+          Montant : <strong>{{ cartService.total | number:'1.2-2' }} DT</strong>
+        </div>
+        <!-- Stripe Payment Element -->
+        <div id="stripe-payment-element" class="stripe-element-wrap"></div>
+      </div>
+
+      <div class="checkout-footer">
+        <button class="btn-cancel" (click)="close.emit()" [disabled]="isConfirmingPayment">Annuler</button>
+        <button class="btn-pay" (click)="confirmPayment()" [disabled]="!paymentElementReady || isConfirmingPayment">
+          <i class="fas" [ngClass]="isConfirmingPayment ? 'fa-spinner fa-spin' : 'fa-lock'"></i>
+          {{ isConfirmingPayment ? 'Confirmation...' : 'Confirmer le paiement' }}
+        </button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>
