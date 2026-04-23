@@ -12,20 +12,20 @@ import { Router } from '@angular/router';
 export class AuthComponent implements OnInit {
 
   mode: 'signin' | 'signup' | 'verify' = 'signin';
-  showSignInPass = false;
-  showSignUpPass = false;
-  previewUrl: string | null = null;
-  photoUploadUrl: string | null = null;
-  loginError: string | null = null;
-  isLoading = false;
-  verificationUserId: number | null = null;
-  verificationEmail: string | null = null;
-  verificationMessage: string | null = null;
-  verificationLoading = false;
-  verificationError: string | null = null;
+  showSignInPass    = false;
+  showSignUpPass    = false;
+  previewUrl:           string | null = null;
+  photoUploadUrl:       string | null = null;
+  loginError:           string | null = null;
+  isLoading                           = false;
+  verificationUserId:   number | null = null;
+  verificationEmail:    string | null = null;
+  verificationMessage:  string | null = null;
+  verificationLoading                 = false;
+  verificationError:    string | null = null;
 
-  signInForm!:  FormGroup;
-  signUpForm!:  FormGroup;
+  signInForm!: FormGroup;
+  signUpForm!: FormGroup;
 
   // Roles that require extra info
   rolesWithExtra = [
@@ -51,7 +51,7 @@ export class AuthComponent implements OnInit {
 
   constructor(
       private authService: AuthService,
-      private router: Router
+      private router:      Router
   ) {}
 
   ngOnInit(): void {
@@ -98,7 +98,7 @@ export class AuthComponent implements OnInit {
     localStorage.setItem('authMode', m);
   }
 
-  togglePass(field: 'signin' | 'signup') {
+  togglePass(field: 'signin' | 'signup'): void {
     if (field === 'signin') this.showSignInPass = !this.showSignInPass;
     else                    this.showSignUpPass = !this.showSignUpPass;
   }
@@ -118,7 +118,7 @@ export class AuthComponent implements OnInit {
   submitSignIn(): void {
     if (this.signInForm.invalid) { this.signInForm.markAllAsTouched(); return; }
 
-    this.isLoading = true;
+    this.isLoading  = true;
     this.loginError = null;
 
     const { email, remember, password } = this.signInForm.value;
@@ -144,7 +144,7 @@ export class AuthComponent implements OnInit {
       },
       error: (err) => {
         this.loginError = err.error?.message || 'An error occurred during login';
-        this.isLoading = false;
+        this.isLoading  = false;
       }
     });
   }
@@ -152,7 +152,7 @@ export class AuthComponent implements OnInit {
   submitSignUp(): void {
     if (this.signUpForm.invalid) { this.signUpForm.markAllAsTouched(); return; }
 
-    this.isLoading = true;
+    this.isLoading  = true;
     this.loginError = null;
 
     const payload: SignupStep1Request = {
@@ -186,11 +186,10 @@ export class AuthComponent implements OnInit {
           return;
         }
 
-        this.mode = 'verify';
         this.enterVerificationMode(response.userId, response.email, response.message || 'Please verify your email to continue.');
       },
       error: (err) => {
-        this.isLoading = false;
+        this.isLoading  = false;
         this.loginError = err.error?.message || 'Could not create your account';
       }
     });
@@ -221,7 +220,7 @@ export class AuthComponent implements OnInit {
       },
       error: (err) => {
         this.verificationLoading = false;
-        this.verificationError = err.error?.message || 'Verification failed';
+        this.verificationError   = err.error?.message || 'Verification failed';
       }
     });
   }
@@ -241,8 +240,8 @@ export class AuthComponent implements OnInit {
     this.signUpForm.get('photo')?.setValue(file);
     this.signUpForm.get('photo')?.markAsTouched();
     this.photoUploadUrl = this.buildMockFileUrl(file);
-    const reader = new FileReader();
-    reader.onload = () => this.previewUrl = reader.result as string;
+    const reader    = new FileReader();
+    reader.onload   = () => this.previewUrl = reader.result as string;
     reader.readAsDataURL(file);
   }
 
@@ -257,12 +256,8 @@ export class AuthComponent implements OnInit {
     this.verificationMessage = message;
     this.mode = 'verify';
     localStorage.setItem('authMode', 'verify');
-    if (userId != null) {
-      localStorage.setItem('pendingVerificationUserId', String(userId));
-    }
-    if (email) {
-      localStorage.setItem('pendingVerificationEmail', email);
-    }
+    if (userId != null) localStorage.setItem('pendingVerificationUserId', String(userId));
+    if (email)          localStorage.setItem('pendingVerificationEmail', email);
     localStorage.setItem('pendingVerificationMessage', message);
   }
 }

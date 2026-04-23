@@ -1,7 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "./",
     "rootDir": "./src",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
@@ -20,8 +20,8 @@
     "useDefineForClassFields": false,
     "lib": ["ES2022", "dom"],
     "paths": {
-    "src/*": ["./src/*"]
-   },
+      "src/*": ["./src/*"]
+    },
     "ignoreDeprecations": "5.0"
   },
   "angularCompilerOptions": {

@@ -86,6 +86,29 @@ import { filter } from 'rxjs/operators';
         }
         .preloader-img         { width: 40px; height: 40px; object-fit: contain; }
         .preloader-logo .green { color: var(--primary); }
+    <!-- Router outlet — gère tout -->
+    <router-outlet></router-outlet>
+   
+  `,
+  styles: [`
+    .preloader {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: white;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; z-index: 2000;
+      transition: opacity 0.5s ease, visibility 0.5s;
+    }
+    .preloader.hidden { opacity: 0; visibility: hidden; }
+    .preloader-inner  { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .preloader-gif    { width: 100px; height: 100px; margin-bottom: 20px; }
+    .preloader-logo   {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Playfair Display', serif;
+      font-size: 32px; font-weight: 700; color: green;
+    }
+    .preloader-img         { width: 40px; height: 40px; object-fit: contain; }
+    .preloader-logo .green { color: var(--primary); }
 
         .back-to-top {
             position: fixed; bottom: 30px; right: 30px;

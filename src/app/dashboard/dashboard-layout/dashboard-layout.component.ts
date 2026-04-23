@@ -70,6 +70,11 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     this.router.navigate(['/auth']);
   }
 
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth']);
+  }
+
   toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
   goHome(): void        { this.router.navigate(['/']); }
 

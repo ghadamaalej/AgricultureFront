@@ -1,0 +1,197 @@
+<app-navbar></app-navbar>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+   
+
+    <h1 class="hero-title">
+      Manage Your Loan<br>
+      <span class="hero-highlight">Services</span>
+    </h1>
+
+    <p class="hero-desc">
+      Create and manage your loan types. Farmers can view them and submit requests.
+    </p>
+  </div>
+
+
+</section>
+
+<!-- CONTENT -->
+<div class="page-body">
+
+  <div class="section-header">
+    <div class="section-label">
+      <span class="label-line"></span> Agent Space
+    </div>
+
+    <div class="section-header-row">
+      <div>
+        <h2 class="section-title">My Services</h2>
+        <p class="section-sub">{{ services.length }} service(s) available</p>
+      </div>
+
+      <a routerLink="/loans/agent/services/new" class="btn-green">
+        + New Service
+      </a>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alert alert-success" *ngIf="successMsg">✔ {{ successMsg }}</div>
+  <div class="alert alert-error"   *ngIf="errorMsg">✖ {{ errorMsg }}</div>
+
+  <!-- Loading -->
+  <div class="loading-wrap" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!loading && services.length === 0">
+    <div class="empty-icon">🏦</div>
+    <h3>No services created</h3>
+    <p>Create your first loan service for farmers.</p>
+  </div>
+
+ <!-- GRID -->
+<div class="cards-grid" *ngIf="!loading && services.length > 0">
+  <div class="card" *ngFor="let s of services">
+
+    <!-- Accent -->
+    <div class="card-accent"></div>
+
+    <!-- HEADER -->
+    <div class="card-header">
+      <div class="card-logo">
+        {{ s.nom.slice(0,2).toUpperCase() }}
+      </div>
+
+      <div class="card-title-block">
+        <h3 class="card-name">{{ s.nom }}</h3>
+        <span class="card-badge-active">● Active</span>
+      </div>
+    </div>
+
+    <!-- DESCRIPTION -->
+    <p class="card-desc">
+      {{ s.description | slice:0:130 }}
+      {{ s.description.length > 130 ? '...' : '' }}
+    </p>
+
+    <!-- STATS -->
+    <div class="card-stats">
+
+      <div class="stat">
+        <span class="stat-lbl">Amount</span>
+        <span class="stat-val">
+          {{ s.montantMin | number }} – {{ s.montantMax | number }} <small>DT</small>
+        </span>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="stat">
+        <span class="stat-lbl">Duration</span>
+        <span class="stat-val">
+          {{ s.dureeMaxMois }} <small>mois</small>
+        </span>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="stat">
+        <span class="stat-lbl">Interest</span>
+        <span class="stat-val green">
+          {{ s.tauxInteret }}<small>%</small>
+        </span>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="stat">
+        <span class="stat-lbl">Penalty</span>
+        <span class="stat-val amber">
+          {{ s.tauxPenalite }}<small>%</small>
+        </span>
+      </div>
+
+    </div>
+<!-- TABS -->
+  <div class="card-tabs">
+  <div class="tab-header">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab[s.id!] === 'eligibility'"
+      (click)="setTab(s.id, 'eligibility')">
+      Eligibility criteria
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab[s.id!] === 'documents'"
+      (click)="setTab(s.id, 'documents')">
+      Required documents
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab[s.id!] === 'delay'"
+      (click)="setTab(s.id, 'delay')">
+      Processing times
+    </button>
+  </div>
+
+  <div class="tab-content">
+    <div *ngIf="activeTab[s.id!] === 'eligibility'">
+      {{ s.criteresEligibilite || '—' }}
+    </div>
+    <div *ngIf="activeTab[s.id!] === 'documents'">
+      {{ s.documentsRequis || '—' }}
+    </div>
+    <div *ngIf="activeTab[s.id!] === 'delay'">
+      {{ s.delaiTraitement || '—' }}
+    </div>
+  </div>
+</div>
+    <!-- FOOTER -->
+    <div class="card-footer">
+
+      <span class="nb-demandes">
+        <span class="dot"></span>
+        {{ s.nombreDemandes || 0 }} request(s)
+      </span>
+
+      <div class="footer-btns">
+        <button class="btn-blue" (click)="editService(s.id)">
+          Edit
+        </button>
+        <button class="btn-red" (click)="confirmDelete(s.id)">
+          Delete
+        </button>
+         <button
+          class="btn-purple"
+          (click)="viewApplications(s.id)"
+          [disabled]="(s.nombreDemandes || 0) === 0">
+          Applications
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+<!-- Modal suppression -->
+<div class="modal-bg" *ngIf="deleteConfirmId !== null">
+  <div class="modal">
+    <div class="modal-ico">⚠️</div>
+    <h3>Confirm deletion</h3>
+    <p>This action is irreversible.</p>
+    <div class="modal-btns">
+      <button class="btn-ghost" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-red"   (click)="deleteService(deleteConfirmId!)">Delete</button>
+    </div>
+  </div>
+</div>
+</div>
+<app-footer></app-footer>
