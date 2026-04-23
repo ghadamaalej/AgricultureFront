@@ -1,68 +1,200 @@
-<div class="page-header">
-  <div class="back-row">
-    <button class="back-btn" (click)="back.emit()">
-      <i class="fas fa-arrow-left"></i> Retour
-    </button>
-    <div>
-      <h1 class="page-title">Campagnes de vaccination</h1>
-      <p class="page-sub">Toutes vos campagnes planifiées</p>
-    </div>
-  </div>
-</div>
+<div class="cal-page">
 
-<div *ngIf="loading" class="state-msg">
-  <i class="fas fa-spinner fa-spin"></i> Chargement…
-</div>
-
-<div *ngIf="error" class="state-msg error">
-  {{ error }}
-</div>
-
-<div class="empty-state" *ngIf="!loading && campaigns.length === 0 && !error">
-  <i class="fas fa-syringe"></i>
-  <p>Aucune campagne enregistrée. Planifiez votre première campagne !</p>
-</div>
-
-<div class="campaigns-grid" *ngIf="!loading && campaigns.length > 0">
-  <div class="campaign-card" *ngFor="let c of campaigns">
-
-    <div class="card-top">
-      <span class="espece-badge">{{ c.espece }}</span>
-      <span class="status-badge" [ngClass]="statusClass(c.status)">
-        {{ statusLabel(c.status) }}
-      </span>
-    </div>
-
-    <div class="card-info-grid">
-      <div class="ci">
-        <span class="ci-lbl">Date planifiée</span>
-        <span class="ci-val">{{ c.plannedDate | date:'dd/MM/yyyy' }}</span>
-      </div>
-
-      <div class="ci">
-        <span class="ci-lbl">Âge cible</span>
-        <span class="ci-val">{{ c.ageMin }} – {{ c.ageMax }} ans</span>
-      </div>
-
-      <div class="ci">
-        <span class="ci-lbl">Produit vaccin</span>
-        <span class="ci-val">{{ c.productName || ('ID #' + c.productId) }}</span>
-      </div>
-
-      <div class="ci">
-        <span class="ci-lbl">Dose</span>
-        <span class="ci-val">{{ c.dose }} unités</span>
-      </div>
-    </div>
-
-    <div class="card-actions">
-      <button
-        class="btn btn-success"
-        *ngIf="c.status !== 'COMPLETED'"
-        (click)="markDone(c.id)">
-        <i class="fas fa-check"></i> Vaccination done
+  <!-- ══ EN-TÊTE ══ -->
+  <div class="page-header">
+    <div class="back-row">
+      <button class="back-btn" (click)="back.emit()">
+        <i class="fas fa-arrow-left"></i> Retour
       </button>
+      <div>
+        <h1 class="page-title">Campagnes de vaccination</h1>
+        <p class="page-sub">Calendrier de vos campagnes planifiées</p>
+      </div>
     </div>
 
+    <!-- Badges stats -->
+    <div class="stats-row" *ngIf="!loading">
+      <div class="stat-chip planned">
+        <i class="fas fa-clock"></i>
+        <span>{{ totalPlanned }}</span> Planifiée{{ totalPlanned !== 1 ? 's' : '' }}
+      </div>
+      <div class="stat-chip progress">
+        <i class="fas fa-spinner"></i>
+        <span>{{ totalInProgress }}</span> En cours
+      </div>
+      <div class="stat-chip done">
+        <i class="fas fa-check-circle"></i>
+        <span>{{ totalDone }}</span> Terminée{{ totalDone !== 1 ? 's' : '' }}
+      </div>
+    </div>
   </div>
+
+  <!-- ══ LOADING / ERROR ══ -->
+  <div *ngIf="loading" class="state-msg">
+    <i class="fas fa-spinner fa-spin"></i> Chargement…
+  </div>
+  <div *ngIf="error" class="state-msg error">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  </div>
+
+  <!-- ══ CORPS : calendrier + panneau latéral ══ -->
+  <div class="cal-layout" *ngIf="!loading && !error">
+
+    <!-- ── Calendrier ── -->
+    <div class="calendar-card">
+
+      <!-- Navigation mois -->
+      <div class="cal-nav">
+        <button class="nav-btn" (click)="prevMonth()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div class="cal-month-title">
+          <span class="month-name">{{ MONTH_NAMES[currentMonth] }}</span>
+          <span class="month-year">{{ currentYear }}</span>
+          <span class="month-count" *ngIf="campaignsThisMonth.length > 0">
+            {{ campaignsThisMonth.length }} campagne{{ campaignsThisMonth.length > 1 ? 's' : '' }}
+          </span>
+        </div>
+
+        <div class="nav-right">
+          <button class="today-btn" (click)="goToToday()">Aujourd'hui</button>
+          <button class="nav-btn" (click)="nextMonth()">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Noms des jours -->
+      <div class="day-names">
+        <div class="day-name" *ngFor="let d of DAY_NAMES">{{ d }}</div>
+      </div>
+
+      <!-- Grille des jours -->
+      <div class="days-grid">
+        <div
+          *ngFor="let day of calendarDays"
+          class="day-cell"
+          [class.empty]="!day"
+          [class.today]="day && isToday(day)"
+          [class.selected]="day && selectedDay === day"
+          [class.has-events]="day && campaignsForDay(day).length > 0"
+          (click)="selectDay(day)">
+
+          <span class="day-num" *ngIf="day">{{ day }}</span>
+
+          <!-- Dots pour les campagnes -->
+          <div class="day-dots" *ngIf="day && campaignsForDay(day).length > 0">
+            <span
+              *ngFor="let c of campaignsForDay(day)"
+              class="dot"
+              [ngClass]="statusClass(c.status)"
+              [title]="c.espece + ' — ' + statusLabel(c.status)">
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Légende statuts -->
+      <div class="legend">
+        <div class="leg-item"><span class="dot st-planned"></span> Planifiée</div>
+        <div class="leg-item"><span class="dot st-progress"></span> En cours</div>
+        <div class="leg-item"><span class="dot st-done"></span> Terminée</div>
+      </div>
+    </div>
+
+    <!-- ── Panneau latéral ── -->
+    <div class="side-panel">
+
+      <!-- Aucun jour sélectionné -->
+      <div class="side-empty" *ngIf="!selectedDay">
+        <div class="side-empty-icon">
+          <i class="fas fa-mouse-pointer"></i>
+        </div>
+        <p>Cliquez sur un jour<br>pour voir les campagnes</p>
+
+        <!-- Liste des prochaines campagnes -->
+        <div class="upcoming" *ngIf="campaigns.length > 0">
+          <h4 class="upcoming-title">Prochaines campagnes</h4>
+          <div
+            class="upcoming-item"
+            *ngFor="let c of campaigns.slice(0, 5)"
+            (click)="currentYear = +c.plannedDate.slice(0,4);
+                     currentMonth = +c.plannedDate.slice(5,7) - 1;
+                     selectDay(+c.plannedDate.slice(8,10))">
+            <span class="dot" [ngClass]="statusClass(c.status)"></span>
+            <div class="upcoming-info">
+              <strong>{{ c.espece }}</strong>
+              <span>{{ c.plannedDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <i class="fas fa-chevron-right upcoming-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Aucune campagne du tout -->
+        <div class="no-campaigns" *ngIf="campaigns.length === 0">
+          <i class="fas fa-syringe"></i>
+          <p>Aucune campagne enregistrée.</p>
+        </div>
+      </div>
+
+      <!-- Jour sélectionné avec campagnes -->
+      <div class="side-content" *ngIf="selectedDay">
+        <div class="side-date">
+          <i class="fas fa-calendar-day"></i>
+          {{ selectedDay }} {{ MONTH_NAMES[currentMonth] }} {{ currentYear }}
+          <button class="close-sel" (click)="selectedDay = null; selectedCampaigns = []">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="no-day-campaigns" *ngIf="selectedCampaigns.length === 0">
+          <i class="fas fa-calendar-times"></i>
+          <p>Aucune campagne ce jour</p>
+        </div>
+
+        <div
+          class="campaign-detail-card"
+          *ngFor="let c of selectedCampaigns">
+
+          <div class="cdc-top">
+            <span class="espece-badge">🐄 {{ c.espece }}</span>
+            <span class="status-badge" [ngClass]="statusClass(c.status)">
+              <i class="fas" [ngClass]="'fa-' + statusIcon(c.status)"></i>
+              {{ statusLabel(c.status) }}
+            </span>
+          </div>
+
+          <div class="cdc-rows">
+            <div class="cdc-row">
+              <i class="fas fa-birthday-cake"></i>
+              <span>Âge cible : <strong>{{ c.ageMin }} – {{ c.ageMax }} ans</strong></span>
+            </div>
+            <div class="cdc-row">
+              <i class="fas fa-vial"></i>
+              <span>Vaccin : <strong>{{ c.productName || ('Produit #' + c.productId) }}</strong></span>
+            </div>
+            <div class="cdc-row">
+              <i class="fas fa-tint"></i>
+              <span>Dose : <strong>{{ c.dose }} unités / animal</strong></span>
+            </div>
+          </div>
+
+          <button
+            class="btn-vaccinate"
+            *ngIf="c.status !== 'COMPLETED'"
+            (click)="markDone(c.id)">
+            <i class="fas fa-check"></i> Marquer comme terminée
+          </button>
+
+          <div class="done-badge" *ngIf="c.status === 'COMPLETED'">
+            <i class="fas fa-check-circle"></i> Vaccination complétée
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>

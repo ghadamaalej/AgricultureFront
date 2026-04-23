@@ -22,3 +22,85 @@
 .btn-save{background:#6a1aa8;color:#fff;}
 .btn-save:hover{background:#55148a;}
 .btn-save:disabled{opacity:.6;cursor:not-allowed;}
+
+
+/* ─── Ajouter à campaign-form.component.css ─── */
+
+/* Section Google Calendar */
+.calendar-section {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: #f8f4ff;
+  border: 1px solid #e0d6f7;
+  border-radius: 10px;
+}
+
+.calendar-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #3d2e6e;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #7b2cbf;
+  cursor: pointer;
+}
+
+.toggle-icon img {
+  display: block;
+}
+
+.toggle-text {
+  font-size: 14px;
+}
+
+.toggle-hint {
+  font-size: 12px;
+  color: #6b5ea8;
+  margin-left: 28px;
+  font-style: italic;
+}
+
+/* Statut synchronisation */
+.calendar-status {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cs-syncing {
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cs-success {
+  background: #f0fdf4;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cs-error {
+  background: #fff7ed;
+  color: #d97706;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
