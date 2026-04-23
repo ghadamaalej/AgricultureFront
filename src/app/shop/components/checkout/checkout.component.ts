@@ -142,13 +142,32 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         this.error = error.message || 'Paiement echoue.';
         this.step = 'error';
         this.toast.error(this.error);
-      } else {
-        this.isConfirmingPayment = false;
-        this.step = 'success';
-        this.cartService.clear();
-        this.toast.success('Paiement effectue avec succes.');
-        setTimeout(() => this.success.emit(), 2000);
+        return;
       }
+
+      if (!this.orderId) {
+        this.isConfirmingPayment = false;
+        this.error = 'Commande introuvable apres paiement.';
+        this.step = 'error';
+        this.toast.error(this.error);
+        return;
+      }
+
+      this.paymentApi.confirmerPaiementCommande(this.orderId).subscribe({
+        next: () => {
+          this.isConfirmingPayment = false;
+          this.step = 'success';
+          this.cartService.clear();
+          this.toast.success('Paiement effectue avec succes.');
+          setTimeout(() => this.success.emit(), 2000);
+        },
+        error: (e) => {
+          this.isConfirmingPayment = false;
+          this.error = e.error?.error || e.error?.message || 'Paiement effectue mais statut commande non mis a jour.';
+          this.step = 'error';
+          this.toast.error(this.error);
+        }
+      });
     } catch (e: any) {
       this.isConfirmingPayment = false;
       this.error = e?.message || 'Erreur technique pendant la confirmation du paiement.';

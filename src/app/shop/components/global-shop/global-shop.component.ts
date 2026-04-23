@@ -44,6 +44,12 @@ export class GlobalShopComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+       this.loadShop();
+  }
+
+  private loadShop() {
+    this.loading = true;
+    this.error = '';
     this.api.getAllPublicShop().subscribe({
       next: p => { this.products = p; this.loading = false; },
       error: () => { this.loading = false; this.error = 'Impossible de charger la boutique.'; }
@@ -92,6 +98,8 @@ export class GlobalShopComponent implements OnInit {
   onPaymentSuccess() {
     this.showCheckout = false;
     this.selectedProduct = null;
+      this.aiResults = null;
+    this.loadShop();
   }
 
   vetName(p: InventoryProduct): string {

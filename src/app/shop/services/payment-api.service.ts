@@ -40,8 +40,6 @@ export interface CommandeResponse {
 
 @Injectable({ providedIn: 'root' })
 export class PaymentApiService {
-
-  // Les commandes sont gérées par Gestion-Inventaire (port 8088)
   private base = 'http://localhost:8088/inventaires/api/commandes';
 
   constructor(private http: HttpClient) {}
@@ -51,24 +49,26 @@ export class PaymentApiService {
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  /** Créer une commande et obtenir le clientSecret Stripe */
   creerCommande(request: CommandeRequest): Observable<CommandeResponse> {
-    return this.http.post<CommandeResponse>(
-      this.base, request, { headers: this.headers() }
-    );
+    return this.http.post<CommandeResponse>(this.base, request, { headers: this.headers() });
   }
 
-  /** Historique des commandes de l'agriculteur */
   getMesCommandes(agriculteurId: number): Observable<CommandeResponse[]> {
     return this.http.get<CommandeResponse[]>(
-      `${this.base}/agriculteur/${agriculteurId}`, { headers: this.headers() }
+      `${this.base}/agriculteur/${agriculteurId}`,
+      { headers: this.headers() }
     );
   }
 
-  /** Détail d'une commande */
   getCommande(id: number): Observable<CommandeResponse> {
-    return this.http.get<CommandeResponse>(
-      `${this.base}/${id}`, { headers: this.headers() }
+    return this.http.get<CommandeResponse>(`${this.base}/${id}`, { headers: this.headers() });
+  }
+
+  confirmerPaiementCommande(id: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.base}/${id}/confirmer-paiement`,
+      {},
+      { headers: this.headers() }
     );
   }
 }
