@@ -6,7 +6,11 @@ export interface UserSummary {
   id: number;
   username: string;
   email: string;
+   nom?: string;
+  prenom?: string;
+  region?: string;
 }
+
 
 export interface InventoryProduct {
   id: number;
