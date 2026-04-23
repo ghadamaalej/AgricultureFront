@@ -42,3 +42,9 @@
 .shop-nav.active { background: rgba(255,213,79,0.15) !important; }
 .shop-nav.active i,
 .shop-nav.active span { color: #ffd54f !important; }
+
+/* Boutique Vétérinaire nav (farmer) */
+.boutique-nav i { color: #ffd54f; }
+.boutique-nav.active { background: rgba(255,213,79,0.15) !important; }
+.boutique-nav.active i,
+.boutique-nav.active span { color: #ffd54f !important; }

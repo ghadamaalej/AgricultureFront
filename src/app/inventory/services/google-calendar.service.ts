@@ -21,7 +21,7 @@ export interface CalendarEvent {
 export class GoogleCalendarService {
 
   // ⚠️ Remplace par ton Client ID Google OAuth2
-  private CLIENT_ID = '.apps.googleusercontent.com';
+  private CLIENT_ID = '644098010516-unvbcuieq1ok2eivphlg0n8s2qbvepev.apps.googleusercontent.com';
   private SCOPES = 'https://www.googleapis.com/auth/calendar.events';
   private accessToken: string | null = null;
 
