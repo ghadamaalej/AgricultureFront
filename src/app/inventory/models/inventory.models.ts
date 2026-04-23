@@ -20,6 +20,10 @@ export interface InventoryProduct {
   isPerishable: boolean;
   currentQuantity: number;
   minThreshold: number;
+  dateAchat?: string | null;
+  datePeremption?: string | null;
+  prixAchat?: number | null;
+  note?: string | null;
   owner?: UserSummary;
   // Boutique fields (nullable)
   prixVente?: number | null;
@@ -99,6 +103,10 @@ export interface CreateProductRequest {
   isPerishable: boolean;
   currentQuantity: number;
   minThreshold: number;
+  dateAchat?: string | null;
+  datePeremption?: string | null;
+  prixAchat?: number | null;
+  note?: string | null;
 }
 
 export interface UpdateProductRequest extends CreateProductRequest {}
@@ -129,9 +137,16 @@ export interface AdjustStockRequest {
 
 export interface AddStockRequest {
   quantity: number;
+  // Prix achat fournisseur
   price: number;
   purchaseDate: string;
   expiryDate?: string | null;
+  note?: string | null;
+}
+
+export interface ConsumeBatchRequest {
+  quantity: number;
+  reason: Reason;
   note?: string | null;
 }
 export interface HealthRecord {

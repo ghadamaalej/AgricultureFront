@@ -33,6 +33,7 @@ export class ProductFormComponent implements OnInit {
       unit: new FormControl(this.product?.unit || '', Validators.required),
       isPerishable: new FormControl(this.product?.isPerishable ?? false),
       minThreshold: new FormControl(this.product?.minThreshold ?? 0, [Validators.required, Validators.min(0)]),
+      note: new FormControl(this.product?.note ?? ''),
     });
   }
 
@@ -60,6 +61,7 @@ export class ProductFormComponent implements OnInit {
       isPerishable: !!val.isPerishable,
       currentQuantity: this.isEdit ? Number(this.product?.currentQuantity ?? 0) : 0,
       minThreshold: Number(val.minThreshold ?? 0),
+      note: (val.note || '').trim() || null,
     };
 
     const obs = this.isEdit

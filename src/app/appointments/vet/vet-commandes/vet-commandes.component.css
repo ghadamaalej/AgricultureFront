@@ -1,0 +1,295 @@
+/* ── Page header ─────────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.pt {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #1a2e1a;
+  margin: 0 0 4px;
+}
+.pt i { color: #2d6a2d; margin-right: 8px; }
+.ps { color: #6b8c6b; font-size: .9rem; margin: 0; }
+
+.btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: #fff;
+  border: 1.5px solid #d8e8d8;
+  border-radius: 10px;
+  color: #2d6a2d;
+  font-size: .84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-refresh:hover  { background: #2d6a2d; color: #fff; border-color: #2d6a2d; }
+.btn-refresh:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Filter tabs ─────────────────────────────────────────────────── */
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.ftab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #d8e8d8;
+  background: #fff;
+  color: #6b8c6b;
+  font-size: .84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.ftab:hover            { border-color: #2d6a2d; color: #2d6a2d; }
+.ftab.active           { background: #2d6a2d; color: #fff; border-color: #2d6a2d; }
+.fbadge                { border-radius: 20px; padding: 1px 7px; font-size: .72rem; }
+.ftab.active .fbadge   { background: rgba(255,255,255,.25); }
+.ftab:not(.active) .fbadge { background: #f0f0f0; color: #555; }
+
+/* ── States ──────────────────────────────────────────────────────── */
+.sm      { text-align: center; padding: 40px; color: #6b8c6b; }
+.sm.err  { color: #c0392b; }
+.empty   { text-align: center; padding: 60px 20px; color: #6b8c6b; }
+.empty i { font-size: 3rem; margin-bottom: 12px; display: block; color: #b0c8b0; }
+
+/* ── Table ───────────────────────────────────────────────────────── */
+.table-wrapper {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid #e8f0e8;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  overflow-x: auto;
+}
+
+.commandes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .85rem;
+}
+
+.commandes-table thead tr {
+  background: #f4faf4;
+  border-bottom: 2px solid #e0eee0;
+}
+.commandes-table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #6b8c6b;
+  white-space: nowrap;
+}
+
+.commandes-table tbody tr {
+  border-bottom: 1px solid #f0f5f0;
+  transition: background .15s;
+}
+.commandes-table tbody tr:last-child { border-bottom: none; }
+.commandes-table tbody tr:hover      { background: #fafffe; }
+
+.commandes-table td {
+  padding: 13px 14px;
+  vertical-align: middle;
+  color: #2a3a2a;
+}
+
+.cmd-id   { font-weight: 700; color: #2d6a2d; font-size: .82rem; }
+.cmd-date { color: #7a9a7a; font-size: .82rem; white-space: nowrap; }
+.cmd-info { font-size: .87rem; }
+.cmd-total {
+  font-weight: 700;
+  color: #1a2e1a;
+  white-space: nowrap;
+}
+.cin { font-family: monospace; font-size: .82rem; color: #555; }
+
+.link-tel {
+  color: #2d6a2d;
+  text-decoration: none;
+  font-size: .84rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.link-tel:hover { text-decoration: underline; }
+
+.link-email {
+  color: #1a6aaa;
+  text-decoration: none;
+  font-size: .83rem;
+}
+.link-email:hover { text-decoration: underline; }
+
+/* ── Status badges ───────────────────────────────────────────────── */
+.status-badge {
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.st-wait   { background: #fff8e0; color: #a07000; }
+.st-ok     { background: #e8ffec; color: #1a7a2d; }
+.st-fail   { background: #fff0f0; color: #c0392b; }
+.st-refund { background: #f0f0ff; color: #5555cc; }
+
+/* ── Voir button ─────────────────────────────────────────────────── */
+.btn-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  background: #e8f5e8;
+  color: #2d6a2d;
+  border: 1.5px solid #b8d8b8;
+  border-radius: 8px;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.btn-detail:hover { background: #2d6a2d; color: #fff; border-color: #2d6a2d; }
+
+/* ── Modal overlay ───────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 16px 48px rgba(0,0,0,.22);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #eef4ee;
+  background: #f8fbf8;
+}
+.modal-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a2e1a;
+  margin: 0 0 4px;
+}
+.modal-header h3 i { color: #2d6a2d; margin-right: 6px; }
+.modal-sub { font-size: .8rem; color: #7a9a7a; margin: 0; }
+.modal-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  transition: color .2s;
+}
+.modal-close:hover { color: #333; }
+
+.modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ── Produits table (inside modal) ───────────────────────────────── */
+.produits-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .86rem;
+}
+.produits-table thead tr {
+  background: #f4faf4;
+  border-bottom: 2px solid #e0eee0;
+}
+.produits-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: .71rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: #6b8c6b;
+}
+.produits-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f5f0;
+  vertical-align: middle;
+  color: #2a3a2a;
+}
+.produits-table tbody tr:last-child td { border-bottom: none; }
+.produits-table tbody tr:hover { background: #fafffe; }
+
+.prod-nom  { font-weight: 600; }
+.prod-prix { color: #555; white-space: nowrap; }
+.prod-qty  { text-align: center; font-weight: 700; color: #2d6a2d; }
+.prod-sous { font-weight: 700; color: #1a2e1a; white-space: nowrap; }
+
+/* ── Modal footer ────────────────────────────────────────────────── */
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid #eef4ee;
+  background: #f8fbf8;
+}
+.total-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.total-label {
+  font-size: .8rem;
+  color: #6b8c6b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.total-val {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #2d6a2d;
+}
+.btn-close-modal {
+  background: #f0f0f0;
+  color: #555;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: .88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-close-modal:hover { background: #555; color: #fff; }

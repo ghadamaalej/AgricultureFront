@@ -7,7 +7,6 @@
     </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="modal-body">
-
       <div class="form-row">
         <div class="form-group full">
           <label>Nom du produit *</label>
@@ -18,7 +17,7 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Catégorie *</label>
+          <label>Categorie *</label>
           <select formControlName="categorie" [class.err]="invalid('categorie')">
             <option value="">-- choisir --</option>
             <option *ngFor="let c of categories" [value]="c">{{ catLabels[c] }}</option>
@@ -26,8 +25,8 @@
           <span class="err-msg" *ngIf="invalid('categorie')">Champ requis</span>
         </div>
         <div class="form-group">
-          <label>Unité *</label>
-          <input formControlName="unit" placeholder="kg, L, pièce…" [class.err]="invalid('unit')">
+          <label>Unite *</label>
+          <input formControlName="unit" placeholder="kg, L, piece..." [class.err]="invalid('unit')">
           <span class="err-msg" *ngIf="invalid('unit')">Champ requis</span>
         </div>
       </div>
@@ -36,19 +35,26 @@
         <div class="form-group full">
           <label>Seuil minimum *</label>
           <input type="number" formControlName="minThreshold" min="0" [class.err]="invalid('minThreshold')">
-          <span class="err-msg" *ngIf="invalid('minThreshold')">Valeur ≥ 0 requise</span>
+          <span class="err-msg" *ngIf="invalid('minThreshold')">Valeur >= 0 requise</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Note</label>
+          <input formControlName="note" placeholder="ex: Lot fournisseur initial">
         </div>
       </div>
 
       <div class="form-row">
         <label class="checkbox-label">
           <input type="checkbox" formControlName="isPerishable">
-          <span>Produit périssable</span>
+          <span>Produit perissable</span>
         </label>
       </div>
 
       <div class="form-hint">
-        Le stock, le prix et les dates de péremption se gèrent ensuite depuis l'interface <strong>Lots</strong>.
+        Le stock, le prix achat et les dates peuvent etre ensuite mis a jour depuis l'interface <strong>Lots</strong>.
       </div>
 
       <div class="err-msg" *ngIf="error" style="margin-top:8px;">{{ error }}</div>
@@ -57,7 +63,7 @@
         <button type="button" class="btn btn-cancel" (click)="cancelled.emit()">Annuler</button>
         <button type="submit" class="btn btn-save" [disabled]="loading">
           <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
-          {{ isEdit ? 'Enregistrer' : 'Créer' }}
+          {{ isEdit ? 'Enregistrer' : 'Creer' }}
         </button>
       </div>
 

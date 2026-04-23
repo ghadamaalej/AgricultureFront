@@ -35,7 +35,7 @@
       <ng-container *ngIf="isVet">
 
         <!-- Section RDV -->
-        <div class="nav-section-label">Rendez-vous</div>
+       
         <button class="ni" [class.active]="view==='list'" (click)="setView('list')">
           <i class="fas fa-calendar-alt"></i><span>Rendez-vous</span>
         </button>
@@ -47,22 +47,23 @@
         </button>
 
         <!-- Section Inventaire -->
-        <div class="nav-section-label">Inventaire</div>
+    
         <button class="ni" [class.active]="view==='products'" (click)="setView('products')">
           <i class="fas fa-boxes"></i><span>Mes produits</span>
         </button>
-        <button class="ni" [class.active]="view==='animals'" (click)="setView('animals')">
-          <i class="fas fa-paw"></i><span>Mes animaux</span>
-        </button>
+      
 
         <!-- Section Boutique -->
-        <div class="nav-section-label">Boutique</div>
+      
         <button class="ni shop-nav" [class.active]="view==='shop'" (click)="setView('shop')">
           <i class="fas fa-store"></i><span>Ma Boutique</span>
         </button>
+        <button class="ni" [class.active]="view==='commandes'" (click)="setView('commandes')">
+  <i class="fas fa-shopping-bag"></i><span>Commandes reçues</span>
+</button>
 
         <!-- Section Autres -->
-        <div class="nav-section-label">Autres</div>
+        
         <button class="ni" [class.active]="view==='profile'" (click)="setView('profile')">
           <i class="fas fa-user-circle"></i><span>Mon profil</span>
         </button>
@@ -116,9 +117,10 @@
       <app-health-records       *ngIf="view==='records'"></app-health-records>
       <!-- Inventaire -->
       <app-vet-product-list     *ngIf="view==='products'"></app-vet-product-list>
-      <app-animal-list          *ngIf="view==='animals'"></app-animal-list>
+     
       <!-- Boutique -->
       <app-vet-shop             *ngIf="view==='shop'" (goToInventory)="setView('products')"></app-vet-shop>
+      <app-vet-commandes *ngIf="view==='commandes'"></app-vet-commandes>
       <!-- Autres -->
       <app-vet-profile-form     *ngIf="view==='profile'"></app-vet-profile-form>
       <app-chat                 *ngIf="view==='messages'"></app-chat>

@@ -28,6 +28,7 @@ import { VetAvisComponent }              from './vet/vet-avis/vet-avis.component
 
 import { InventoryModule }               from '../inventory/inventory.module';
 import { ShopModule }                    from '../shop/shop.module';
+import { VetCommandesComponent } from './vet/vet-commandes/vet-commandes.component';
 
 @NgModule({
   declarations: [
@@ -47,6 +48,8 @@ import { ShopModule }                    from '../shop/shop.module';
     VetImageChatbotComponent,
     FarmerAvisComponent,
     VetAvisComponent,
+     VetCommandesComponent,
+    
   ],
   imports: [
     CommonModule,
