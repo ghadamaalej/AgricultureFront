@@ -12,7 +12,9 @@ import { AuthService } from '../../services/auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class InventoryApiService {
-  private base = 'http://localhost:8088/inventaires/api';
+  private readonly backendOrigin = 'http://localhost:8088';
+  private readonly contextPath = '/inventaires';
+  private base = `${this.backendOrigin}${this.contextPath}/api`;
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
@@ -178,6 +180,14 @@ export class InventoryApiService {
     ).pipe(map(r => r.data));
   }
 
+  resolveMediaUrl(rawUrl?: string | null): string {
+    const url = (rawUrl || '').trim();
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    if (url.startsWith(this.contextPath + '/')) return `${this.backendOrigin}${url}`;
+    const normalized = url.startsWith('/') ? url : `/${url}`;
+    return `${this.backendOrigin}${this.contextPath}${normalized}`;
+  }
 
 
 }

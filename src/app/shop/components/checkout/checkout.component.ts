@@ -25,6 +25,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   elements: any = null;
   paymentElement: any = null;
   clientSecret = '';
+  paymentElementReady = false;
+  isConfirmingPayment = false;
+  private readonly stripePublishableKey = 'pk_test_51TLlvW4WOLv4xB64Ky7TafIi9dKCCiIMQTAUEbIJVSvSm1hKGihxULANwuzAH0PHTVjHpwgqEVgTemv7hvhdq4Re00jXu8gGh1';
 
   constructor(
     public cartService: CartService,
@@ -45,16 +48,19 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     if (typeof Stripe === 'undefined') {
       const script = document.createElement('script');
       script.src = 'https://js.stripe.com/v3/';
-      script.onload = () => { this.stripe = Stripe('pk_test_YOUR_PUBLISHABLE_KEY'); };
+      script.onload = () => { this.stripe = Stripe(this.stripePublishableKey); };
       document.head.appendChild(script);
     } else {
-      this.stripe = Stripe('pk_test_YOUR_PUBLISHABLE_KEY');
+      this.stripe = Stripe(this.stripePublishableKey);
     }
   }
 
   proceedToPayment() {
     const userId = this.auth.getCurrentUserId();
-    if (!userId) { this.toast.error('Vous devez être connecté.'); return; }
+    if (!userId) {
+      this.toast.error('Vous devez etre connecte.');
+      return;
+    }
 
     const request: CommandeRequest = {
       agriculteurId: userId,
@@ -65,8 +71,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         vetNom: i.vetNom,
         vetRegion: i.vetRegion,
         prixUnitaire: i.product.prixVente ?? 0,
-        quantite: i.quantity,
-        sousTotal: i.sousTotal
+        quantite: i.quantity
       }))
     };
 
@@ -80,7 +85,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         setTimeout(() => this.mountStripeElement(), 300);
       },
       error: (e) => {
-        this.error = e.error?.message || 'Erreur lors de la création de la commande.';
+        this.error = e.error?.error || e.error?.message || 'Erreur lors de la creation de la commande.';
         this.step = 'error';
         this.toast.error(this.error);
       }
@@ -88,34 +93,67 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   mountStripeElement() {
-    if (!this.stripe || !this.clientSecret) return;
+    if (!this.stripe || !this.clientSecret) {
+      this.error = 'Stripe non initialise. Verifiez la cle publique.';
+      this.step = 'error';
+      this.toast.error(this.error);
+      return;
+    }
 
-    this.elements = this.stripe.elements({ clientSecret: this.clientSecret, locale: 'fr' });
-    this.paymentElement = this.elements.create('payment');
-    this.paymentElement.mount('#stripe-payment-element');
+    try {
+      this.paymentElementReady = false;
+      this.elements = this.stripe.elements({ clientSecret: this.clientSecret, locale: 'fr' });
+      this.paymentElement = this.elements.create('payment');
+      this.paymentElement.on('ready', () => { this.paymentElementReady = true; });
+      this.paymentElement.on('loaderror', (event: any) => {
+        this.paymentElementReady = false;
+        this.error = event?.error?.message || 'Impossible de charger le formulaire de paiement.';
+        this.step = 'error';
+        this.toast.error(this.error);
+      });
+      this.paymentElement.mount('#stripe-payment-element');
+    } catch (e: any) {
+      this.error = e?.message || 'Erreur lors de l initialisation du paiement.';
+      this.step = 'error';
+      this.toast.error(this.error);
+    }
   }
 
   async confirmPayment() {
-    if (!this.stripe || !this.elements) return;
-    this.step = 'processing';
-
-    const { error } = await this.stripe.confirmPayment({
-      elements: this.elements,
-      confirmParams: {
-        return_url: window.location.href
-      },
-      redirect: 'if_required'
-    });
-
-    if (error) {
-      this.error = error.message || 'Paiement échoué.';
+    if (!this.stripe || !this.elements || !this.paymentElementReady) {
+      this.error = 'Le formulaire de paiement n est pas pret.';
       this.step = 'error';
       this.toast.error(this.error);
-    } else {
-      this.step = 'success';
-      this.cartService.clear();
-      this.toast.success('Paiement effectué avec succès !');
-      setTimeout(() => this.success.emit(), 2000);
+      return;
+    }
+    this.isConfirmingPayment = true;
+
+    try {
+      const { error } = await this.stripe.confirmPayment({
+        elements: this.elements,
+        confirmParams: {
+          return_url: window.location.href
+        },
+        redirect: 'if_required'
+      });
+
+      if (error) {
+        this.isConfirmingPayment = false;
+        this.error = error.message || 'Paiement echoue.';
+        this.step = 'error';
+        this.toast.error(this.error);
+      } else {
+        this.isConfirmingPayment = false;
+        this.step = 'success';
+        this.cartService.clear();
+        this.toast.success('Paiement effectue avec succes.');
+        setTimeout(() => this.success.emit(), 2000);
+      }
+    } catch (e: any) {
+      this.isConfirmingPayment = false;
+      this.error = e?.message || 'Erreur technique pendant la confirmation du paiement.';
+      this.step = 'error';
+      this.toast.error(this.error);
     }
   }
 

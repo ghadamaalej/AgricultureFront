@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { InventoryProduct } from 'src/app/inventory/models/inventory.models';
 import { CartService } from '../../services/cart.service';
 import { ToastService } from 'src/app/core/services/toast.service';
+import { InventoryApiService } from 'src/app/inventory/services/inventory-api.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -19,7 +20,11 @@ export class ProductDetailComponent implements OnInit {
   quantity = 1;
   addedToCart = false;
 
-  constructor(public cartService: CartService, private toast: ToastService) {}
+  constructor(
+    public cartService: CartService,
+    private toast: ToastService,
+    private inventoryApi: InventoryApiService
+  ) {}
 
   ngOnInit() {
     const inCart = this.cartService.getQuantity(this.product.id);
@@ -41,7 +46,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   imageUrl(): string {
-    return this.product.imageUrl ? 'http://localhost:8088' + this.product.imageUrl : '';
+    return this.inventoryApi.resolveMediaUrl(this.product.imageUrl);
   }
 
   categoryLabel(c: string) {

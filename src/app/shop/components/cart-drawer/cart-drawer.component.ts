@@ -1,5 +1,6 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CartService, CartItem } from '../../services/cart.service';
+import { InventoryApiService } from 'src/app/inventory/services/inventory-api.service';
 
 @Component({
   selector: 'app-cart-drawer',
@@ -11,7 +12,10 @@ export class CartDrawerComponent {
   @Output() close      = new EventEmitter<void>();
   @Output() checkout   = new EventEmitter<void>();
 
-  constructor(public cartService: CartService) {}
+  constructor(
+    public cartService: CartService,
+    private inventoryApi: InventoryApiService
+  ) {}
 
   updateQty(item: CartItem, delta: number) {
     const newQty = item.quantity + delta;
@@ -32,7 +36,7 @@ export class CartDrawerComponent {
   }
 
   imageUrl(item: CartItem): string {
-    return item.product.imageUrl ? 'http://localhost:8088' + item.product.imageUrl : '';
+    return this.inventoryApi.resolveMediaUrl(item.product.imageUrl);
   }
 
   categoryEmoji(c: string): string {

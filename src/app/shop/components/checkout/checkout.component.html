@@ -86,9 +86,10 @@
       </div>
 
       <div class="checkout-footer">
-        <button class="btn-cancel" (click)="close.emit()">Annuler</button>
-        <button class="btn-pay" (click)="confirmPayment()">
-          <i class="fas fa-lock"></i> Confirmer le paiement
+        <button class="btn-cancel" (click)="close.emit()" [disabled]="isConfirmingPayment">Annuler</button>
+        <button class="btn-pay" (click)="confirmPayment()" [disabled]="!paymentElementReady || isConfirmingPayment">
+          <i class="fas" [ngClass]="isConfirmingPayment ? 'fa-spinner fa-spin' : 'fa-lock'"></i>
+          {{ isConfirmingPayment ? 'Confirmation...' : 'Confirmer le paiement' }}
         </button>
       </div>
     </ng-container>

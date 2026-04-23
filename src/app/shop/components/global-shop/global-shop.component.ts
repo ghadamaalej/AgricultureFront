@@ -103,7 +103,7 @@ export class GlobalShopComponent implements OnInit {
   }
 
   imageUrl(p: InventoryProduct): string {
-    return p.imageUrl ? 'http://localhost:8088' + p.imageUrl : '';
+    return this.api.resolveMediaUrl(p.imageUrl);
   }
 
   categoryLabel(c: string) {
