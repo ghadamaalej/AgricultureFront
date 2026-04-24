@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { InventoryApiService } from '../../services/inventory-api.service';
 import { InventoryProduct, Batch } from '../../models/inventory.models';
-import { ToastService } from '../../../shared/services/toast.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-product-list',
@@ -23,7 +23,7 @@ export class ProductListComponent implements OnInit {
   showAdjustModal = false;
   editingProduct: InventoryProduct | null = null;
 
-  constructor(private api: InventoryApiService, private toast: ToastService) {}
+  constructor(private api: InventoryApiService ) {}
 
   ngOnInit() { this.load(); }
 
@@ -47,21 +47,16 @@ export class ProductListComponent implements OnInit {
   openEdit(p: InventoryProduct) { this.editingProduct = p; this.showProductForm = true; }
 
   onProductSaved() {
+
     this.showProductForm = false;
+    this.editingProduct = null;
+   
     this.load();
   }
 
   delete(p: InventoryProduct) {
     if (!confirm(`Supprimer "${p.nom}" ?`)) return;
-    this.api.deleteProduct(p.id).subscribe({
-      next: () => {
-        this.toast.success(`Produit "${p.nom}" supprimé avec succès !`);
-        this.load();
-      },
-      error: (e) => {
-        this.toast.error(e.error?.message || 'Erreur lors de la suppression du produit.');
-      }
-    });
+    this.api.deleteProduct(p.id).subscribe({ next: () => this.load() });
   }
 
   openBatches(p: InventoryProduct) {
@@ -81,7 +76,7 @@ export class ProductListComponent implements OnInit {
   openConsume(p: InventoryProduct) { this.selectedProduct = { ...p }; this.showConsumeModal = true; }
   openAdjust(p: InventoryProduct)  { this.selectedProduct = { ...p }; this.showAdjustModal = true; }
 
-  onConsumed() {
+  onConsumed()  {
     this.showConsumeModal = false;
     this.load();
     if (this.view === 'batches' && this.selectedProduct) {
@@ -89,7 +84,7 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  onAdjusted() {
+  onAdjusted()  {
     this.showAdjustModal = false;
     this.load();
     if (this.view === 'batches' && this.selectedProduct) {
@@ -97,9 +92,11 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  onStockAdded() { this.load(); }
+  onStockAdded() {
+    this.load();
+  }
 
-  isLowStock(p: InventoryProduct) { return p.currentQuantity <= p.minThreshold; }
+  isLowStock(p: InventoryProduct) { return (p.currentQuantity ?? 0) <= (p.minThreshold ?? 0); }
 
   categoryLabel(c: string): string {
     const map: Record<string, string> = {
@@ -108,8 +105,8 @@ export class ProductListComponent implements OnInit {
     };
     return map[c] || c;
   }
+get currentStock(): number {
+  return this.batches.reduce((sum, batch) => sum + Number(batch.quantity || 0), 0);
+}
 
-  get currentStock(): number {
-    return this.batches.reduce((sum, batch) => sum + Number(batch.quantity || 0), 0);
-  }
 }

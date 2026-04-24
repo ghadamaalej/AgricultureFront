@@ -6,13 +6,15 @@ import {
   ApiResponse, InventoryProduct, Batch, StockMovement,
   Animal, AnimalDetail, VaccinationCampaign,
   CreateProductRequest, UpdateProductRequest, AddStockRequest,
-  CreateAnimalRequest, ConsumeStockRequest, AdjustStockRequest
+  CreateAnimalRequest, ConsumeStockRequest, UpdateAnimalRequest, AdjustStockRequest
 } from '../models/inventory.models';
 import { AuthService } from '../../services/auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class InventoryApiService {
-  private base = 'http://localhost:8088/inventaires/api';
+  private readonly backendOrigin = 'http://localhost:8088';
+  private readonly contextPath = '/inventaires';
+  private base = `${this.backendOrigin}${this.contextPath}/api`;
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
@@ -94,7 +96,7 @@ export class InventoryApiService {
     ).pipe(map(r => r.data));
   }
 
-  updateAnimal(id: number, req: CreateAnimalRequest): Observable<Animal> {
+  updateAnimal(id: number, req: UpdateAnimalRequest): Observable<Animal> {
     return this.http.put<ApiResponse<Animal>>(
       `${this.base}/animals/${id}`, req, { headers: this.headers() }
     ).pipe(map(r => r.data));
@@ -130,4 +132,62 @@ export class InventoryApiService {
     { headers: this.headers() }
   );
 }
+
+    // ── Boutique en ligne ─────────────────────────────────────────────
+
+  /** Agriculteur: boutique publique d'un vétérinaire */
+  getPublicShop(vetId: number): Observable<InventoryProduct[]> {
+    return this.http.get<ApiResponse<InventoryProduct[]>>(
+      `${this.base}/products/shop/vet/${vetId}`
+    ).pipe(map(r => r.data));
+  }
+
+  /** Vétérinaire: mettre à jour infos boutique (prix, desc, image, visible) */
+  updateBoutiqueInfo(id: number, data: {
+    prixVente?: number;
+    description?: string;
+    enBoutique?: boolean;
+  }, image?: File): Observable<InventoryProduct> {
+    const fd = new FormData();
+    if (data.prixVente   != null) fd.append('prixVente',   String(data.prixVente));
+    if (data.description != null) fd.append('description', data.description);
+    if (data.enBoutique  != null) fd.append('enBoutique',  String(data.enBoutique));
+    if (image) fd.append('image', image);
+    return this.http.put<ApiResponse<InventoryProduct>>(
+      `${this.base}/products/${id}/boutique`, fd, { headers: this.headers() }
+    ).pipe(map(r => r.data));
+  }
+
+  /** Vétérinaire: toggle enBoutique */
+  toggleBoutique(id: number): Observable<InventoryProduct> {
+    return this.http.patch<ApiResponse<InventoryProduct>>(
+      `${this.base}/products/${id}/boutique/toggle`, {}, { headers: this.headers() }
+    ).pipe(map(r => r.data));
+  }
+
+
+  /** Tous les produits de toutes les boutiques vétérinaires */
+  getAllPublicShop(): Observable<InventoryProduct[]> {
+    return this.http.get<ApiResponse<InventoryProduct[]>>(
+      `${this.base}/products/shop/all`
+    ).pipe(map(r => r.data));
+  }
+
+  /** Recherche IA Groq dans la boutique globale */
+  searchShopWithAI(query: string): Observable<InventoryProduct[]> {
+    return this.http.post<ApiResponse<InventoryProduct[]>>(
+      `${this.base}/products/shop/search-ai`, { query }
+    ).pipe(map(r => r.data));
+  }
+
+  resolveMediaUrl(rawUrl?: string | null): string {
+    const url = (rawUrl || '').trim();
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    if (url.startsWith(this.contextPath + '/')) return `${this.backendOrigin}${url}`;
+    const normalized = url.startsWith('/') ? url : `/${url}`;
+    return `${this.backendOrigin}${this.contextPath}${normalized}`;
+  }
+
+
 }

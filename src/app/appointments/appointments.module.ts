@@ -11,6 +11,7 @@ import { AppointmentsLayoutComponent }   from './layout/appointments-layout.comp
 import { VetListComponent }              from './farmer/vet-list/vet-list.component';
 import { VetProfileComponent }           from './farmer/vet-profile/vet-profile.component';
 import { MyAppointmentsComponent }       from './farmer/my-appointments/my-appointments.component';
+import { FarmerShopComponent }           from './farmer/farmer-shop/farmer-shop.component';
 
 // Vet
 import { VetDashboardComponent }         from './vet/dashboard/vet-dashboard.component';
@@ -25,12 +26,16 @@ import { VetImageChatbotComponent }      from './vet/vet-image-chatbot/vet-image
 import { FarmerAvisComponent }           from './farmer/farmer-avis/farmer-avis.component';
 import { VetAvisComponent }              from './vet/vet-avis/vet-avis.component';
 
+import { InventoryModule }               from '../inventory/inventory.module';
+import { ShopModule }                    from '../shop/shop.module';
+
 @NgModule({
   declarations: [
     AppointmentsLayoutComponent,
     VetListComponent,
     VetProfileComponent,
     MyAppointmentsComponent,
+    FarmerShopComponent,
     VetDashboardComponent,
     AvailabilityManagerComponent,
     VetProfileFormComponent,
@@ -40,15 +45,16 @@ import { VetAvisComponent }              from './vet/vet-avis/vet-avis.component
     VetAiChatbotComponent,
     FarmerImageChatbotComponent,
     VetImageChatbotComponent,
-     FarmerAvisComponent,
+    FarmerAvisComponent,
     VetAvisComponent,
-
   ],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     AppointmentsRoutingModule,
+    InventoryModule,
+    ShopModule,
   ]
 })
 export class AppointmentsModule {}

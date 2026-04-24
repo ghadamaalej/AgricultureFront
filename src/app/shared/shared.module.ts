@@ -20,7 +20,8 @@ import { RouterModule } from '@angular/router';
     NavbarComponent,
     FooterComponent,
     CommonModule,
+    RouterModule,
     FormsModule
   ]
 })
-export class SharedModule {}
+export class SharedModule { }

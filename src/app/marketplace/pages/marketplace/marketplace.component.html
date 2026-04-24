@@ -23,6 +23,11 @@
   </div>
 </section>
 
+<!-- ERROR BANNER -->
+<div *ngIf="loadError" style="background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:12px 20px;margin:16px auto;max-width:900px;border-radius:8px;text-align:center;">
+  ⚠️ {{ loadError }}
+</div>
+
 <!-- CONTENT -->
 <section class="section-padding">
   <div class="container marketplace-layout">
@@ -144,6 +149,19 @@
             <i class="fas fa-tasks"></i>
             <span>Manage Reservations</span>
           </a>
+
+          <a
+            *ngIf="isAgriculteur"
+            class="shortcut-btn"
+            routerLink="/marketplace/manage-rental-proposals">
+            <i class="fas fa-file-signature"></i>
+            <span>Manage Rental Proposals</span>
+          </a>
+
+          <a class="shortcut-btn" routerLink="/marketplace/my-rental-proposals">
+            <i class="fas fa-file-contract"></i>
+            <span>My Rental Proposals</span>
+          </a>
         </div>
       </div>
     </aside>
@@ -158,9 +176,22 @@
         </button>
       </div>
 
-      <div class="products-grid">
+      <!-- Loading state -->
+      <div *ngIf="isLoadingProducts || isLoadingRentals" style="text-align:center;padding:60px 20px;color:#888;">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+        <p style="margin-top:12px">Chargement des produits...</p>
+      </div>
+
+      <!-- Empty state (not loading, no error, no items) -->
+      <div *ngIf="!isLoadingProducts && !isLoadingRentals && !loadError && paginatedItems.length === 0"
+           style="text-align:center;padding:60px 20px;color:#888;">
+        <i class="fas fa-box-open fa-2x"></i>
+        <p style="margin-top:12px">Aucun produit trouvé.</p>
+      </div>
+
+      <div class="products-grid" *ngIf="!isLoadingProducts && !isLoadingRentals">
         <div class="product-card reveal"
-             *ngFor="let p of filteredItems; let i = index"
+             *ngFor="let p of paginatedItems; let i = index"
              [style.animation-delay]="(i * 0.08) + 's'">
 
           <div class="product-img">
@@ -219,6 +250,19 @@
 
             <h3 class="product-name">{{ p.name }}</h3>
 
+
+            <div class="product-rating" *ngIf="p.reviewCount > 0">
+              <span
+                class="star"
+                *ngFor="let filled of getStars(p.averageRating)"
+                [class.filled]="filled">
+                ★
+              </span>
+              <span class="review-count">
+                ({{ p.reviewCount }})
+              </span>
+            </div>
+
             <div class="product-price-row">
               <div class="product-price">
                 <span class="price-current">
@@ -238,6 +282,22 @@
           </div>
         </div>
       </div>
+
+      <div class="pagination" *ngIf="filteredItems.length > itemsPerPage">
+
+          <button (click)="prevPage()" [disabled]="currentPage === 1">
+            ⬅ Prev
+          </button>
+
+          <span>Page {{ currentPage }}</span>
+
+          <button
+            (click)="nextPage()"
+            [disabled]="currentPage * itemsPerPage >= filteredItems.length">
+            Next ➡
+          </button>
+
+        </div>
 
       <!-- FORM MODAL -->
       <div class="modal" *ngIf="showForm">
@@ -754,5 +814,8 @@
     </button>
   </div>
 </div>
-
+<app-recipe-chatbot
+  [currentUserId]="currentUserId"
+  [openReservationPopup]="openReservationPopup.bind(this)">
+</app-recipe-chatbot>
 <app-footer></app-footer>

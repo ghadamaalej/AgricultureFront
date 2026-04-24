@@ -1,0 +1,169 @@
+<div class="vet-shop-wrapper">
+
+  <!-- Header -->
+  <div class="shop-header">
+    <div class="shop-header-left">
+      <span class="shop-icon">🏪</span>
+      <div>
+        <h2 class="shop-title">Ma Boutique</h2>
+        <p class="shop-subtitle">Activez et configurez les produits visibles aux agriculteurs</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="shop-stats" *ngIf="!loading && products.length > 0">
+    <div class="stat-item">
+      <span class="stat-val">{{ products.length }}</span>
+      <span class="stat-label">Produits total</span>
+    </div>
+    <div class="stat-item highlight">
+      <span class="stat-val">{{ inBoutiqueCount }}</span>
+      <span class="stat-label">En boutique</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val">{{ inStockCount }}</span>
+      <span class="stat-label">En stock</span>
+    </div>
+  </div>
+
+  <!-- Loader / Error / Empty -->
+  <div *ngIf="loading" class="shop-loader"><div class="spinner"></div><p>Chargement...</p></div>
+  <div *ngIf="error && !loading" class="shop-error">{{ error }}</div>
+  <div *ngIf="!loading && products.length === 0" class="shop-empty">
+    <div class="empty-icon">📦</div>
+    <h3>Aucun produit dans votre inventaire</h3>
+    <p>Ajoutez d'abord des produits depuis <strong>Mes produits</strong>, puis revenez ici pour les activer dans votre boutique.</p>
+    <button class="btn-go-inventory" (click)="goToInventory.emit()">
+      <i class="fas fa-boxes"></i> Aller à Mes produits
+    </button>
+  </div>
+
+  <!-- Products table -->
+  <div class="shop-table-wrap" *ngIf="!loading && products.length > 0">
+    <table class="shop-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Catégorie</th>
+          <th>Stock</th>
+          <th>Prix vente</th>
+          <th>Boutique</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of products" [class.inactive-row]="!p.enBoutique">
+          <!-- Produit -->
+          <td class="td-product">
+            <div class="prod-thumb">
+              <img *ngIf="imageUrl(p)" [src]="imageUrl(p)" class="thumb-img">
+              <span *ngIf="!imageUrl(p)" class="thumb-emoji">{{ categoryEmoji(p.categorie) }}</span>
+            </div>
+            <div class="prod-info">
+              <span class="prod-name">{{ p.nom }}</span>
+              <span *ngIf="p.description" class="prod-desc">{{ p.description | slice:0:50 }}{{ p.description!.length > 50 ? '…' : '' }}</span>
+            </div>
+          </td>
+          <!-- Catégorie -->
+          <td><span class="cat-badge">{{ categoryLabel(p.categorie) }}</span></td>
+          <!-- Stock -->
+          <td>
+            <span class="stock-badge" [class.in-stock]="(p.currentQuantity ?? 0) > 0" [class.out-stock]="!((p.currentQuantity ?? 0) > 0)">
+              {{ (p.currentQuantity ?? 0) > 0 ? '✔ ' + p.currentQuantity + ' ' + p.unit : '✖ Rupture' }}
+            </span>
+          </td>
+          <!-- Prix -->
+          <td>
+            <span *ngIf="p.prixVente" class="price-badge">{{ p.prixVente | number:'1.2-2' }} DT</span>
+            <span *ngIf="!p.prixVente" class="price-missing">Non défini</span>
+          </td>
+          <!-- Toggle boutique -->
+          <td>
+            <button class="toggle-btn" [class.active]="p.enBoutique" (click)="toggle(p)"
+                    [title]="p.enBoutique ? 'Masquer de la boutique' : 'Afficher dans la boutique'">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              <span class="toggle-label">{{ p.enBoutique ? 'Visible' : 'Masqué' }}</span>
+            </button>
+          </td>
+          <!-- Actions -->
+          <td>
+            <button class="btn-edit-shop" (click)="openEdit(p)" title="Configurer boutique">
+              ✏️ Configurer
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal formulaire boutique -->
+  <div *ngIf="showForm" class="modal-overlay" (click)="cancelForm()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>Configurer la boutique</h3>
+          <p class="modal-subtitle">{{ editingProduct?.nom }}</p>
+        </div>
+        <button class="modal-close" (click)="cancelForm()">✕</button>
+      </div>
+
+      <form (ngSubmit)="submitForm()" class="modal-form">
+
+        <!-- Prix de vente -->
+        <div class="form-group">
+          <label>Prix de vente (DT) *</label>
+          <input type="number" min="0.01" step="0.01"
+                 [formControl]="$any(form.get('prixVente'))"
+                 placeholder="ex: 25.00"
+                 [class.error]="invalid('prixVente')">
+          <span *ngIf="invalid('prixVente')" class="err-msg">Prix requis et > 0</span>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label>Description / Notice</label>
+          <textarea [formControl]="$any(form.get('description'))"
+                    rows="4"
+                    placeholder="Posologie, conditions de conservation, informations importantes..."></textarea>
+        </div>
+
+        <!-- Photo -->
+        <div class="form-group">
+          <label>Photo du produit</label>
+          <div class="img-upload-area" (click)="imgInput.click()">
+            <img *ngIf="imagePreview" [src]="imagePreview" class="img-preview">
+            <div *ngIf="!imagePreview" class="img-placeholder">
+              <span class="upload-icon">📷</span>
+              <p>Cliquer pour ajouter une photo</p>
+              <small>JPG, PNG — max 10 MB</small>
+            </div>
+          </div>
+          <input #imgInput type="file" accept="image/*" style="display:none"
+                 (change)="onImageSelected($event)">
+          <button *ngIf="imagePreview" type="button" class="btn-remove-img" (click)="removeImage()">
+            ✕ Supprimer l'image
+          </button>
+        </div>
+
+        <!-- Visible -->
+        <div class="form-group form-group-inline">
+          <label class="toggle-label-form">Visible dans la boutique</label>
+          <label class="switch">
+            <input type="checkbox" [formControl]="$any(form.get('enBoutique'))">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
+          <button type="submit" class="btn-submit" [disabled]="formLoading">
+            <span *ngIf="formLoading" class="btn-spinner"></span>
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>

@@ -4,6 +4,7 @@ import { AppointmentsApiService } from '../../services/appointments-api.service'
 import { InventoryApiService } from '../../../inventory/services/inventory-api.service';
 import { VetUser, VetAvailability, TimeSlot } from '../../models/appointments.models';
 import { Animal } from '../../../inventory/models/inventory.models';
+import { ToastService } from 'src/app/core/services/toast.service';
 
 @Component({
   selector: 'app-vet-profile',
@@ -21,15 +22,14 @@ export class VetProfileComponent implements OnInit {
   animals: Animal[] = [];
   loading = true;
 
-  // Calendar
   calDate = new Date();
   calDays: { date: Date; valid: boolean }[] = [];
   selectedDate: string | null = null;
   slotsForDate: TimeSlot[] = [];
   selectedSlot: TimeSlot | null = null;
 
-  // Booking
   step: 'calendar' | 'slots' | 'form' | 'done' = 'calendar';
+  showShop = false;
   bookingLoading = false;
   bookingError = '';
 
@@ -43,7 +43,7 @@ export class VetProfileComponent implements OnInit {
 
   weekDays = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 
-  constructor(private api: AppointmentsApiService, private invApi: InventoryApiService) {}
+  constructor(private api: AppointmentsApiService, private invApi: InventoryApiService, private toast: ToastService) {}
 
   ngOnInit() {
     this.api.getVetAvailabilities(this.vet.id).subscribe({
@@ -58,7 +58,6 @@ export class VetProfileComponent implements OnInit {
     const firstDay = new Date(y, m, 1).getDay();
     const daysInMonth = new Date(y, m + 1, 0).getDate();
     const days: { date: Date; valid: boolean }[] = [];
-    // Pad start
     for (let i = 0; i < firstDay; i++) days.push({ date: new Date(0), valid: false });
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(y, m, d);
@@ -101,8 +100,16 @@ export class VetProfileComponent implements OnInit {
       timeSlotId: this.selectedSlot.id,
       motif: this.form.value.motif!,
     }).subscribe({
-      next: () => { this.bookingLoading = false; this.step = 'done'; },
-      error: e => { this.bookingLoading = false; this.bookingError = e.error?.message || 'Erreur lors de la réservation'; }
+      next: () => {
+        this.bookingLoading = false;
+        this.step = 'done';
+        this.toast.success('Rendez-vous réservé avec succès !');
+      },
+      error: e => {
+        this.bookingLoading = false;
+        this.bookingError = e.error?.message || 'Erreur lors de la réservation';
+        this.toast.error(this.bookingError);
+      }
     });
   }
 
@@ -120,7 +127,6 @@ export class VetProfileComponent implements OnInit {
     const t = new Date(); return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear();
   }
 
-  // ── Template helpers (no arrow functions in Angular templates) ──
   get vetInitials(): string {
     return ((this.vet?.prenom?.charAt(0) || '') + (this.vet?.nom?.charAt(0) || '')).toUpperCase();
   }
@@ -142,6 +148,8 @@ export class VetProfileComponent implements OnInit {
   }
 
   openConversation() { this.openChat.emit(this.vet.id); }
+  openShop()  { this.showShop = true; }
+  closeShop() { this.showShop = false; }
 
   get selectedDateDisplay(): string {
     if (!this.selectedDate) return '';

@@ -1,6 +1,4 @@
 <div class="dashboard-wrap" [class.sidebar-closed]="!sidebarOpen">
-
-  <!-- ===== SIDEBAR ===== -->
   <aside class="dash-sidebar">
     <div class="sidebar-logo">
       <img src="assets/images/logo.png" alt="GreenRoots" class="sidebar-logo-img">
@@ -29,10 +27,8 @@
     </a>
   </aside>
 
-  <!-- ===== MAIN ===== -->
   <div class="dash-main">
 
-    <!-- Top Bar -->
     <header class="dash-topbar">
       <div class="topbar-left">
         <button class="toggle-btn" (click)="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
@@ -67,7 +63,6 @@
       </div>
     </header>
 
-    <!-- ← Router outlet — chaque module s'affiche ici -->
     <div class="dash-content-wrap">
       <router-outlet></router-outlet>
     </div>

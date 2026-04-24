@@ -15,11 +15,10 @@ import { HelpRequestComponent }              from './components/help-request/hel
 import { ExpertAssistanceRequestsComponent } from './components/expert-assistance-requests/expert-assistance-requests.component';
 
 const routes: Routes = [
-  { path: '',         component: HomeComponent,       pathMatch: 'full' },
+  { path: '',         component: HomeComponent,  pathMatch: 'full' },
   { path: 'explorer', component: ExplorerHostComponent },
-  { path: 'auth',     component: AuthComponent, canActivate: [GuestGuard] },
+  { path: 'auth',     component: AuthComponent,  canActivate: [GuestGuard] },
 
-  // Feature modules (lazy-loaded)
   {
     path: 'forums',
     loadChildren: () => import('./forums/forums.module').then(m => m.ForumsModule)
@@ -42,7 +41,8 @@ const routes: Routes = [
   {
     path: 'loans',
     loadChildren: () => import('./loans/loans.module').then(m => m.LoansModule),
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    data: { roles: ['AGENT', 'AGRICULTEUR'] }   // ← merged from second file
   },
   {
     path: 'claims',
@@ -79,18 +79,18 @@ const routes: Routes = [
   },
 
   // Standalone page components declared in AppModule
-  { path: 'disease-predictor', component: DiseasePredictorComponent, canActivate: [AuthGuard] },
-  { path: 'help-request',      component: HelpRequestComponent,      canActivate: [AuthGuard] },
-  { path: 'expert/assistance-requests', component: ExpertAssistanceRequestsComponent, canActivate: [AuthGuard] },
+  { path: 'disease-predictor',          component: DiseasePredictorComponent,         canActivate: [AuthGuard] },
+  { path: 'help-request',               component: HelpRequestComponent,               canActivate: [AuthGuard] },
+  { path: 'expert/assistance-requests', component: ExpertAssistanceRequestsComponent,  canActivate: [AuthGuard] },
 
   // Role-home placeholders
-  { path: 'buyer/home',       component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['ACHETEUR'],              homeLabel: 'buyer home'          } },
-  { path: 'farmer/home',      component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['AGRICULTEUR'],           homeLabel: 'farmer home'         } },
-  { path: 'expert/home',      component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['EXPERT_AGRICOLE'],       homeLabel: 'agricultural expert home' } },
-  { path: 'transporter/home', component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['TRANSPORTEUR'],         homeLabel: 'transporter home'    } },
-  { path: 'veterinarian/home',component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['VETERINAIRE'],          homeLabel: 'veterinarian home'   } },
-  { path: 'agent/home',       component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['AGENT'],                homeLabel: 'agent home'          } },
-  { path: 'organizer/home',   component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['ORGANISATEUR_EVENEMENT'], homeLabel: 'event organizer home' } },
+  { path: 'buyer/home',        component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['ACHETEUR'],               homeLabel: 'buyer home'               } },
+  { path: 'farmer/home',       component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['AGRICULTEUR'],            homeLabel: 'farmer home'              } },
+  { path: 'expert/home',       component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['EXPERT_AGRICOLE'],        homeLabel: 'agricultural expert home' } },
+  { path: 'transporter/home',  component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['TRANSPORTEUR'],           homeLabel: 'transporter home'         } },
+  { path: 'veterinarian/home', component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['VETERINAIRE'],            homeLabel: 'veterinarian home'        } },
+  { path: 'agent/home',        component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['AGENT'],                  homeLabel: 'agent home'               } },
+  { path: 'organizer/home',    component: RoleHomePlaceholderComponent, canActivate: [AuthGuard], data: { roles: ['ORGANISATEUR_EVENEMENT'], homeLabel: 'event organizer home'     } },
 
   { path: 'register-extra', component: RegisterExtraComponent },
   { path: 'blog/:id',       component: BlogDetailComponent    },

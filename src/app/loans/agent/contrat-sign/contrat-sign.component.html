@@ -1,0 +1,121 @@
+<div class="contract-container" *ngIf="contrat; else loading">
+
+  <!-- HEADER -->
+  <div class="contract-header">
+    <h1>📄 Agricultural Loan Agreement</h1>
+    <p class="subtitle">Official Financing Document</p>
+  </div>
+
+  <!-- FARMER INFO -->
+  <div class="info-box">
+    <h3>👤 Borrower Information</h3>
+
+    <div class="info-grid">
+      <div>
+        <strong>First Name:</strong>
+        {{ contrat?.agriculteur?.nom || 'Not available' }}
+      </div>
+
+      <div>
+        <strong>Last Name:</strong>
+        {{ contrat?.agriculteur?.prenom || 'Not available' }}
+      </div>
+
+      <div>
+        <strong>National ID (CIN):</strong>
+        {{ contrat?.agriculteur?.cin || 'Not available' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTRACT DETAILS -->
+  <div class="contract-box">
+    <h3>📊 Contract Details</h3>
+
+    <div class="info-grid">
+      <div>
+        <strong>Loan Amount:</strong>
+        {{ contrat?.contrat?.montant }} TND
+      </div>
+
+      <div>
+        <strong>Creation Date:</strong>
+        {{ contrat?.contrat?.dateCreation | date:'yyyy-MM-dd' }}
+      </div>
+
+      <div>
+        <strong>Status:</strong>
+        <span class="status">
+          {{ contrat?.contrat?.statutContrat }}
+        </span>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- LOAN DETAILS -->
+    <div class="info-grid">
+
+      <div>
+        <strong>Interest Rate:</strong>
+        {{ contrat?.demande?.service?.tauxInteret || 0 }} %
+      </div>
+
+      <div>
+        <strong>Penalty Rate:</strong>
+        {{ contrat?.demande?.service?.tauxPenalite || 0 }} %
+      </div>
+
+      <div>
+        <strong>Duration:</strong>
+        {{ contrat?.demande?.dureeMois || 0 }} months
+      </div>
+
+      <div>
+        <strong>Requested Amount:</strong>
+        {{ contrat?.demande?.montantDemande || 0 }} TND
+      </div>
+
+      <div>
+        <strong>Monthly Payment:</strong>
+        {{
+          calculateMensualite(
+            contrat?.demande?.montantDemande || 0,
+            contrat?.demande?.service?.tauxInteret || 0,
+            contrat?.demande?.dureeMois || 1
+          ) | number:'1.2-2'
+        }} TND
+      </div>
+
+    </div>
+
+    <hr />
+
+    <p class="contract-text">
+      I, the undersigned, hereby acknowledge that I have carefully read and fully understood the terms and conditions of this agricultural loan agreement.
+      This contract constitutes a legally binding obligation between the borrower and the lending institution, in accordance with applicable laws and regulations.
+    </p>
+  </div>
+
+  <!-- SIGNATURE -->
+  <div class="signature-section">
+
+    <h3>✍ Digital Signature</h3>
+    <p class="hint">Please sign in the area below</p>
+
+    <div class="canvas-wrapper">
+      <canvas #canvas class="signature-canvas"></canvas>
+    </div>
+
+    <div class="buttons">
+      <button (click)="clear()" class="btn btn-clear">Clear</button>
+      <button (click)="save()" class="btn btn-save">Sign & Submit</button>
+    </div>
+
+  </div>
+
+</div>
+
+<ng-template #loading>
+  <div class="loading">Loading contract...</div>
+</ng-template>

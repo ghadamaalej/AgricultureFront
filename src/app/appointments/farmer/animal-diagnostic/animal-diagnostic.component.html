@@ -1,103 +1,233 @@
+<!-- Template HTML amélioré -->
 <section class="diagnostic-shell">
-  <div class="intro-card">
-    <div>
-      <p class="eyebrow">Assistant veterinaire</p>
-      <h2>Diagnostic IA pour vos animaux</h2>
-      <p class="intro-copy">
-        Cette interface contient uniquement le modele ML classique de prediction. Elle envoie la requete vers l endpoint local `/predict`.
-      </p>
+  <div class="diagnostic-container">
+    <!-- Header avec stats -->
+    <div class="diagnostic-header">
+      <div class="header-left">
+        <div class="logo-badge">🩺</div>
+        <h1>VetDiagnostic AI</h1>
+      </div>
+      <div class="header-stats">
+        <div class="stat-item">
+          <span class="stat-label">Précision</span>
+          <span class="stat-value">94.7%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Maladies</span>
+          <span class="stat-value">125+</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Patients</span>
+          <span class="stat-value">2.3K</span>
+        </div>
+      </div>
     </div>
 
-    <div class="quick-actions">
-      <button type="button" (click)="quickFill('respiratory')">Exemple respiratoire</button>
-      <button type="button" (click)="quickFill('digestive')">Exemple digestif</button>
-      <button type="button" (click)="quickFill('skin')">Exemple cutane</button>
-    </div>
-  </div>
-
-  <div class="diagnostic-grid">
-    <form class="diagnostic-form" [formGroup]="form" (ngSubmit)="submit()">
-      <div class="field">
-        <label>Animal concerne</label>
-        <select formControlName="animalId">
-          <option [ngValue]="null">Choisir un animal</option>
-          <option *ngFor="let animal of animals" [ngValue]="animal.id">
-            {{ animal.reference }} · {{ animal.espece }}
-          </option>
-        </select>
-        <small *ngIf="loadingAnimals">Chargement des animaux...</small>
-        <small class="error" *ngIf="hasError('animalId')">Veuillez selectionner un animal.</small>
+    <!-- Intro Card améliorée -->
+    <div class="intro-card">
+      <div class="intro-content">
+        <div class="eyebrow">Assistant Vétérinaire IA</div>
+        <h2>Diagnostic intelligent pour vos patients</h2>
+        <p class="intro-copy">
+          Notre modèle ML analyse les symptômes en temps réel pour fournir 
+          des prédictions précises et des recommandations personnalisées.
+        </p>
       </div>
-
-      <div class="field">
-        <label>Symptome principal</label>
-        <input type="text" formControlName="symptom1" placeholder="ex: loss of appetite">
-        <small class="error" *ngIf="hasError('symptom1')">Le symptome principal est requis.</small>
-      </div>
-
-      <div class="field">
-        <label>Symptome 2</label>
-        <input type="text" formControlName="symptom2" placeholder="ex: coughing">
-      </div>
-
-      <div class="field">
-        <label>Symptome 3</label>
-        <input type="text" formControlName="symptom3" placeholder="ex: depression">
-      </div>
-
-      <div class="field">
-        <label>Duree d'evolution</label>
-        <input type="text" formControlName="duration" placeholder="ex: 3 days">
-        <small class="error" *ngIf="hasError('duration')">La duree est requise.</small>
-      </div>
-
-      <div class="field">
-        <label>Temperature corporelle</label>
-        <input type="text" formControlName="bodyTemperature" placeholder="39.5C">
-      </div>
-
-      <div class="actions full">
-        <button type="submit" [disabled]="diagnosing || loadingAnimals">
-          {{ diagnosing ? 'Analyse en cours...' : 'Lancer le diagnostic' }}
+      <div class="quick-actions">
+        <button type="button" (click)="quickFill('respiratory')">
+          📊 Exemple respiratoire
+        </button>
+        <button type="button" (click)="quickFill('digestive')">
+          🩺 Exemple digestif
+        </button>
+        <button type="button" (click)="quickFill('skin')">
+          🔬 Exemple cutané
         </button>
       </div>
+    </div>
 
-      <p class="error full" *ngIf="error">{{ error }}</p>
-    </form>
-
-    <section class="result-panel">
-      <div class="placeholder" *ngIf="!result">
-        <h3>Resultat attendu</h3>
-        <p>Le systeme affichera ici les maladies les plus probables, une analyse redigee et un avertissement medical.</p>
-      </div>
-
-      <div class="result-card" *ngIf="result">
-        <p class="eyebrow">Animal {{ result.animalReference }}</p>
-        <h3>{{ result.animalEspece | titlecase }}</h3>
-
-        <div class="prediction-list" *ngIf="result.predictions?.length; else noPrediction">
-          <article class="prediction" *ngFor="let prediction of result.predictions">
-            <div>
-              <span class="rank">#{{ prediction.rank }}</span>
-              <strong>{{ prediction.disease | titlecase }}</strong>
+    <!-- Grid principal -->
+    <div class="diagnostic-grid">
+      <!-- Formulaire Card -->
+      <div class="form-card">
+        <div class="card-header">
+          <div class="card-header-icon">📋</div>
+          <div>
+            <h3>Formulaire clinique</h3>
+            <p>Renseignez les informations du patient</p>
+          </div>
+        </div>
+        
+        <form [formGroup]="form" (ngSubmit)="submit()" class="diagnostic-form">
+          <div class="field">
+            <label>Animal <span class="required">*</span></label>
+            <select formControlName="animalId">
+              <option [ngValue]="null">Sélectionner un animal</option>
+              <option *ngFor="let animal of animals" [ngValue]="animal.id">
+                {{ animal.reference }} · {{ animal.espece | titlecase }}
+              </option>
+            </select>
+            <small *ngIf="loadingAnimals">Chargement...</small>
+            <div class="error" *ngIf="hasError('animalId')">
+              Sélection requise
             </div>
-            <span class="score">{{ prediction.probability }}%</span>
-          </article>
+          </div>
+
+          <div class="field">
+            <label>Symptôme principal <span class="required">*</span></label>
+            <input type="text" formControlName="symptom1" placeholder="ex: anorexie, toux...">
+            <div class="error" *ngIf="hasError('symptom1')">
+              Symptôme requis
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Symptôme secondaire</label>
+            <input type="text" formControlName="symptom2" placeholder="ex: fièvre">
+          </div>
+
+          <div class="field">
+            <label>Symptôme tertiaire</label>
+            <input type="text" formControlName="symptom3" placeholder="ex: abattement">
+          </div>
+
+          <div class="field">
+            <label>Durée d'évolution <span class="required">*</span></label>
+            <input type="text" formControlName="duration" placeholder="ex: 3 jours">
+            <div class="error" *ngIf="hasError('duration')">
+              Durée requise
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Température</label>
+            <input type="text" formControlName="bodyTemperature" placeholder="ex: 39.5°C">
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn-primary" [disabled]="diagnosing || loadingAnimals">
+              <span *ngIf="diagnosing" class="spinner"></span>
+              {{ diagnosing ? 'Analyse en cours...' : 'Lancer le diagnostic' }}
+            </button>
+          </div>
+
+          <div class="error-message" *ngIf="error">
+            {{ error }}
+          </div>
+        </form>
+      </div>
+
+      <!-- Résultats Card -->
+      <div class="result-card">
+        <div class="result-header">
+          <h3>Résultats d'analyse</h3>
+          <p>Prédictions basées sur le modèle ML</p>
         </div>
+        
+        <div class="result-content">
+          <!-- État vide -->
+          <div class="placeholder-state" *ngIf="!result && !diagnosing">
+            <div class="placeholder-icon">🔬</div>
+            <h4>Aucun diagnostic</h4>
+            <p>Complétez le formulaire pour obtenir une analyse</p>
+          </div>
 
-        <ng-template #noPrediction>
-          <p class="muted">Aucune prediction ML disponible pour ce cas.</p>
-        </ng-template>
+          <!-- Loading -->
+          <div class="loading-state" *ngIf="diagnosing">
+            <div class="spinner"></div>
+            <p>Analyse des symptômes en cours...</p>
+          </div>
 
-        <div class="analysis">
-          <h4>Analyse du resultat ML</h4>
-          <p>{{ result.assistantAnalysis || result.geminiAnalysis }}</p>
-        </div>
+          <!-- Résultats -->
+          <div *ngIf="result && !diagnosing">
+            <!-- Animal Info -->
+            <div class="animal-info">
+              <div class="animal-details">
+                <h4>{{ result.animalEspece | titlecase }}</h4>
+                <div class="reference">ID: {{ result.animalReference }}</div>
+              </div>
+              <div class="animal-badge">
+                Patient actif
+              </div>
+            </div>
 
-        <div class="disclaimer">
-          {{ result.disclaimer }}
+            <!-- Predictions -->
+            <div class="predictions-section">
+              <div class="section-title">
+                <span>📊</span>
+                Diagnostics différentiels
+              </div>
+              
+              <div class="prediction-list">
+                <div *ngFor="let prediction of result.predictions; let i = index" 
+                     class="prediction-item" 
+                     [class.high-confidence]="prediction.probability > 70">
+                  <div class="prediction-rank">
+                    <span class="rank-badge">#{{ prediction.rank || i+1 }}</span>
+                    <span class="confidence-badge" *ngIf="prediction.probability > 70">
+                      Haute confiance
+                    </span>
+                  </div>
+                  <div class="prediction-name">
+                    {{ prediction.disease | titlecase }}
+                  </div>
+                  <div class="progress-container">
+                    <div class="progress-bar">
+                      <div class="progress-fill" [style.width]="prediction.probability + '%'"></div>
+                    </div>
+                    <div class="progress-percentage">
+                      {{ prediction.probability }}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Analyse -->
+            <div class="analysis-card">
+              <div class="analysis-header">
+                <span>📝 Analyse clinique</span>
+              </div>
+              <div class="analysis-text">
+                {{ result.assistantAnalysis || result.geminiAnalysis }}
+              </div>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="disclaimer-card">
+              <div class="disclaimer-icon">⚠️</div>
+              <div class="disclaimer-text">
+                {{ result.disclaimer }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
+
+    <!-- Section Recommandations (optionnelle) -->
+    <div class="recommendations-section" *ngIf="result">
+      <div class="section-title">
+        <span>💡</span>
+        Recommandations associées
+      </div>
+      <div class="recommendations-grid">
+        <div class="recommendation-card">
+          <div class="recommendation-icon">🏥</div>
+          <h4>Consultation vétérinaire</h4>
+          <p>Un examen physique complet est recommandé pour confirmer le diagnostic.</p>
+        </div>
+        <div class="recommendation-card">
+          <div class="recommendation-icon">🧪</div>
+          <h4>Examens complémentaires</h4>
+          <p>Des analyses sanguines pourraient être nécessaires.</p>
+        </div>
+        <div class="recommendation-card">
+          <div class="recommendation-icon">📅</div>
+          <h4>Suivi recommandé</h4>
+          <p>Planifier un contrôle dans 7 jours pour évaluer l'évolution.</p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>

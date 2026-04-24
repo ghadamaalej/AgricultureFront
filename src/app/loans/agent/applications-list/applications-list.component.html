@@ -1,0 +1,247 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-label">AGENT SPACE</p>
+    <h1 class="hero-title">Review Loan <span class="hero-accent">Applications</span></h1>
+    <p class="hero-sub">Consult submitted files, evaluate solvency scores and make decisions.</p>
+  </div>
+</div>
+
+<!-- SECTION -->
+<div class="section-header">
+  <div class="section-line"></div>
+  <span class="section-tag">APPLICATIONS</span>
+  <div class="section-line"></div>
+</div>
+
+<div class="app-wrap">
+  <div class="toolbar">
+    <input type="text" placeholder="Search by name, amount, duration..."
+      [(ngModel)]="searchText" class="search-bar" />
+    <select [(ngModel)]="selectedStatus" class="filter">
+      <option value="">All status</option>
+          <option value="APPROUVEE">Accepted</option>
+    <option value="REJETEE">Refused</option>
+    <option value="EN_ATTENTE">Pending</option>
+    </select>
+    <select [(ngModel)]="scoreFilter" class="filter">
+      <option value="">All scores</option>
+      <option value="HIGH">Score > 70</option>
+      <option value="MEDIUM">Score 50 - 70</option>
+      <option value="LOW">Score &lt; 50</option>
+    </select>
+  </div>
+
+  <div id="list">
+    <div class="app-card" *ngFor="let app of filteredApplications()">
+      <div class="card-header">
+        <div>
+          <div class="card-id">DEM-{{ app.id }}</div>
+          <div class="card-name">{{ app.farmerName }} {{ app.farmerLastName }}</div>
+          <div class="card-service">{{ app.serviceName || 'No service' }} · submitted on {{ app.dateDemande }}</div>
+        </div>
+        <span class="badge" [ngClass]="badgeClass(app.statut)">{{ badgeLabel(app.statut) }}</span>
+      </div>
+
+      <div class="card-stats">
+        <div>
+          <div class="stat-label">Amount</div>
+          <div class="stat-val">{{ app.montantDemande | number }} DT</div>
+        </div>
+        <div>
+          <div class="stat-label">Duration</div>
+          <div class="stat-val">{{ app.dureeMois }} months</div>
+        </div>
+        <div class="score-bar-wrap">
+          <div class="stat-label">
+            Solvency score
+            <span class="score-num" [style.color]="scoreColor(app.scoreSolvabilite)">
+              {{ app.scoreSolvabilite }}
+            </span>
+          </div>
+          <div class="score-bar-bg">
+            <div class="score-bar"
+                 [style.width.%]="app.scoreSolvabilite || 0"
+                 [style.background]="scoreColor(app.scoreSolvabilite)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+     <div class="card-actions">
+
+  <ng-container *ngIf="app.statut === 'REJETEE'">
+  </ng-container>
+
+  <ng-container *ngIf="app.loanCreated">
+    <span class="badge-done">✔ Loan Created</span>
+  </ng-container>
+
+  <ng-container *ngIf="app.statut !== 'REJETEE' && !app.loanCreated">
+
+    <!-- STEP 1 : pas de contrat -->
+    <ng-container *ngIf="!app.contratGenere">
+      <button class="btn btn-accept" (click)="acceptAndGenerateContract(app)">
+        Generate Contract
+      </button>
+
+      <button class="btn btn-refuse"
+              *ngIf="app.statut !== 'APPROUVEE'"
+              (click)="openRefuseModal(app.id)">
+        ✕ Refuse
+      </button>
+    </ng-container>
+
+    <!-- STEP 2 : contrat en attente signature -->
+    <ng-container *ngIf="app.contratGenere && !app.contratSigne">
+      <button class="btn btn-pending" disabled>
+        ⏳ Awaiting Farmer Signature...
+      </button>
+
+      <button class="btn btn-refresh"
+              (click)="refreshContratStatus(app)">
+        🔄 Refresh
+      </button>
+    </ng-container>
+
+    <!-- STEP 3 : prêt possible -->
+     <ng-container *ngIf="app.contratGenere && app.contratSigne && !app.loanCreated">
+      <button class="btn btn-pay"
+              (click)="openPretForm(app.id)">
+        💳 Pay & Create Loan
+      </button>
+    </ng-container>
+
+  </ng-container>
+
+
+  <button class="btn btn-docs" (click)="viewDocuments(app.id)">
+    📁 Documents
+  </button>
+
+</div>
+    </div>
+
+    <div class="empty" *ngIf="filteredApplications().length === 0">
+      No applications found.
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="getTotalPages() > 1">
+    <button (click)="currentPage = currentPage - 1" [disabled]="currentPage === 1">◀ Prev</button>
+    <span class="page-info">Page {{ currentPage }} / {{ getTotalPages() }}</span>
+    <button (click)="currentPage = currentPage + 1" [disabled]="currentPage === getTotalPages()">Next ▶</button>
+  </div>
+</div>
+
+<!-- ─── MODAL DOCUMENTS ─── -->
+<div class="modal-overlay" *ngIf="showDocumentsModal">
+  <div class="modal-box">
+    <h2 class="modal-title">Documents</h2>
+    <div class="docs-container">
+      <div class="docs-list">
+        <div *ngFor="let doc of documents"
+             class="doc-item"
+             [class.doc-item-active]="doc === selectedDocName"
+             (click)="openDocument(doc)">
+          <span class="doc-icon">📄</span>
+          <span class="doc-name">{{ doc }}</span>
+        </div>
+        <div *ngIf="documents.length === 0" class="doc-empty">No documents found.</div>
+      </div>
+      <div class="doc-preview">
+        <div class="preview-placeholder" *ngIf="!selectedFileType">
+          <span class="placeholder-icon">📂</span>
+          <p>Select a document to preview</p>
+        </div>
+        <img *ngIf="selectedFileType === 'image'" [src]="selectedFileUrl" class="preview-img" />
+        <div *ngIf="selectedFileType === 'pdf'" class="pdf-viewer-wrap">
+          <div class="pdf-controls">
+            <button class="zoom-btn" (click)="zoomOut()" [disabled]="zoomLevel <= 40">−</button>
+            <span class="zoom-label">{{ zoomLevel }}%</span>
+            <button class="zoom-btn" (click)="zoomIn()" [disabled]="zoomLevel >= 200">+</button>
+            <span class="page-info">{{ totalPages }} page{{ totalPages > 1 ? 's' : '' }}</span>
+          </div>
+          <div class="pdf-canvas-container" #pdfContainer></div>
+        </div>
+        <div class="preview-placeholder" *ngIf="selectedFileType === 'other'">
+          <span class="placeholder-icon">⚠️</span>
+          <p>Cannot preview this file type</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="close-btn" (click)="showDocumentsModal = false">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL REFUSE ─── -->
+<div class="modal-overlay" *ngIf="showRefuseModal">
+  <div class="refuse-modal-box">
+    <h2>Refuse Application</h2>
+    <textarea [(ngModel)]="refuseReason"
+              placeholder="Enter reason..."
+              class="refuse-textarea"></textarea>
+    <div class="modal-footer">
+      <button (click)="confirmRefuse()" class="btn btn-refuse">Confirm Refuse</button>
+      <button (click)="showRefuseModal = false" class="close-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL LOAN / PAYMENT ─── -->
+<div class="modal-overlay" *ngIf="showPretForm">
+  <div class="modal-box loan-modal">
+    <div class="modal-header">
+      <h2 class="modal-title">💳 Create Loan (Prêt)</h2>
+      <button class="modal-close" (click)="showPretForm = false">×</button>
+    </div>
+
+    <form [formGroup]="pretForm">
+      <div class="form-section">
+        <h3 class="section-subtitle">📋 Loan Details</h3>
+        <div class="form-group readonly-field">
+          <label>Interest rate (%)</label>
+          <input type="number" formControlName="tauxInteret" readonly />
+        </div>
+        <div class="form-group readonly-field">
+          <label>Total amount (DT)</label>
+          <input type="number" formControlName="montantTotal" readonly />
+        </div>
+        <div class="form-group readonly-field">
+          <label>Installments (months)</label>
+          <input type="number" formControlName="nbEcheances" readonly />
+        </div>
+        <div class="form-row">
+          <div class="form-group readonly-field">
+            <label>Start date</label>
+            <input type="date" formControlName="dateDebut" readonly />
+          </div>
+          <div class="form-group readonly-field">
+            <label>End date</label>
+            <input type="date" formControlName="dateFin" readonly />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="section-subtitle">💳 Payment Details</h3>
+        <div id="card-element" class="stripe-card"></div>
+        <div id="card-errors" class="stripe-errors"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="showPretForm = false">
+          Cancel
+        </button>
+        <button type="button" class="btn-pay"
+                [disabled]="isProcessing"
+                (click)="payAndCreateLoan()">
+          {{ isProcessing ? '⏳ Processing...' : '💳 Pay & Create Loan' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

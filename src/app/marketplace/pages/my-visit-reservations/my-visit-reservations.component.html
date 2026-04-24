@@ -125,6 +125,23 @@
           (click)="deleteReservation(reservation)">
           <i class="fas fa-trash"></i>
         </button>
+
+        <button
+          class="details-btn"
+          *ngIf="canProposeRental(reservation)"
+          (click)="openRentalProposalForm(reservation)">
+          <i class="fas fa-file-signature"></i>
+          Propose Rental
+        </button>
+
+        <button
+          class="details-btn"
+          *ngIf="(getStatus(reservation) === 'TERMINEE' || getStatus(reservation) === 'DONE') && hasProposalForReservation(reservation)"
+          disabled
+          style="opacity: 0.8; cursor: default;">
+          <i class="fas fa-check-circle"></i>
+          Rental Already Proposed
+        </button>
       </div>
     </div>
 
@@ -185,7 +202,106 @@
     </div>
 
   </div>
-</div>
+  </div>
+  </div>
+  <div class="proposal-overlay" *ngIf="proposalOpen" (click)="closeRentalProposalForm()">
+    <div class="proposal-modal" (click)="$event.stopPropagation()">
+
+    <div class="proposal-header">
+      <div>
+        <span class="proposal-badge">Rental Proposal</span>
+        <h3>Propose rental for {{ getProposalRentalName() }}</h3>
+        <p>
+          Choose a rental period in full months only.
+        </p>
+      </div>
+    </div>
+
+    <div class="proposal-rental-card">
+      <div class="proposal-rental-image">
+        <img [src]="getProposalRentalImage()" [alt]="getProposalRentalName()">
+      </div>
+
+      <div class="proposal-rental-info">
+        <h4>{{ getProposalRentalName() }}</h4>
+
+        <div class="proposal-mini-grid">
+          <div>
+            <strong>Available from</strong>
+            <span>{{ selectedProposalReservation?.location?.dateDebutLocation || '-' }}</span>
+          </div>
+
+          <div>
+            <strong>Available until</strong>
+            <span>{{ selectedProposalReservation?.location?.dateFinLocation || '-' }}</span>
+          </div>
+
+          <div>
+            <strong>Monthly price</strong>
+            <span>{{ selectedProposalReservation?.location?.prix || 0 }} DT</span>
+          </div>
+
+          <div>
+            <strong>{{ getProposalExtraLabel() }}</strong>
+            <span>{{ getProposalExtraValue() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="proposal-note">
+      <i class="fas fa-info-circle"></i>
+      The minimum duration is <strong>1 month</strong>, and the rental period must use <strong>whole months only</strong>.
+    </div>
+
+    <div class="proposal-form-grid">
+      <div class="visit-date-box">
+        <label>Start Date</label>
+        <input
+          type="date"
+          [(ngModel)]="proposalDateDebut"
+          [min]="selectedProposalReservation?.location?.dateDebutLocation"
+          [max]="selectedProposalReservation?.location?.dateFinLocation"
+          (change)="updateProposalSummary()">
+      </div>
+
+      <div class="visit-date-box">
+        <label>End Date</label>
+        <input
+          type="date"
+          [(ngModel)]="proposalDateFin"
+          [min]="proposalDateDebut || selectedProposalReservation?.location?.dateDebutLocation"
+          [max]="selectedProposalReservation?.location?.dateFinLocation"
+          (change)="updateProposalSummary()">
+      </div>
+    </div>
+
+    <div class="proposal-summary">
+      <div class="summary-card">
+        <span class="summary-label">Months</span>
+        <span class="summary-value">{{ proposalNbMois || 0 }}</span>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-label">Monthly Price</span>
+        <span class="summary-value">{{ selectedProposalReservation?.location?.prix || 0 }} DT</span>
+      </div>
+
+      <div class="summary-card total-card">
+        <span class="summary-label">Total</span>
+        <span class="summary-value">{{ proposalTotal || 0 }} DT</span>
+      </div>
+    </div>
+
+    <div class="booking-actions">
+      <button type="button" class="btn btn-secondary" (click)="closeRentalProposalForm()">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" (click)="confirmRentalProposal()">
+        Send Proposal
+      </button>
+    </div>
+  </div>
 </div>
 <div
   *ngIf="showReservationPopup"

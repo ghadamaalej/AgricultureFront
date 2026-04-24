@@ -77,6 +77,8 @@ export class ProductFormComponent implements OnInit {
       },
       error: (e) => {
         this.loading = false;
+        
+        
         this.error = e.error?.message || 'Erreur';
         this.toast.error(this.error);
       }

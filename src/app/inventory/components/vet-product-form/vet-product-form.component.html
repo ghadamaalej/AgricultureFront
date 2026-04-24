@@ -1,0 +1,112 @@
+<div class="modal-overlay" (click)="cancelled.emit()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-icon">{{ isEdit ? '✏️' : '➕' }}</div>
+        <div>
+          <h2>{{ isEdit ? 'Modifier le produit' : 'Ajouter un produit' }}</h2>
+          <p class="modal-subtitle">Stock clinique vétérinaire</p>
+        </div>
+      </div>
+      <button class="close-btn" (click)="cancelled.emit()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="modal-body">
+
+      <!-- Nom -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="fas fa-tag"></i> Nom du produit *
+        </label>
+        <input formControlName="nom"
+               placeholder="ex: Ivermectine 1%, Vaccin Fièvre Aphteuse..."
+               [class.err]="invalid('nom')">
+        <span class="err-msg" *ngIf="invalid('nom')">Le nom est requis</span>
+      </div>
+
+      <!-- Catégorie -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="fas fa-th-large"></i> Catégorie *
+        </label>
+        <div class="cat-grid">
+          <button
+            type="button"
+            *ngFor="let c of categories"
+            class="cat-btn"
+            [class.selected]="form.get('categorie')?.value === c"
+            [style.--cat-color]="catConfig[c].color"
+            (click)="form.get('categorie')?.setValue(c)">
+            <span class="cat-emoji">{{ catConfig[c].emoji }}</span>
+            <span class="cat-name">{{ catConfig[c].label }}</span>
+          </button>
+        </div>
+        <span class="err-msg" *ngIf="invalid('categorie')">Sélectionnez une catégorie</span>
+      </div>
+
+      <!-- Unité -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="fas fa-balance-scale"></i> Unité *
+        </label>
+        <input formControlName="unit"
+               placeholder="dose, flacon, ml, comprimé..."
+               [class.err]="invalid('unit')">
+        <!-- Suggestions selon catégorie -->
+        <div class="unit-chips" *ngIf="suggestedUnits.length > 0">
+          <span class="unit-chip-label">Suggestions :</span>
+          <button type="button" class="unit-chip"
+                  *ngFor="let u of suggestedUnits"
+                  [class.selected]="form.get('unit')?.value === u"
+                  (click)="selectUnit(u)">{{ u }}</button>
+        </div>
+        <span class="err-msg" *ngIf="invalid('unit')">L'unité est requise</span>
+      </div>
+
+      <!-- Seuil minimum -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="fas fa-exclamation-triangle"></i> Seuil d'alerte stock bas
+        </label>
+        <input type="number" formControlName="minThreshold" min="0"
+               [class.err]="invalid('minThreshold')">
+        <small class="form-hint">Une alerte s'affichera quand le stock descend en dessous de cette valeur</small>
+        <span class="err-msg" *ngIf="invalid('minThreshold')">Valeur ≥ 0 requise</span>
+      </div>
+
+      <!-- Périssable -->
+      <div class="form-group">
+        <label class="checkbox-row">
+          <div class="checkbox-wrap">
+            <input type="checkbox" formControlName="isPerishable" id="perishable">
+            <label for="perishable" class="checkbox-custom"></label>
+          </div>
+          <div class="checkbox-info">
+            <span class="checkbox-title">Produit périssable</span>
+            <span class="checkbox-sub">Vaccins, médicaments biologiques, produits avec date d'expiration</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="form-hint-box" *ngIf="!isEdit">
+        <i class="fas fa-info-circle"></i>
+        Le stock initial, les prix d'achat et les dates de péremption se gèrent depuis l'onglet <strong>Lots</strong> après création.
+      </div>
+
+      <div class="err-msg form-error" *ngIf="error">{{ error }}</div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="cancelled.emit()">Annuler</button>
+        <button type="submit" class="btn-save" [disabled]="loading">
+          <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+          <i class="fas fa-check" *ngIf="!loading"></i>
+          {{ isEdit ? 'Enregistrer' : 'Créer le produit' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

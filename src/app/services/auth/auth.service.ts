@@ -14,64 +14,64 @@ export type BackendRole =
     | 'AGENT';
 
 export interface LoginResponse {
-    token: string | null;
-    userId: number | null;
-    username: string | null;
-    email: string;
-    role: string | null;
-    statutCompte?: string | null;
+    token:                    string | null;
+    userId:                   number | null;
+    username:                 string | null;
+    email:                    string;
+    role:                     string | null;
+    statutCompte?:            string | null;
     emailVerificationStatus?: string | null;
     profileValidationStatus?: string | null;
-    nextStep?: 'LOGIN' | 'VERIFY_EMAIL' | 'SIGNUP_STEP2' | 'ACCESS_GRANTED' | string | null;
-    verificationRequired?: boolean;
-    message: string;
+    nextStep?:                'LOGIN' | 'VERIFY_EMAIL' | 'SIGNUP_STEP2' | 'ACCESS_GRANTED' | string | null;
+    verificationRequired?:    boolean;
+    message:                  string;
 }
 
 export interface SignupResponse {
-    userId: number | null;
-    email: string | null;
-    role: string | null;
-    statutCompte: string | null;
+    userId:                   number | null;
+    email:                    string | null;
+    role:                     string | null;
+    statutCompte:             string | null;
     emailVerificationStatus?: string | null;
     profileValidationStatus?: string | null;
-    nextStep?: 'VERIFY_EMAIL' | 'SIGNUP_STEP2' | 'LOGIN' | string | null;
-    message: string;
+    nextStep?:                'VERIFY_EMAIL' | 'SIGNUP_STEP2' | 'LOGIN' | string | null;
+    message:                  string;
 }
 
 export interface SignupStep1Request {
-    nom: string;
-    prenom: string;
-    email: string;
+    nom:        string;
+    prenom:     string;
+    email:      string;
     motDePasse: string;
-    role: string;
-    photo?: string | null;
+    role:       string;
+    photo?:     string | null;
     telephone?: string | null;
 }
 
 export interface SignupStep2Request {
-    photo?: string | null;
-    telephone?: string | null;
-    region?: string | null;
-    diplomeExpert?: string | null;
-    documentUrl?: string | null;
-    vehicule?: string | null;
-    capacite?: number | null;
-    agence?: string | null;
-    certificatTravail?: string | null;
-    organizationLogo?: string | null;
-    cin?: string | null;
-    adresseCabinet?: string | null;
+    photo?:               string | null;
+    telephone?:           string | null;
+    region?:              string | null;
+    diplomeExpert?:       string | null;
+    documentUrl?:         string | null;
+    vehicule?:            string | null;
+    capacite?:            number | null;
+    agence?:              string | null;
+    certificatTravail?:   string | null;
+    organizationLogo?:    string | null;
+    cin?:                 string | null;
+    adresseCabinet?:      string | null;
     presentationCarriere?: string | null;
-    telephoneCabinet?: string | null;
-    nomOrganisation?: string | null;
-    description?: string | null;
+    telephoneCabinet?:    string | null;
+    nomOrganisation?:     string | null;
+    description?:         string | null;
 }
 
 export interface AuthUser {
-    userId: number;
-    username: string;
-    email: string;
-    role: BackendRole;
+    userId:       number;
+    username:     string;
+    email:        string;
+    role:         BackendRole;
     statutCompte?: string;
 }
 
@@ -103,7 +103,6 @@ export class AuthService {
                     this.storeUser(user);
                     this.currentUserSubject.next(user);
 
-                    // Log user role and account status to console
                     console.log('🔐 User logged in successfully!');
                     console.log('👤 User Role:', response.role);
                     console.log('🆔 User ID:', response.userId);
@@ -141,8 +140,13 @@ export class AuthService {
         return !!this.getToken();
     }
 
+    // ← Defensive version from second file: guards against 'null'/'undefined' strings in localStorage
     getToken(): string | null {
-        return localStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken');
+        if (token && token !== 'null' && token !== 'undefined') {
+            return token;
+        }
+        return null;
     }
 
     getCurrentUser(): AuthUser | null {
@@ -176,29 +180,17 @@ export class AuthService {
     }
 
     getDefaultRouteForRole(role: BackendRole | null): string {
-        if (!role) {
-            return '/';
-        }
-
+        if (!role) return '/';
         switch (role) {
-            case 'ADMIN':
-                return '/dashboard';
-            case 'ACHETEUR':
-                return '/marketplace';
-            case 'AGRICULTEUR':
-                return '/delivery';
-            case 'EXPERT_AGRICOLE':
-                return '/expert/home';
-            case 'TRANSPORTEUR':
-                return '/transporter/home';
-            case 'VETERINAIRE':
-                return '/appointments';
-            case 'AGENT':
-                return '/agent/home';
-            case 'ORGANISATEUR_EVENEMENT':
-                return '/organizer/home';
-            default:
-                return '/';
+            case 'ADMIN':                  return '/dashboard';
+            case 'ACHETEUR':               return '/marketplace';
+            case 'AGRICULTEUR':            return '/delivery';
+            case 'EXPERT_AGRICOLE':        return '/expert/home';
+            case 'TRANSPORTEUR':           return '/transporter/home';
+            case 'VETERINAIRE':            return '/appointments';
+            case 'AGENT':                  return '/agent/home';
+            case 'ORGANISATEUR_EVENEMENT': return '/organizer/home';
+            default:                       return '/';
         }
     }
 

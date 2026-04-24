@@ -1,0 +1,396 @@
+<app-navbar></app-navbar>
+
+<section class="section-padding marketplace-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">Rental Proposals</span>
+      <h2 class="section-title">
+        Manage <span>Rental Proposals</span>
+      </h2>
+      <p class="section-desc">
+        Review incoming rental proposals, respond to clients, and prepare contracts.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="back-wrapper">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+  </div>
+</div>
+
+<div class="reservations-page">
+
+  <div class="page-header">
+    <div>
+      <h1>Manage Rental Proposals</h1>
+      <p>See all incoming proposals for your listings and take action quickly.</p>
+    </div>
+
+    <div class="notif-wrapper">
+      <button class="notif-btn" (click)="toggleNotifications()">
+        <i class="fas fa-bell"></i>
+        <span class="notif-badge" *ngIf="getPendingCount() > 0">{{ getPendingCount() }}</span>
+      </button>
+
+      <div class="notif-dropdown" *ngIf="notificationsOpen">
+        <div class="notif-title">Notifications</div>
+
+        <div *ngIf="getPendingCount() === 0" class="notif-empty">
+          No new rental proposals.
+        </div>
+
+        <div
+          class="notif-item"
+          *ngFor="let proposal of getPendingNotifications()">
+          <i class="fas fa-file-signature"></i>
+          <div>
+            <strong>New rental proposal</strong>
+            <p>{{ getProposalTitle(proposal) }} — {{ getProposalSubtitle(proposal) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-number">{{ getTotalProposals() }}</span>
+      <span class="stat-label">Total Proposals</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">{{ getProposalCountByStatus('EN_ATTENTE') }}</span>
+      <span class="stat-label">Pending</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">{{ getProposalCountByStatus('ACCEPTEE') }}</span>
+      <span class="stat-label">Accepted</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-number">{{ getProposalCountByStatus('REFUSEE') }}</span>
+      <span class="stat-label">Refused</span>
+    </div>
+  </div>
+
+  <div *ngIf="getTotalProposals() === 0" class="empty-box">
+    <i class="fas fa-file-signature" style="font-size: 34px; margin-bottom: 12px; color: #9ca3af;"></i>
+    <p>No rental proposals found yet.</p>
+  </div>
+
+  <div class="proposal-list" *ngIf="getTotalProposals() > 0">
+    <div class="proposal-card" *ngFor="let proposal of proposals">
+
+      <div class="proposal-image">
+        <img [src]="getProposalImage(proposal)" [alt]="getProposalTitle(proposal)">
+      </div>
+
+      <div class="proposal-body">
+        <div class="proposal-top">
+          <div class="proposal-main">
+            <div class="proposal-type-chip">
+              <i class="fas" [ngClass]="proposal?.location?.type === 'terrain' ? 'fa-map-marker-alt' : 'fa-tractor'"></i>
+              {{ getProposalTypeLabel(proposal) }}
+            </div>
+
+            <h2>{{ getProposalTitle(proposal) }}</h2>
+
+            <p class="proposal-subtitle">
+              {{ getProposalSubtitle(proposal) }}
+            </p>
+          </div>
+
+          <span class="status-badge" [ngClass]="getStatusClass(proposal.statut)">
+            {{ getStatusLabel(proposal.statut) }}
+          </span>
+        </div>
+
+        <div class="proposal-info-grid">
+          <div class="info-box">
+            <strong>Rental Start</strong>
+            <span>{{ proposal.dateDebut }}</span>
+          </div>
+
+          <div class="info-box">
+            <strong>Rental End</strong>
+            <span>{{ proposal.dateFin }}</span>
+          </div>
+
+          <div class="info-box">
+            <strong>Duration</strong>
+            <span>{{ proposal.nbMois }} month(s)</span>
+          </div>
+
+          <div class="info-box">
+            <strong>Monthly Price</strong>
+            <span>{{ proposal.montantMensuel }} DT</span>
+          </div>
+
+          <div class="info-box">
+            <strong>Total Amount</strong>
+            <span>{{ proposal.montantTotal }} DT</span>
+          </div>
+
+          <div class="info-box">
+            <strong>Created At</strong>
+            <span>{{ proposal.dateCreation | date:'mediumDate' }}</span>
+          </div>
+        </div>
+
+        <div class="proposal-refusal-box" *ngIf="proposal.messageRefus">
+          <strong>Refusal Reason</strong>
+          <p>{{ proposal.messageRefus }}</p>
+        </div>
+
+        <div class="proposal-actions tenant-profile-actions">
+        <button class="tenant-btn" (click)="viewTenantProfile(proposal)">
+            <i class="fas fa-user"></i>
+            View Tenant
+        </button>
+        </div>
+
+        <div class="proposal-actions" *ngIf="canManage(proposal)">
+          <button class="details-btn" (click)="acceptProposal(proposal)">
+            <i class="fas fa-check"></i>
+            Accept Proposal
+          </button>
+
+          <button class="cancel-btn" (click)="openRefuseModal(proposal)">
+            <i class="fas fa-times"></i>
+            Refuse Proposal
+          </button>
+        </div>
+
+        <div class="proposal-actions" *ngIf="canCompleteContractInfo(proposal)">
+          <button class="details-btn" (click)="openContractModal(proposal)">
+            <i class="fas fa-file-signature"></i>
+            Complete Contract Info
+          </button>
+        </div>
+
+        <div class="proposal-actions" *ngIf="proposal.statut === 'REFUSEE'">
+          <button class="state-btn refused-btn" disabled>
+            <i class="fas fa-ban"></i>
+            Refused
+          </button>
+        </div>
+
+        <div class="proposal-actions" *ngIf="proposal.statut === 'PRETE_POUR_CONTRAT'">
+          <button class="state-btn accepted-btn" disabled>
+            <i class="fas fa-check-circle"></i>
+            Contract Info Ready
+          </button>
+        </div>
+        <div class="proposal-actions" *ngIf="proposal.statut === 'FINALISEE'">
+          <button class="state-btn accepted-btn" disabled>
+            <i class="fas fa-check-circle"></i>
+            Finalized
+          </button>
+
+          <button class="details-btn" (click)="viewContract(proposal)">
+            <i class="fas fa-file-contract"></i>
+            View Contract
+          </button>
+
+          <button class="payment-btn" (click)="goToRentalPayment(proposal)">
+            <i class="fas fa-credit-card"></i>
+            View Payment
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="edit-overlay" *ngIf="refuseModalOpen" (click)="closeRefuseModal()">
+  <div class="edit-modal" (click)="$event.stopPropagation()">
+    <h3 class="booking-title">Refuse Rental Proposal</h3>
+
+    <div class="visit-date-box">
+      <label>Reason for refusal</label>
+      <textarea
+        [(ngModel)]="refusalMessage"
+        rows="5"
+        placeholder="Write the reason for refusing this proposal..."></textarea>
+    </div>
+
+    <div class="booking-actions">
+      <button type="button" class="btn btn-secondary" (click)="closeRefuseModal()">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-danger" (click)="confirmRefuseProposal()">
+        Confirm Refusal
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="edit-overlay" *ngIf="contractModalOpen" (click)="closeContractModal()">
+  <div class="edit-modal" (click)="$event.stopPropagation()">
+    <h3 class="booking-title">Complete Contract Info</h3>
+
+    <div class="visit-date-box">
+  <label>Farmer Signature</label>
+
+  <div class="signature-pad-wrapper">
+    <canvas #signatureCanvas class="signature-canvas"></canvas>
+  </div>
+
+  <div class="signature-actions">
+    <button type="button" class="btn btn-secondary" (click)="clearSignature()">
+      Clear Signature
+    </button>
+  </div>
+</div>
+
+    <div class="visit-date-box">
+      <label>Contract Clauses</label>
+      <textarea
+        rows="5"
+        [(ngModel)]="contractForm.clausesContrat"
+        placeholder="Optional clauses or conditions..."></textarea>
+    </div>
+
+    <div class="booking-actions">
+      <button type="button" class="btn btn-secondary" (click)="closeContractModal()">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" (click)="saveContractInfo()">
+        Save Contract Info
+      </button>
+    </div>
+  </div>
+</div>
+<div class="edit-overlay" *ngIf="tenantModalOpen" (click)="closeTenantModal()">
+  <div class="tenant-modal" (click)="$event.stopPropagation()">
+
+    <h3 class="booking-title">Tenant Information</h3>
+
+    <div *ngIf="tenantLoading" class="tenant-loading">
+      Loading tenant information...
+    </div>
+
+    <div *ngIf="!tenantLoading && selectedTenant" class="tenant-card">
+      <div class="tenant-avatar-wrapper">
+        <img [src]="getTenantPhoto(selectedTenant)" alt="Tenant photo" class="tenant-avatar">
+      </div>
+
+      <div class="tenant-info-grid">
+        <div class="tenant-info-box">
+          <strong>First Name</strong>
+          <span>{{ selectedTenant.prenom || '-' }}</span>
+        </div>
+
+        <div class="tenant-info-box">
+          <strong>Last Name</strong>
+          <span>{{ selectedTenant.nom || '-' }}</span>
+        </div>
+
+        <div class="tenant-info-box">
+          <strong>Email</strong>
+          <span>{{ selectedTenant.email || '-' }}</span>
+        </div>
+
+        <div class="tenant-info-box">
+          <strong>Phone</strong>
+          <span>{{ selectedTenant.telephone || '-' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="booking-actions">
+      <button type="button" class="btn btn-secondary" (click)="closeTenantModal()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+<div
+  *ngIf="showPopup"
+  (click)="closePopup()"
+  style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    padding: 20px;
+  ">
+
+  <div
+    (click)="$event.stopPropagation()"
+    [ngStyle]="{
+      width: '100%',
+      'max-width': '460px',
+      background: 'white',
+      'border-radius': '24px',
+      padding: '32px 28px',
+      'text-align': 'center',
+      'box-shadow': popupType === 'success'
+        ? '0 25px 60px rgba(76,175,80,0.18)'
+        : '0 25px 60px rgba(220,53,69,0.18)'
+    }">
+
+    <div
+      [ngStyle]="{
+        width: '72px',
+        height: '72px',
+        margin: '0 auto 18px',
+        'border-radius': '50%',
+        display: 'flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        background: popupType === 'success'
+          ? 'rgba(76,175,80,0.12)'
+          : 'rgba(220,53,69,0.12)'
+      }">
+
+      <i
+        class="fas"
+        [class.fa-check-circle]="popupType === 'success'"
+        [class.fa-times-circle]="popupType === 'error'"
+        [ngStyle]="{
+          'font-size': '34px',
+          color: popupType === 'success' ? '#4caf50' : '#dc3545'
+        }">
+      </i>
+    </div>
+
+    <h3
+      [ngStyle]="{
+        margin: '0 0 10px',
+        'font-size': '24px',
+        'font-weight': '700',
+        color: popupType === 'success' ? '#222' : '#b02a37'
+      }">
+      {{ popupTitle }}
+    </h3>
+
+    <p
+      [ngStyle]="{
+        margin: '0 0 24px',
+        'font-size': '15px',
+        'line-height': '1.6',
+        color: '#555'
+      }">
+      {{ popupMessage }}
+    </p>
+
+    <button
+      type="button"
+      class="btn"
+      [ngClass]="popupType === 'success' ? 'btn-primary' : 'btn-danger'"
+      (click)="closePopup()">
+      OK
+    </button>
+  </div>
+</div>
+
+<app-footer></app-footer>

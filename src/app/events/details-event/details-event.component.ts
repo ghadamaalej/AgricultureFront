@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Events } from 'src/app/models/events';
 import { EventService } from 'src/app/services/event/event.service';
 import { WeatherService, WeatherData, ForecastDay } from 'src/app/services/weather/weather.service';
 import { ReservationService, Reservation } from 'src/app/services/reservation/reservation.service';
-import { AuthService } from 'src/app/services/auth/auth.service'; // adapte le chemin
+import { AuthService } from 'src/app/services/auth/auth.service';
 
 @Component({
   selector: 'app-details-event',
@@ -19,7 +19,6 @@ export class DetailsEventComponent implements OnInit {
   weatherError = false;
   weatherInfo: string = '';
 
-  // ── Réservation ──────────────────────────────────────────
   nbPlaceReserve: number = 1;
   bookingLoading = false;
   bookingSuccess = false;
@@ -27,6 +26,7 @@ export class DetailsEventComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,               
     private eventService: EventService,
     private weatherService: WeatherService,
     private reservationService: ReservationService,
@@ -41,27 +41,17 @@ export class DetailsEventComponent implements OnInit {
     });
   }
 
-  // ── Météo (inchangé) ─────────────────────────────────────
   loadWeather(): void {
-    const location = `${this.event.lieu}, ${this.event.region}`;
-    const days = this.calculateDays();
     this.loadingWeather = true;
     this.weatherError = false;
+    this.weatherInfo = '';
+    this.forecastDays = [];
 
-    this.weatherService.getForecast(location, days).subscribe({
-      next: data => {
-        this.weatherData = data;
-        if (!data.region.includes(this.event.region)) {
-          this.weatherInfo = `📍 Showing weather for ${data.location}`;
-        }
-        this.filterForecast();
-        this.loadingWeather = false;
-      },
-      error: () => {
-        this.weatherError = true;
-        this.loadingWeather = false;
-      }
-    });
+    const exactLocation = `${this.event.lieu}, ${this.event.region}`;
+    const regionOnly = this.event.region;
+    const requestedDays = this.calculateDays();
+
+    this.tryLoadWeather(exactLocation, requestedDays, true, regionOnly);
   }
 
   calculateDays(): number {
@@ -82,6 +72,43 @@ export class DetailsEventComponent implements OnInit {
     if (!this.forecastDays.length) {
       this.weatherInfo = '⚠️ No forecast available for these dates';
     }
+  }
+
+  private tryLoadWeather(location: string, days: number, allowRetryWithShorterRange: boolean, fallbackLocation?: string): void {
+    this.weatherService.getForecast(location, days).subscribe({
+      next: data => {
+        this.weatherData = data;
+
+        const apiRegion = data.region || '';
+        if (this.event.region && !apiRegion.toLowerCase().includes(this.event.region.toLowerCase())) {
+          this.weatherInfo = `📍 Showing weather for ${data.location}`;
+        }
+
+        this.filterForecast();
+        this.loadingWeather = false;
+      },
+      error: () => {
+        if (allowRetryWithShorterRange && days > 3) {
+          this.tryLoadWeather(location, 3, false, fallbackLocation);
+          return;
+        }
+
+        if (fallbackLocation && fallbackLocation !== location) {
+          this.tryLoadWeather(fallbackLocation, Math.min(days, 3), false);
+          return;
+        }
+
+        this.weatherData = {
+          location: this.event.lieu,
+          region: this.event.region,
+          country: 'Tunisia',
+          forecast: []
+        };
+        this.weatherInfo = '⚠️ Weather forecast is temporarily unavailable for this event.';
+        this.weatherError = false;
+        this.loadingWeather = false;
+      }
+    });
   }
 
   get placesRestantes(): number {
@@ -122,15 +149,14 @@ export class DetailsEventComponent implements OnInit {
       nbPlaceReserve: this.nbPlaceReserve,
       montant: this.event.montant * this.nbPlaceReserve,
       evenement: { id: this.event.id },
-      id_user: currentUser.userId         
+      id_user: currentUser.userId
     };
 
     this.reservationService.addReservation(reservation).subscribe({
-      next: () => {
+      next: (res) => {                                        
         this.bookingLoading = false;
-        this.bookingSuccess = true;
-        this.event.inscrits = (this.event.inscrits || 0) + this.nbPlaceReserve;
-        this.nbPlaceReserve = 1;
+        this.router.navigate(['/events/payment', res.id]);  
+        window.scrollTo(0, 0);          
       },
       error: () => {
         this.bookingLoading = false;

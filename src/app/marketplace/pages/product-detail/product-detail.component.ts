@@ -7,6 +7,7 @@ import { ReservationVisiteService } from '../../../services/reservation/reservat
 import { CartService } from '../../../services/cart/cart.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { Location } from '@angular/common';
+import { ReviewService } from '../../../services/review/review.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -41,12 +42,16 @@ export class ProductDetailComponent implements OnInit {
 availabilities: any[] = [];
 filteredAvailabilities: any[] = [];
 
+blockedRentalRanges: { start: Date; end: Date }[] = [];
+
 reservationPopupType: 'success' | 'error' = 'success';
 
 selectedDay = '';
-selectedDate = '';
+selectedDate: Date | string | null = null;
 selectedSlot: any = null;
 isOwner = false;
+
+recommendations: any[] = [];
 
 daysOfWeek = [
   { label: 'Monday', value: 'LUNDI' },
@@ -71,6 +76,20 @@ daysOfWeek = [
   selectedQuantity = 1;
   cartTotal = 0;
 
+  reviews: any[] = [];
+  canReview = false;
+  alreadyReviewed = false;
+  reviewReason = '';
+  reviewRating = 5;
+  reviewComment = '';
+  submittingReview = false;
+  averageRating = 0;
+  reviewCount = 0;
+
+
+  myReview: any = null;
+  isEditingReview = false;
+
   constructor(
     private route: ActivatedRoute,
     private productService: ProductService,
@@ -79,6 +98,7 @@ daysOfWeek = [
     private reservationVisiteService: ReservationVisiteService,
     private cartService: CartService,
     private authService: AuthService,
+    private reviewService: ReviewService,
     private location: Location
   ) {}
 
@@ -115,6 +135,9 @@ extractId(url: string): number {
         quantity: p.quantiteDisponible
       };
       this.isOwner = p.idUser === this.currentUserId;
+
+      this.loadReviews();
+      this.loadReviewEligibility();
     });
   }
 
@@ -136,7 +159,7 @@ extractId(url: string): number {
       condition: r.etat,
       startDate: r.dateDebutLocation,
       endDate: r.dateFinLocation,
-      location: r.localisation,
+      localisation: r.localisation,
       surface: r.superficie,
       unit: r.uniteSuperficie,
       soilType: r.typeSol,
@@ -147,6 +170,10 @@ extractId(url: string): number {
     this.isOwner = r.idUser === this.currentUserId;
 
     this.loadAvailabilities(id);
+    this.loadBlockedRentalRanges(id);
+
+    this.loadReviews();
+    this.loadReviewEligibility();
   });
 }
 loadAvailabilities(locationId: number) {
@@ -227,6 +254,15 @@ confirmBooking() {
   );
   return;
 }
+
+if (this.isSelectedDateBlocked()) {
+  this.openReservationPopup(
+    'Reservation Failed',
+    'This date is unavailable because the rental is already finalized for that period.',
+    'error'
+  );
+  return;
+}
   if (!this.product?.id) {
     this.openReservationPopup(
       'Reservation Failed',
@@ -294,8 +330,13 @@ confirmBooking() {
         return;
       }
 
+      const formattedDate =
+        this.selectedDate instanceof Date
+          ? this.selectedDate.toLocaleDateString('en-CA')
+          : this.selectedDate;
+
       const reservation = {
-        dateVisite: this.selectedDate,
+        dateVisite: formattedDate,
         heureDebut: this.selectedSlot.heureDebut,
         heureFin: this.selectedSlot.heureFin
       };
@@ -472,6 +513,7 @@ addProductToCart(): void {
         this.showQuantitySelector = false;
         this.selectedQuantity = 1;
         this.cartTotal = 0;
+        this.loadAIRecommendations();
       },
       error: (err) => {
         this.openReservationPopup(
@@ -490,4 +532,299 @@ canBuyProduct(): boolean {
 goBack(): void {
   this.location.back();
 }
+
+
+loadBlockedRentalRanges(locationId: number): void {
+  this.reservationVisiteService.getProposalsByLocation(locationId).subscribe({
+    next: (proposals: any[]) => {
+      const finalized = (Array.isArray(proposals) ? proposals : []).filter((p: any) =>
+        p?.statut === 'CONTRAT_SIGNE' ||
+        p?.statut === 'SIGNEE' ||
+        p?.statut === 'FINALISEE' ||
+        p?.statut === 'FINALIZED'
+      );
+
+      this.blockedRentalRanges = finalized
+        .filter((p: any) => p.dateDebut && p.dateFin)
+        .map((p: any) => ({
+          start: new Date(p.dateDebut),
+          end: new Date(p.dateFin)
+        }));
+    },
+    error: (err) => {
+      console.error('Failed to load blocked rental ranges:', err);
+      this.blockedRentalRanges = [];
+    }
+  });
+}
+
+isDateBlocked = (date: Date | null): boolean => {
+  if (!date) return false;
+
+  const current = new Date(date);
+  current.setHours(0, 0, 0, 0);
+
+  for (const range of this.blockedRentalRanges) {
+    const start = new Date(range.start);
+    const end = new Date(range.end);
+
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
+    if (current >= start && current <= end) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+dateFilter = (date: Date | null): boolean => {
+  if (!date) return false;
+
+  const current = new Date(date);
+  current.setHours(0, 0, 0, 0);
+
+  if (this.product?.startDate) {
+    const min = new Date(this.product.startDate);
+    min.setHours(0, 0, 0, 0);
+    if (current < min) return false;
+  }
+
+  if (this.product?.endDate) {
+    const max = new Date(this.product.endDate);
+    max.setHours(0, 0, 0, 0);
+    if (current > max) return false;
+  }
+
+  return !this.isDateBlocked(current);
+};
+
+isSelectedDateBlocked(): boolean {
+  if (!this.selectedDate) return false;
+  return this.isDateBlocked(new Date(this.selectedDate));
+}
+
+loadAIRecommendations() {
+  if (!this.product?.id) return;
+
+  this.productService.getAIRecommendations(this.product.id)
+    .subscribe({
+      next: (res: any[]) => {
+        this.recommendations = res.map(p => ({
+          id: p.id,
+          name: p.nom,
+          price: p.prix,
+          image: p.photoProduit
+            ? 'http://localhost:8090/uploads/' + p.photoProduit
+            : 'assets/images/product1.jpg'
+        }));
+      },
+      error: err => {
+        console.error("AI reco failed", err);
+      }
+    });
+}
+
+
+goToProduct(id: number) {
+  window.location.href = `/marketplace/buy/${id}`;
+}
+
+
+loadReviews(): void {
+  if (!this.product?.id) return;
+
+  const targetType: 'PRODUCT' | 'RENTAL' = this.mode === 'buy' ? 'PRODUCT' : 'RENTAL';
+
+  this.reviewService.getReviews(targetType, this.product.id).subscribe({
+    next: (data) => {
+      this.reviews = Array.isArray(data) ? data : [];
+      this.reviewCount = this.reviews.length;
+
+      if (this.currentUserId) {
+        this.myReview = this.reviews.find(r => Number(r.userId) === Number(this.currentUserId)) || null;
+      } else {
+        this.myReview = null;
+      }
+
+      if (this.reviewCount > 0) {
+        const total = this.reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
+        this.averageRating = total / this.reviewCount;
+      } else {
+        this.averageRating = 0;
+      }
+    },
+    error: (err) => {
+      console.error('Failed to load reviews', err);
+      this.reviews = [];
+      this.myReview = null;
+      this.reviewCount = 0;
+      this.averageRating = 0;
+    }
+  });
+}
+
+loadReviewEligibility(): void {
+  if (!this.product?.id) return;
+
+  if (!this.currentUserId) {
+    this.canReview = false;
+    this.alreadyReviewed = false;
+    this.reviewReason = 'Please sign in first to review.';
+    return;
+  }
+
+  const targetType: 'PRODUCT' | 'RENTAL' = this.mode === 'buy' ? 'PRODUCT' : 'RENTAL';
+
+  this.reviewService.getEligibility(targetType, this.product.id, this.currentUserId).subscribe({
+    next: (res) => {
+      this.canReview = !!res?.canReview;
+      this.alreadyReviewed = !!res?.alreadyReviewed;
+      this.reviewReason = res?.reason || '';
+    },
+    error: (err) => {
+      console.error('Failed to load eligibility', err);
+      this.canReview = false;
+      this.alreadyReviewed = false;
+      this.reviewReason = 'Unable to verify review eligibility.';
+    }
+  });
+}
+
+submitReview(): void {
+  if (!this.currentUserId) {
+    this.openReservationPopup('Login Required', 'Please sign in first to review.', 'error');
+    return;
+  }
+
+  if (!this.canReview) {
+    this.openReservationPopup('Review Not Allowed', this.reviewReason || 'You are not allowed to review this item.', 'error');
+    return;
+  }
+
+  if (!this.reviewRating || this.reviewRating < 1 || this.reviewRating > 5) {
+    this.openReservationPopup('Review Error', 'Rating must be between 1 and 5.', 'error');
+    return;
+  }
+
+  const targetType: 'PRODUCT' | 'RENTAL' = this.mode === 'buy' ? 'PRODUCT' : 'RENTAL';
+
+  this.submittingReview = true;
+
+  this.reviewService.addReview(targetType, this.product.id, {
+    userId: this.currentUserId,
+    rating: this.reviewRating,
+    comment: (this.reviewComment || '').trim()
+  }).subscribe({
+    next: () => {
+      this.submittingReview = false;
+      this.reviewComment = '';
+      this.reviewRating = 5;
+
+      this.openReservationPopup('Review Added', 'Your review was added successfully.', 'success');
+      this.loadReviews();
+      this.loadReviewEligibility();
+    },
+    error: (err) => {
+      this.submittingReview = false;
+
+      const msg =
+        err?.error?.message ||
+        err?.error ||
+        'Failed to submit review.';
+
+      this.openReservationPopup('Review Error', String(msg), 'error');
+    }
+  });
+}
+
+getStarArray(count: number): number[] {
+  return Array(count).fill(0);
+}
+
+getRoundedAverageStars(): number[] {
+  return Array(Math.round(this.averageRating || 0)).fill(0);
+}
+
+setRating(star: number): void {
+  this.reviewRating = star;
+}
+
+getFiveStars(): number[] {
+  return [1, 2, 3, 4, 5];
+}
+
+showAllReviews = false;
+
+get visibleReviews(): any[] {
+  if (this.showAllReviews) {
+    return this.reviews;
+  }
+  return this.reviews.slice(0, 2);
+}
+
+startEditReview(): void {
+  if (!this.myReview) return;
+
+  this.isEditingReview = true;
+  this.reviewRating = Number(this.myReview.rating) || 5;
+  this.reviewComment = this.myReview.comment || '';
+}
+
+cancelEditReview(): void {
+  this.isEditingReview = false;
+  this.reviewRating = 5;
+  this.reviewComment = '';
+}
+
+updateMyReview(): void {
+  if (!this.currentUserId) {
+    this.openReservationPopup('Login Required', 'Please sign in first.', 'error');
+    return;
+  }
+
+  if (!this.myReview) {
+    this.openReservationPopup('Review Error', 'No review found to edit.', 'error');
+    return;
+  }
+
+  if (!this.reviewRating || this.reviewRating < 1 || this.reviewRating > 5) {
+    this.openReservationPopup('Review Error', 'Rating must be between 1 and 5.', 'error');
+    return;
+  }
+
+  const targetType: 'PRODUCT' | 'RENTAL' = this.mode === 'buy' ? 'PRODUCT' : 'RENTAL';
+
+  this.submittingReview = true;
+
+  this.reviewService.updateReview(targetType, this.product.id, {
+    userId: this.currentUserId,
+    rating: this.reviewRating,
+    comment: (this.reviewComment || '').trim()
+  }).subscribe({
+    next: () => {
+      this.submittingReview = false;
+      this.isEditingReview = false;
+      this.reviewComment = '';
+      this.reviewRating = 5;
+
+      this.openReservationPopup('Review Updated', 'Your review was updated successfully.', 'success');
+      this.loadReviews();
+      this.loadReviewEligibility();
+    },
+    error: (err) => {
+      this.submittingReview = false;
+
+      const msg =
+        err?.error?.message ||
+        err?.error ||
+        'Failed to update review.';
+
+      this.openReservationPopup('Review Error', String(msg), 'error');
+    }
+  });
+}
+
+
 }

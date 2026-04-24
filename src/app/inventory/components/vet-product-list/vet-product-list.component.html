@@ -1,0 +1,217 @@
+<!-- Sub-views -->
+<ng-container *ngIf="view === 'movements'">
+  <app-movement-list (back)="backToList()"></app-movement-list>
+</ng-container>
+
+<ng-container *ngIf="view === 'batches' && selectedProduct">
+  <app-batch-list
+    [product]="selectedProduct"
+    [batches]="batches"
+    (back)="backToList()"
+    (consume)="openConsume(selectedProduct!)"
+    (adjust)="openAdjust(selectedProduct!)"
+    (stockAdded)="onStockAdded()">
+  </app-batch-list>
+</ng-container>
+
+<!-- Main list view -->
+<ng-container *ngIf="view === 'list'">
+
+  <!-- Header -->
+  <div class="vpl-header">
+    <div class="vpl-header-left">
+      <div class="vpl-header-icon">🏥</div>
+      <div>
+        <h1 class="vpl-title">Stock Clinique</h1>
+        <p class="vpl-subtitle">Gérez vos produits et médicaments vétérinaires</p>
+      </div>
+    </div>
+    <div class="vpl-header-actions">
+      <button class="btn-movements" (click)="openMovements()">
+        <i class="fas fa-exchange-alt"></i> Mouvements
+      </button>
+      <button class="btn-add" (click)="openAdd()">
+        <i class="fas fa-plus"></i> Ajouter un produit
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="vpl-stats" *ngIf="!loading && products.length > 0">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#e8f5e9; color:#2e7d32">📦</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalProducts }}</span>
+        <span class="stat-lbl">Produits</span>
+      </div>
+    </div>
+    <div class="stat-card" [class.stat-warn]="lowStockCount > 0">
+      <div class="stat-icon" style="background:#fff8e1; color:#f57c00">⚠️</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ lowStockCount }}</span>
+        <span class="stat-lbl">Stock bas</span>
+      </div>
+    </div>
+    <div class="stat-card" [class.stat-danger]="outOfStockCount > 0">
+      <div class="stat-icon" style="background:#fbe9e7; color:#c62828">❌</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ outOfStockCount }}</span>
+        <span class="stat-lbl">En rupture</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#e3f2fd; color:#0277bd">🏪</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ products | enBoutiqueCount }}</span>
+        <span class="stat-lbl">En boutique</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="vpl-filters" *ngIf="!loading && products.length > 0">
+    <div class="search-wrap">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" [(ngModel)]="searchTerm"
+             placeholder="Rechercher un produit..." class="search-input">
+    </div>
+    <div class="cat-filter-btns">
+      <button *ngFor="let c of categories"
+              class="cat-filter-btn"
+              [class.active]="filterCat === c.value"
+              (click)="filterCat = c.value">
+        {{ c.emoji }} {{ c.label }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" class="vpl-loader">
+    <div class="spinner"></div>
+    <p>Chargement du stock clinique...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="vpl-error">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !error && products.length === 0" class="vpl-empty">
+    <div class="empty-icon">💉</div>
+    <h3>Aucun produit dans votre stock clinique</h3>
+    <p>Ajoutez vos vaccins, médicaments et aliments pour commencer à gérer votre inventaire vétérinaire.</p>
+    <button class="btn-add" (click)="openAdd()">
+      <i class="fas fa-plus"></i> Ajouter mon premier produit
+    </button>
+  </div>
+
+  <!-- No results after filter -->
+  <div *ngIf="!loading && products.length > 0 && filtered.length === 0" class="vpl-no-results">
+    <p>Aucun produit ne correspond à votre recherche.</p>
+    <button (click)="searchTerm=''; filterCat=''">Réinitialiser les filtres</button>
+  </div>
+
+  <!-- Products grid -->
+  <div class="vpl-grid" *ngIf="!loading && filtered.length > 0">
+    <div *ngFor="let p of filtered"
+         class="vpl-card"
+         [class.low-stock]="isLowStock(p) && (p.currentQuantity ?? 0) > 0"
+         [class.out-of-stock]="(p.currentQuantity ?? 0) === 0">
+
+      <!-- Top badges -->
+      <div class="vcard-top">
+        <div class="vcard-cat-badge"
+             [style.background]="'color-mix(in srgb, ' + catConfig[p.categorie].color + ' 12%, white)'"
+             [style.color]="catConfig[p.categorie].color">
+          {{ catConfig[p.categorie].emoji }} {{ catConfig[p.categorie].label }}
+        </div>
+        <div class="vcard-badges-right">
+          <span class="badge-low"  *ngIf="isLowStock(p) && (p.currentQuantity ?? 0) > 0">
+            <i class="fas fa-exclamation-triangle"></i> Stock bas
+          </span>
+          <span class="badge-out"  *ngIf="(p.currentQuantity ?? 0) === 0">
+            <i class="fas fa-times-circle"></i> Rupture
+          </span>
+          <span class="badge-shop" *ngIf="p.enBoutique">
+            🏪 Boutique
+          </span>
+        </div>
+      </div>
+
+      <!-- Product name -->
+      <h3 class="vcard-name">{{ p.nom }}</h3>
+
+      <!-- Stock info -->
+      <div class="vcard-stock">
+        <div class="stock-bar-wrap">
+          <div class="stock-label">Stock actuel</div>
+          <div class="stock-val">
+            <span class="stock-num">{{ p.currentQuantity ?? 0 }}</span>
+            <span class="stock-unit">{{ p.unit }}</span>
+          </div>
+        </div>
+        <div class="stock-bar">
+          <div class="stock-bar-fill"
+               [style.width]="getStockPercent(p) + '%'"
+               [class.low]="isLowStock(p)"
+               [class.ok]="!isLowStock(p)">
+          </div>
+        </div>
+        <div class="stock-threshold">
+          Seuil min : {{ p.minThreshold }} {{ p.unit }}
+        </div>
+      </div>
+
+      <!-- Meta -->
+      <div class="vcard-meta">
+        <span class="meta-tag">
+          <i class="fas" [ngClass]="p.isPerishable ? 'fa-clock' : 'fa-box'"></i>
+          {{ p.isPerishable ? 'Périssable' : 'Non périssable' }}
+        </span>
+        <span class="meta-tag" *ngIf="p.prixVente">
+          <i class="fas fa-tag"></i>
+          {{ p.prixVente | number:'1.2-2' }} DT
+        </span>
+      </div>
+
+      <!-- Actions -->
+      <div class="vcard-actions">
+        <button class="act-btn act-batches" (click)="openBatches(p)" title="Gérer les lots">
+          <i class="fas fa-layer-group"></i> Lots & Stock
+        </button>
+        <button class="act-btn act-edit" (click)="openEdit(p)" title="Modifier">
+          <i class="fas fa-pen"></i>
+        </button>
+        <button class="act-btn act-delete" (click)="delete(p)" title="Supprimer">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</ng-container>
+
+<!-- Modals -->
+<app-vet-product-form
+  *ngIf="showProductForm"
+  [product]="editingProduct"
+  (saved)="onProductSaved()"
+  (cancelled)="showProductForm = false">
+</app-vet-product-form>
+
+<app-consume-modal
+  *ngIf="showConsumeModal && selectedProduct"
+  [product]="selectedProduct"
+  [currentStock]="currentStock"
+  (consumed)="onConsumed()"
+  (cancelled)="showConsumeModal = false">
+</app-consume-modal>
+
+<app-adjust-modal
+  *ngIf="showAdjustModal && selectedProduct"
+  [product]="selectedProduct"
+  (adjusted)="onAdjusted()"
+  (cancelled)="showAdjustModal = false">
+</app-adjust-modal>

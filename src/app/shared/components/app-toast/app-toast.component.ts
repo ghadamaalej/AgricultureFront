@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ToastMessage, ToastService } from 'src/app/core/services/toast.service';
 
 @Component({
-  selector: 'app-toast',
+  selector: 'app-toast-stack',
   templateUrl: './app-toast.component.html',
   styleUrls: ['./app-toast.component.css']
 })

@@ -1,0 +1,141 @@
+<div class="fshop-wrapper">
+
+  <!-- Header -->
+  <div class="fshop-header">
+    <button class="btn-back" (click)="back.emit()">← Retour</button>
+    <div class="fshop-header-info">
+      <span class="fshop-icon">🏪</span>
+      <div>
+        <h2 class="fshop-title">Boutique — Dr. {{ vetName }}</h2>
+        <p class="fshop-subtitle">Produits vétérinaires disponibles</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader / Error -->
+  <div *ngIf="loading" class="fshop-loader"><div class="spinner"></div><p>Chargement...</p></div>
+  <div *ngIf="error && !loading" class="fshop-error">{{ error }}</div>
+
+  <!-- Empty boutique -->
+  <div *ngIf="!loading && !error && products.length === 0" class="fshop-empty">
+    <div class="empty-icon">🛒</div>
+    <h3>Aucun produit disponible</h3>
+    <p>Ce vétérinaire n'a pas encore ajouté de produits à sa boutique.</p>
+    <button class="btn-back-btn" (click)="back.emit()">← Retour au profil</button>
+  </div>
+
+  <ng-container *ngIf="!loading && !error && products.length > 0">
+
+    <!-- Summary -->
+    <div class="fshop-summary">
+      <div class="summary-badge en-stock"><span class="snum">{{ inStockCount }}</span><span class="slbl">En stock</span></div>
+      <div class="summary-badge rupture" *ngIf="outOfStockCount > 0"><span class="snum">{{ outOfStockCount }}</span><span class="slbl">Rupture</span></div>
+      <div class="summary-badge total"><span class="snum">{{ products.length }}</span><span class="slbl">Produits</span></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="fshop-filters">
+      <input type="text" [(ngModel)]="searchTerm" placeholder="🔍 Rechercher..." class="filter-search">
+      <select [(ngModel)]="selectedCategory" class="filter-cat">
+        <option *ngFor="let c of categories" [value]="c.value">{{ c.label }}</option>
+      </select>
+    </div>
+
+    <!-- No results -->
+    <div *ngIf="filtered.length === 0" class="no-results">
+      <p>Aucun produit ne correspond à votre recherche.</p>
+      <button (click)="searchTerm=''; selectedCategory=''">Réinitialiser</button>
+    </div>
+
+    <!-- Grid -->
+    <div class="fshop-grid">
+      <div *ngFor="let p of filtered"
+           class="fshop-card"
+           [class.out-of-stock]="!((p.currentQuantity ?? 0) > 0)"
+           (click)="openDetail(p)">
+
+        <div class="fcard-img-wrap">
+          <img *ngIf="imageUrl(p)" [src]="imageUrl(p)" [alt]="p.nom" class="fcard-img">
+          <div *ngIf="!imageUrl(p)" class="fcard-img-placeholder">{{ categoryEmoji(p.categorie) }}</div>
+          <div class="fcard-stock-badge" [class.in]="(p.currentQuantity ?? 0) > 0" [class.out]="!((p.currentQuantity ?? 0) > 0)">
+            {{ (p.currentQuantity ?? 0) > 0 ? '✔ En stock' : '✖ Rupture' }}
+          </div>
+        </div>
+
+        <div class="fcard-body">
+          <div class="fcard-cat">{{ categoryLabel(p.categorie) }}</div>
+          <h3 class="fcard-name">{{ p.nom }}</h3>
+          <p *ngIf="p.description" class="fcard-desc">{{ p.description | slice:0:80 }}{{ p.description.length > 80 ? '…' : '' }}</p>
+          <div class="fcard-footer">
+            <span class="fcard-price">{{ p.prixVente | number:'1.2-2' }} DT</span>
+            <span class="fcard-detail-btn">Voir détail →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>
+
+<!-- ── Product Detail Modal ── -->
+<div *ngIf="selectedProduct" class="detail-overlay" (click)="closeDetail()">
+  <div class="detail-modal" (click)="$event.stopPropagation()">
+    <button class="detail-close" (click)="closeDetail()">✕</button>
+
+    <!-- Image -->
+    <div class="detail-img-wrap">
+      <img *ngIf="imageUrl(selectedProduct)" [src]="imageUrl(selectedProduct)" [alt]="selectedProduct.nom" class="detail-img">
+      <div *ngIf="!imageUrl(selectedProduct)" class="detail-img-placeholder">{{ categoryEmoji(selectedProduct.categorie) }}</div>
+      <div class="detail-stock-badge" [class.in]="(selectedProduct.currentQuantity ?? 0) > 0" [class.out]="!((selectedProduct.currentQuantity ?? 0) > 0)">
+        {{ (selectedProduct.currentQuantity ?? 0) > 0 ? '✔ En stock' : '✖ Rupture de stock' }}
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="detail-body">
+      <div class="detail-cat">{{ categoryLabel(selectedProduct.categorie) }}</div>
+      <h2 class="detail-name">{{ selectedProduct.nom }}</h2>
+
+      <!-- Description -->
+      <div class="detail-section" *ngIf="selectedProduct.description">
+        <h4 class="detail-section-title">📋 Description / Notice</h4>
+        <p class="detail-desc">{{ selectedProduct.description }}</p>
+      </div>
+
+      <!-- Details grid -->
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-item-label">Unité</span>
+          <span class="detail-item-val">{{ selectedProduct.unit }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Stock disponible</span>
+          <span class="detail-item-val" [class.green]="(selectedProduct.currentQuantity ?? 0) > 0" [class.red]="!((selectedProduct.currentQuantity ?? 0) > 0)">
+            {{ (selectedProduct.currentQuantity ?? 0) > 0 ? selectedProduct.currentQuantity + ' ' + selectedProduct.unit : 'Rupture' }}
+          </span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Périssable</span>
+          <span class="detail-item-val">{{ selectedProduct.isPerishable ? 'Oui' : 'Non' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Catégorie</span>
+          <span class="detail-item-val">{{ categoryLabel(selectedProduct.categorie) }}</span>
+        </div>
+      </div>
+
+      <!-- Price -->
+      <div class="detail-price-box">
+        <span class="detail-price-label">Prix de vente</span>
+        <span class="detail-price-val">{{ selectedProduct.prixVente | number:'1.2-2' }} DT</span>
+        <span class="detail-price-unit">/ {{ selectedProduct.unit }}</span>
+      </div>
+
+      <p class="detail-contact-hint">
+        💬 Pour commander, contactez directement le vétérinaire via la messagerie.
+      </p>
+
+      <button class="detail-close-btn" (click)="closeDetail()">Fermer</button>
+    </div>
+  </div>
+</div>

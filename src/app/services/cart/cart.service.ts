@@ -11,6 +11,7 @@ export class CartService {
 
   private baseUrl = 'http://localhost:8089/Vente/api/panier';
   private commandeUrl = 'http://localhost:8089/Vente/api/commande';
+  private paymentUrl = 'http://localhost:8089/paiement/api/v1/stripe';
 
   cartCount$ = new BehaviorSubject<number>(0);
 
@@ -63,8 +64,10 @@ export class CartService {
     );
   }
 
-  checkout(userId: number): Observable<any> {
-    const params = new HttpParams().set('userId', userId);
+  checkout(userId: number, tip: number = 0): Observable<any> {
+    const params = new HttpParams()
+      .set('userId', userId)
+      .set('tip', tip);
 
     return this.http.post(`${this.commandeUrl}/checkout`, null, { params }).pipe(
       catchError(this.handleError)
@@ -98,4 +101,36 @@ export class CartService {
       'An error occurred while processing the cart.';
     return throwError(() => message);
   }
+
+  getRecommendations(userId: number) {
+    return this.http.get<string[]>(`http://localhost:8089/Vente/api/ai/recommend/${userId}`);
+  }
+
+
+  createStripeCheckoutSession(payload: {
+    commandeId: number;
+    userId: number;
+    montant: number;
+    productName: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.paymentUrl}/checkout-session`, payload);
+  }
+
+  getPaidOrders(userId: number) {
+    return this.http.get<any[]>(`http://localhost:8089/Vente/api/commande/history?userId=${userId}`);
+  }
+
+  getPaidOrderDetails(userId: number, commandeId: number) {
+    return this.http.get<any>(`http://localhost:8089/Vente/api/commande/${commandeId}/details?userId=${userId}`);
+  }
+
+
+  getPaidPaymentsByUser(userId: number): Observable<any[]> {
+  return this.http.get<any[]>(
+    `http://localhost:8089/paiement/api/v1/paiements/user/${userId}/paid`
+  ).pipe(
+    catchError(this.handleError)
+  );
+}
+  
 }

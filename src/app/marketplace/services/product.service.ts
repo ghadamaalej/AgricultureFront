@@ -12,8 +12,8 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   // 🔹 GET all products
-  getAll(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  getAll() {
+    return this.http.get('http://localhost:8089/Vente/produitAgricoles?size=100');
   }
 
   // 🔹 GET one product
@@ -35,7 +35,7 @@ export class ProductService {
   const formData = new FormData();
   formData.append('file', file);
 
-  return this.http.post('http://localhost:8090/upload', formData, {
+  return this.http.post('/upload', formData, {
     responseType: 'text'
   });
 }
@@ -45,4 +45,10 @@ export class ProductService {
       product
     );
   }
+
+  getAIRecommendations(productId: number) {
+  return this.http.get<any[]>(
+    `http://localhost:8089/Vente/api/ai/product-recommend/${productId}`
+  );
+}
 }

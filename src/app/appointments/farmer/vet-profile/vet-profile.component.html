@@ -50,6 +50,9 @@
         <button type="button" class="btn-confirm" (click)="openConversation()">
           <i class="fas fa-comments"></i> Envoyer un message
         </button>
+        <button type="button" class="btn-boutique" (click)="openShop()">
+          🏪 Voir la boutique
+        </button>
       </div>
 
       <!-- Bio -->
@@ -244,4 +247,13 @@
   <!-- ══════════════════════════════════════════════ -->
   <app-farmer-avis [vetId]="vet.id"></app-farmer-avis>
 
+</div>
+
+<!-- Boutique overlay -->
+<div *ngIf="showShop" class="shop-overlay">
+  <app-farmer-shop
+    [vetId]="vet.id"
+    [vetName]="vet.prenom + ' ' + vet.nom"
+    (back)="closeShop()"
+  ></app-farmer-shop>
 </div>

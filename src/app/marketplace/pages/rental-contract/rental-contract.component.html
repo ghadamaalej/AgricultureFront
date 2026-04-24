@@ -1,0 +1,226 @@
+<app-navbar *ngIf="!fromAdmin"></app-navbar>
+
+<section class="contract-page" [class.admin-contract-view]="fromAdmin">
+  <div class="container">
+
+    <div class="contract-toolbar no-print">
+  <button class="back-btn" (click)="goBack()">
+    <i class="fas fa-arrow-left"></i>
+    Back
+  </button>
+
+  <div class="document-actions">
+    <button class="doc-action-btn" (click)="printContract()">
+      <i class="fas fa-print"></i>
+      Print
+    </button>
+
+    <button class="doc-action-btn danger" (click)="exportContract()" [disabled]="exportingPdf">
+      <i class="fas fa-file-pdf"></i>
+      {{ exportingPdf ? 'Exporting...' : 'Export PDF' }}
+    </button>
+  </div>
+</div>
+
+    <div *ngIf="loading" class="empty-box">
+      Loading contract...
+    </div>
+
+    <div *ngIf="errorMessage && !proposal" class="empty-box">
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="proposal && !loading && !errorMessage" #contractContent class="contract-wrapper tunisian-contract">
+
+      <div class="contract-header classic-header">
+        <h1>CONTRAT DE LOCATION</h1>
+      </div>
+
+      <div class="contract-intro">
+        <p><strong>Entre les soussignés :</strong></p>
+      </div>
+
+      <div class="contract-section">
+        <div class="party-grid">
+
+            <div class="party-block">
+            <p><strong>1) Le Propriétaire</strong></p>
+            <p>
+                Nom et prénom :
+                <strong>{{ getFullName(agriculteur) }}</strong>
+            </p>
+            <p>
+                CIN :
+                <strong>{{ agriculteur?.cin || '-' }}</strong>
+            </p>
+            <p>
+                Téléphone :
+                <strong>{{ agriculteur?.telephone || '-' }}</strong>
+            </p>
+            <p>
+                Email :
+                <strong>{{ agriculteur?.email || '-' }}</strong>
+            </p>
+            <p class="party-role"><strong>Ci-après désigné : le Propriétaire</strong></p>
+            </div>
+
+            <div class="party-block">
+            <p><strong>2) Le Locataire</strong></p>
+            <p>
+                Nom et prénom :
+                <strong>{{ getFullName(locataire) }}</strong>
+            </p>
+            <p>
+                CIN :
+                <strong>{{ locataire?.cin || '-' }}</strong>
+            </p>
+            <p>
+                Téléphone :
+                <strong>{{ locataire?.telephone || '-' }}</strong>
+            </p>
+            <p>
+                Email :
+                <strong>{{ locataire?.email || '-' }}</strong>
+            </p>
+            <p class="party-role"><strong>Ci-après désigné : le Locataire</strong></p>
+            </div>
+
+        </div>
+        </div>
+
+      <div class="contract-centered-title">
+        <h2>IL A ÉTÉ CONVENU CE QUI SUIT</h2>
+      </div>
+
+      <div class="contract-section article-section">
+        <h3>ARTICLE 1 : Description du bien loué</h3>
+
+        <div *ngIf="isLandRental()" class="contract-box">
+          <p>
+            Le présent contrat porte sur la location d’un <strong>terrain agricole</strong>
+            appartenant au propriétaire.
+          </p>
+          <p><strong>Localisation :</strong> {{ locationData?.localisation || '-' }}</p>
+          <p><strong>Superficie :</strong> {{ locationData?.superficie || '-' }} {{ locationData?.uniteSuperficie || '' }}</p>
+          <p><strong>Type de sol :</strong> {{ locationData?.typeSol || '-' }}</p>
+        </div>
+
+        <div *ngIf="isMachineRental()" class="contract-box">
+          <p>
+            Le présent contrat porte sur la location d’une <strong>machine agricole</strong>
+            appartenant au propriétaire.
+          </p>
+          <p><strong>Nom :</strong> {{ locationData?.nom || '-' }}</p>
+          <p><strong>Marque :</strong> {{ locationData?.marque || '-' }}</p>
+          <p><strong>Modèle :</strong> {{ locationData?.modele || '-' }}</p>
+          <p><strong>État :</strong> {{ locationData?.etat || '-' }}</p>
+        </div>
+      </div>
+
+      <div class="contract-section article-section">
+        <h3>ARTICLE 2 : Durée de location</h3>
+        <div class="contract-box">
+          <p>La présente location est consentie pour une durée de <strong>{{ proposal.nbMois }} mois</strong>.</p>
+          <p>Elle commence le <strong>{{ proposal.dateDebut }}</strong></p>
+          <p>et prend fin le <strong>{{ proposal.dateFin }}</strong>.</p>
+        </div>
+      </div>
+
+      <div class="contract-section article-section">
+        <h3>ARTICLE 3 : Prix de location</h3>
+        <div class="contract-box">
+          <p>Le présent contrat est consenti moyennant un loyer mensuel de :</p>
+          <p class="price-line"><strong>{{ proposal.montantMensuel }} DT</strong></p>
+          <p>Le montant total de la présente location est fixé à :</p>
+          <p class="price-line"><strong>{{ proposal.montantTotal }} DT</strong></p>
+        </div>
+      </div>
+
+      <div class="contract-section article-section">
+        <h3>ARTICLE 4 : Obligations générales</h3>
+        <div class="contract-box">
+          <p>
+            Le propriétaire s’engage à mettre le bien loué à la disposition du locataire
+            pendant toute la durée convenue.
+          </p>
+          <p>
+            Le locataire s’engage à utiliser le bien loué conformément à sa destination
+            et à respecter les conditions convenues dans le présent contrat.
+          </p>
+        </div>
+      </div>
+
+      <div class="contract-section article-section">
+        <h3>ARTICLE 5 : Clauses particulières</h3>
+        <div class="contract-box">
+          {{ proposal.clausesContrat || 'Aucune clause particulière n’a été ajoutée.' }}
+        </div>
+      </div>
+
+      <div class="contract-section article-section">
+        <h3>ARTICLE 6 : Signatures</h3>
+
+        <div class="signature-grid">
+            <div class="signature-side">
+              <p><strong>Signature du Propriétaire</strong></p>
+
+              <div class="contract-box signature-box" *ngIf="proposal.signatureAgriculteur; else noFarmerSignature">
+                <div class="signature-overlay-wrap">
+                  <img [src]="cachetImage" alt="Cachet GreenRoots" class="contract-cachet-under-signature">
+                  <img [src]="proposal.signatureAgriculteur" alt="Farmer signature" class="contract-signature-img signature-on-top">
+                </div>
+              </div>
+
+              <ng-template #noFarmerSignature>
+                <div class="contract-box signature-box">
+                  No signature provided yet.
+                </div>
+              </ng-template>
+
+              <p class="signature-name"><strong>{{ getFullName(agriculteur) }}</strong></p>
+            </div>
+
+
+            <div class="signature-side">
+              <p><strong>Signature du Locataire</strong></p>
+
+              <div class="contract-box signature-box" *ngIf="proposal.signatureClient; else tenantSignatureArea">
+                <div class="signature-overlay-wrap">
+                  <img [src]="cachetImage" alt="Cachet GreenRoots" class="contract-cachet-under-signature">
+                  <img [src]="proposal.signatureClient" alt="Client signature" class="contract-signature-img signature-on-top">
+                </div>
+              </div>
+
+              <ng-template #tenantSignatureArea>
+                <div *ngIf="canClientSign(); else noClientSignatureYet">
+                  <div class="signature-pad-wrapper">
+                    <canvas #clientSignatureCanvas class="signature-canvas"></canvas>
+                  </div>
+
+                  <div class="signature-actions no-print">
+                    <button type="button" class="btn btn-secondary" (click)="clearClientSignature()">
+                      Clear Signature
+                    </button>
+
+                    <button type="button" class="btn btn-primary" (click)="signContract()" [disabled]="savingClientSignature">
+                      {{ savingClientSignature ? 'Signing...' : 'Sign Contract' }}
+                    </button>
+                  </div>
+                </div>
+
+                <ng-template #noClientSignatureYet>
+                  <div class="signature-placeholder">
+                    Client signature will be added in the next step.
+                  </div>
+                </ng-template>
+              </ng-template>
+
+              <p class="signature-name"><strong>{{ getFullName(locataire) }}</strong></p>
+            </div>
+        </div>
+        </div>
+
+    </div>
+  </div>
+</section>
+<app-footer *ngIf="!fromAdmin"></app-footer>

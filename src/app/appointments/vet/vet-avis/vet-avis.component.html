@@ -178,7 +178,7 @@
             <button class="btn-cancel-reply" (click)="toggleReplyInput(a.id)" [disabled]="submittingReply[a.id]">
               Annuler
             </button>
-            <button class="btn-send-reply" (click)="submitReply(a)" [disabled]="submittingReply[a.id] || !replyInputs[a.id]?.trim()">
+            <button class="btn-send-reply" (click)="submitReply(a)" [disabled]="submittingReply[a.id] || !replyInputs[a.id].trim()">
               <i class="fas fa-spinner fa-spin" *ngIf="submittingReply[a.id]"></i>
               <i class="fas fa-paper-plane"    *ngIf="!submittingReply[a.id]"></i>
               Publier la réponse
