@@ -1,4 +1,4 @@
-<div class="vp-wrap">
+*<div class="vp-wrap">
 
   <button class="back-btn" (click)="back.emit()">
     <i class="fas fa-arrow-left"></i> Retour à la liste
@@ -95,7 +95,8 @@
       <div *ngFor="let day of calDays"
         class="cal-day-cell"
         [class.cal-empty]="!day.date.getTime()"
-        [class.cal-avail]="day.valid && day.date.getTime()"
+        [class.cal-avail]="day.valid && day.date.getTime() && !day.past"
+        [class.cal-past]="day.date.getTime() && day.past"
         [class.cal-today]="day.date.getTime() && isToday(day.date)"
         (click)="selectDay(day)">
         <span class="cal-day-num" *ngIf="day.date.getTime()">{{ day.date.getDate() }}</span>

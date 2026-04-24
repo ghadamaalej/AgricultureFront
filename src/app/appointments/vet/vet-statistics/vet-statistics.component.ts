@@ -154,8 +154,6 @@ export class VetStatisticsComponent implements OnInit, OnDestroy, AfterViewInit 
     this.buildAppointmentStatusPieChart();
     this.buildCategoryBarChart();
     this.buildStockStatusPieChart();
-    this.buildMovementsLineChart();
-    this.buildCommandeStatusChart();
     this.buildTopProductsChart();
   }
 

@@ -1,114 +1,128 @@
-<section class="stats-page">
-  <div class="stats-header">
-    <div>
-      <h1>Statistiques agricoles</h1>
-      <p>Vision globale du stock, des ventes et des coûts d'achat.</p>
+<div class="stats-page">
+
+  <!-- ── Header ─────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon"><i class="fas fa-seedling"></i></div>
+      <div>
+        <h1 class="page-title">Statistiques agricoles</h1>
+        <p class="page-subtitle">Vue d'ensemble de votre inventaire et coûts</p>
+      </div>
     </div>
   </div>
 
-  <div *ngIf="loading" class="state-msg">
-    <i class="fas fa-spinner fa-spin"></i> Chargement des statistiques...
+  <!-- ── Loading / Error ──────────────────────────────────── -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des statistiques…</p>
   </div>
 
-  <div *ngIf="error" class="state-msg error">
-    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  <div *ngIf="error && !loading" class="error-state">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
   </div>
 
-  <div *ngIf="!loading && !error && products.length === 0" class="empty-state">
-    <i class="fas fa-chart-pie"></i>
+  <div *ngIf="!loading && !error && products.length === 0" class="loading-state">
+    <i class="fas fa-chart-pie" style="font-size:2rem;margin-bottom:12px;display:block;color:#6b8c6b"></i>
     <p>Aucune donnée inventaire pour afficher les statistiques.</p>
   </div>
 
   <ng-container *ngIf="hasData">
+
+    <!-- ── KPI Cards ─────────────────────────────────────── -->
     <div class="kpi-grid">
-      <article class="kpi-card">
-        <span class="kpi-label">Produits suivis</span>
-        <strong class="kpi-value">{{ kpis.totalProducts }}</strong>
-      </article>
-
-      <article class="kpi-card">
-        <span class="kpi-label">Stock total</span>
-        <strong class="kpi-value">{{ kpis.totalUnits }}</strong>
-      </article>
-
-      <article class="kpi-card warning">
-        <span class="kpi-label">Stock faible</span>
-        <strong class="kpi-value">{{ kpis.lowStockCount }}</strong>
-      </article>
-
-      <article class="kpi-card">
-        <span class="kpi-label">Valeur stock (estimée)</span>
-        <strong class="kpi-value">{{ formatCurrency(kpis.stockValue) }}</strong>
-      </article>
-
-      <article class="kpi-card">
-        <span class="kpi-label">Coût achats</span>
-        <strong class="kpi-value">{{ formatCurrency(kpis.purchaseCost) }}</strong>
-      </article>
-
-      <article class="kpi-card">
-        <span class="kpi-label">Revenus ventes (estimés)</span>
-        <strong class="kpi-value">{{ formatCurrency(kpis.salesRevenue) }}</strong>
-      </article>
-
-      <article class="kpi-card" [class.loss]="kpis.netMargin < 0">
-        <span class="kpi-label">Marge nette estimée</span>
-        <strong class="kpi-value">{{ formatCurrency(kpis.netMargin) }}</strong>
-      </article>
+      <div class="kpi-card kpi-products">
+        <div class="kpi-icon"><i class="fas fa-boxes"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Produits suivis</span>
+          <span class="kpi-value">{{ kpis.totalProducts }}</span>
+          <span class="kpi-sub">Dans votre inventaire</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-stock">
+        <div class="kpi-icon"><i class="fas fa-layer-group"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Stock total</span>
+          <span class="kpi-value">{{ kpis.totalUnits }}</span>
+          <span class="kpi-sub">Unités en stock</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-low" *ngIf="kpis.lowStockCount > 0">
+        <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Stock faible</span>
+          <span class="kpi-value">{{ kpis.lowStockCount }}</span>
+          <span class="kpi-sub">Produits sous le seuil</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-cost">
+        <div class="kpi-icon"><i class="fas fa-shopping-cart"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Coût achats</span>
+          <span class="kpi-value">{{ formatCurrency(kpis.purchaseCost) }}</span>
+          <span class="kpi-sub">Achats stock cumulés</span>
+        </div>
+      </div>
     </div>
 
-    <div class="charts-grid">
-      <article class="chart-card">
-        <h3>Répartition du stock par catégorie</h3>
-        <div class="chart-wrap">
+    <!-- ── Charts Row ────────────────────────────────────── -->
+    <div class="charts-row">
+      <div class="chart-card large">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <span class="chart-icon green"><i class="fas fa-chart-pie"></i></span>
+            <div>
+              <h3 class="chart-title">Répartition du stock par catégorie</h3>
+              <p class="chart-desc">Distribution des produits par type</p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body pie-body">
           <canvas #stockPieChart></canvas>
         </div>
-      </article>
+      </div>
 
-      <article class="chart-card">
-        <h3>Produits en stock faible (déficit)</h3>
-        <div class="chart-wrap">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <span class="chart-icon orange"><i class="fas fa-exclamation-circle"></i></span>
+            <div>
+              <h3 class="chart-title">Produits en stock faible</h3>
+              <p class="chart-desc">Déficit par produit sous le seuil</p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body">
           <canvas #lowStockBarChart></canvas>
         </div>
-      </article>
-
-      <article class="chart-card full-width">
-        <h3>Évolution mensuelle: revenus vs coûts</h3>
-        <div class="chart-wrap line">
-          <canvas #cashFlowLineChart></canvas>
-        </div>
-      </article>
+      </div>
     </div>
 
-    <article class="table-card" *ngIf="lowStockProducts.length > 0">
-      <div class="table-title">
-        <h3>Top produits à réapprovisionner</h3>
+    <!-- ── Stock Alerts Table ────────────────────────────── -->
+    <div class="alerts-section" *ngIf="lowStockProducts.length > 0">
+      <h2 class="section-title"><i class="fas fa-bell"></i> Produits à réapprovisionner</h2>
+      <div class="alerts-grid">
+        <div class="alert-table-card">
+          <div class="alert-table-header low">
+            <i class="fas fa-exclamation-circle"></i> Stocks faibles
+            <span class="alert-badge">{{ lowStockProducts.length }}</span>
+          </div>
+          <table class="alert-table">
+            <thead>
+              <tr><th>Produit</th><th>Stock actuel</th><th>Seuil minimum</th><th>Déficit</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of lowStockProducts | slice:0:8">
+                <td><strong>{{ item.name }}</strong></td>
+                <td><span class="qty-badge low-qty">{{ item.current }}</span></td>
+                <td>{{ item.threshold }}</td>
+                <td class="deficit-cell">{{ item.deficit }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+    </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Produit</th>
-              <th>Stock actuel</th>
-              <th>Seuil minimum</th>
-              <th>Déficit</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of lowStockProducts | slice:0:8">
-              <td>{{ item.name }}</td>
-              <td>{{ item.current }}</td>
-              <td>{{ item.threshold }}</td>
-              <td class="deficit">{{ item.deficit }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </article>
-
-    <p class="disclaimer">
-      Les revenus sont estimés depuis les mouvements de type vente. Si aucun prix n'est indiqué dans la note, un coût unitaire moyen est utilisé.
-    </p>
   </ng-container>
-</section>
+</div>

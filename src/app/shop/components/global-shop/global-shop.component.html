@@ -24,10 +24,6 @@
     Les produits d'autres vétérinaires ne peuvent pas être mélangés.
     <button class="btn-clear-cart" (click)="cartService.clear()">Vider le panier</button>
   </div>
-    <button class="cart-fab" (click)="openCart()">
-      <i class="fas fa-shopping-cart"></i>
-      <span class="cart-fab-badge" *ngIf="cartService.count > 0">{{ cartService.count }}</span>
-    </button>
   </div>
 
   <!-- AI Search Panel -->

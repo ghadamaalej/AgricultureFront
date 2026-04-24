@@ -20,13 +20,14 @@ export class CampaignFormComponent implements OnInit {
   loadingSpecies = true;
   error = '';
 
-  // État de l'intégration Calendar
+  // Etat de l'integration Calendar
   calendarStatus: 'idle' | 'syncing' | 'success' | 'error' = 'idle';
   calendarMessage = '';
 
   products: InventoryProduct[] = [];
   animals: Animal[] = [];
   speciesOptions: string[] = [];
+  todayIso = this.toIsoDate(new Date());
 
   constructor(
     private api: InventoryApiService,
@@ -41,7 +42,7 @@ export class CampaignFormComponent implements OnInit {
       plannedDate: new FormControl('', Validators.required),
       productId:   new FormControl(null, Validators.required),
       dose:        new FormControl(null, [Validators.required, Validators.min(0.01)]),
-      addToCalendar: new FormControl(true)  // ← checkbox Google Calendar
+      addToCalendar: new FormControl(true)
     });
 
     this.loadProducts();
@@ -92,7 +93,12 @@ export class CampaignFormComponent implements OnInit {
     const val = this.form.getRawValue();
 
     if (Number(val.ageMin) > Number(val.ageMax)) {
-      this.error = "L'âge minimum doit être inférieur ou égal à l'âge maximum.";
+      this.error = "L'age minimum doit etre inferieur ou egal a l'age maximum.";
+      return;
+    }
+
+    if (val.plannedDate && val.plannedDate < this.todayIso) {
+      this.error = "La date planifiee ne peut pas etre inferieure a la date d'aujourd'hui.";
       return;
     }
 
@@ -114,7 +120,6 @@ export class CampaignFormComponent implements OnInit {
       next: (createdCampaign: VaccinationCampaign) => {
         this.loading = false;
 
-        // ✅ Campagne créée → synchroniser avec Google Calendar si coché
         if (val.addToCalendar) {
           this.syncToGoogleCalendar(createdCampaign);
         } else {
@@ -123,14 +128,14 @@ export class CampaignFormComponent implements OnInit {
       },
       error: (e) => {
         this.loading = false;
-        this.error = e.error?.message || 'Erreur serveur';
+        this.error = e.error?.message || e.error?.error || 'Erreur serveur';
       }
     });
   }
 
   private syncToGoogleCalendar(campaign: VaccinationCampaign) {
     this.calendarStatus = 'syncing';
-    this.calendarMessage = 'Synchronisation avec Google Calendar…';
+    this.calendarMessage = 'Synchronisation avec Google Calendar...';
 
     const event = this.calendarService.buildVaccinationEvent({
       espece:      campaign.espece,
@@ -142,19 +147,24 @@ export class CampaignFormComponent implements OnInit {
     });
 
     this.calendarService.createEvent(event).subscribe({
-      next: (resp: any) => {
+      next: () => {
         this.calendarStatus = 'success';
-        this.calendarMessage = `✅ Événement ajouté dans Google Calendar`;
-        // Fermer après 2 secondes pour laisser voir le message
+        this.calendarMessage = 'Evenement ajoute dans Google Calendar';
         setTimeout(() => this.saved.emit(), 2000);
       },
       error: (err) => {
         console.error('Google Calendar error:', err);
         this.calendarStatus = 'error';
-        this.calendarMessage = "⚠️ Campagne enregistrée, mais l'ajout dans Google Calendar a échoué.";
-        // Fermer quand même après 3 secondes
+        this.calendarMessage = "Campagne enregistree, mais l'ajout dans Google Calendar a echoue.";
         setTimeout(() => this.saved.emit(), 3000);
       }
     });
+  }
+
+  private toIsoDate(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 }

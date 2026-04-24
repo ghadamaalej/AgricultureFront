@@ -432,6 +432,13 @@
   color: var(--gray-400);
 }
 
+.cal-past {
+  cursor: not-allowed;
+  background: var(--gray-50);
+  color: var(--gray-400);
+  opacity: 0.75;
+}
+
 /* Jours disponibles */
 .cal-avail { 
   background: linear-gradient(135deg, var(--primary-light), white);

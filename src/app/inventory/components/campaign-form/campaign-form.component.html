@@ -42,7 +42,7 @@
 
         <div class="form-group">
           <label>Date planifiée *</label>
-          <input type="date" formControlName="plannedDate" [class.err]="invalid('plannedDate')">
+          <input type="date" formControlName="plannedDate" [attr.min]="todayIso" [class.err]="invalid('plannedDate')">
           <span class="err-msg" *ngIf="invalid('plannedDate')">Champ requis</span>
         </div>
       </div>

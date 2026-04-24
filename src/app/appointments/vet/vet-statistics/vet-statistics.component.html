@@ -74,14 +74,7 @@
           <span class="kpi-sub">{{ outOfStockCount }} ruptures · {{ lowStockCount }} faibles</span>
         </div>
       </div>
-      <div class="kpi-card kpi-products">
-        <div class="kpi-icon"><i class="fas fa-boxes"></i></div>
-        <div class="kpi-body">
-          <span class="kpi-label">Produits actifs</span>
-          <span class="kpi-value">{{ products.length }}</span>
-          <span class="kpi-sub">Dans votre inventaire</span>
-        </div>
-      </div>
+    
     </div>
 
     <!-- ── Row 1: Revenue & Gain ─────────────────────────── -->
@@ -117,8 +110,8 @@
       </div>
     </div>
 
-    <!-- ── Row 2: RDV & Commandes ─────────────────────────── -->
-    <div class="charts-row three-col">
+    <!-- ── Row 2: RDV & État du stock ────────────────────── -->
+    <div class="charts-row">
       <div class="chart-card">
         <div class="chart-header">
           <div class="chart-title-group">
@@ -143,21 +136,6 @@
       <div class="chart-card">
         <div class="chart-header">
           <div class="chart-title-group">
-            <span class="chart-icon purple"><i class="fas fa-shopping-bag"></i></span>
-            <div>
-              <h3 class="chart-title">Statut des commandes</h3>
-              <p class="chart-desc">Répartition des commandes reçues</p>
-            </div>
-          </div>
-        </div>
-        <div class="chart-body pie-body">
-          <canvas id="commandeStatusChart"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title-group">
             <span class="chart-icon red"><i class="fas fa-warehouse"></i></span>
             <div>
               <h3 class="chart-title">État du stock</h3>
@@ -171,40 +149,7 @@
       </div>
     </div>
 
-    <!-- ── Row 3: Movements & Top Products & Categories ──── -->
-    <div class="charts-row">
-      <div class="chart-card large">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <span class="chart-icon green"><i class="fas fa-exchange-alt"></i></span>
-            <div>
-              <h3 class="chart-title">Mouvements de stock</h3>
-              <p class="chart-desc">Entrées et sorties de stock</p>
-            </div>
-          </div>
-        </div>
-        <div class="chart-body">
-          <canvas id="movementsChart"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <span class="chart-icon blue"><i class="fas fa-layer-group"></i></span>
-            <div>
-              <h3 class="chart-title">Catégories de produits</h3>
-              <p class="chart-desc">Nb de produits par catégorie</p>
-            </div>
-          </div>
-        </div>
-        <div class="chart-body">
-          <canvas id="categoryChart"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Row 4: Top products ──────────────────────────── -->
+    <!-- ── Row 3: Top products ───────────────────────────── -->
     <div class="charts-row">
       <div class="chart-card full-width">
         <div class="chart-header">

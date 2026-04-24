@@ -22,7 +22,9 @@ import { ChatComponent }                 from './chat/chat.component';
 import { AnimalDiagnosticComponent }     from './farmer/animal-diagnostic/animal-diagnostic.component';
 import { VetAiChatbotComponent }         from './farmer/vet-ai-chatbot/vet-ai-chatbot.component';
 import { FarmerImageChatbotComponent }   from './farmer/farmer-image-chatbot/farmer-image-chatbot.component';
+import { FarmerPoultryChatbotComponent } from './farmer/farmer-poultry-chatbot/farmer-poultry-chatbot.component';
 import { VetImageChatbotComponent }      from './vet/vet-image-chatbot/vet-image-chatbot.component';
+import { VetPoultryChatbotComponent }    from './vet/vet-poultry-chatbot/vet-poultry-chatbot.component';
 import { FarmerAvisComponent }           from './farmer/farmer-avis/farmer-avis.component';
 import { VetAvisComponent }              from './vet/vet-avis/vet-avis.component';
 
@@ -46,7 +48,9 @@ import { VetStatisticsComponent } from './vet/vet-statistics/vet-statistics.comp
     AnimalDiagnosticComponent,
     VetAiChatbotComponent,
     FarmerImageChatbotComponent,
+    FarmerPoultryChatbotComponent,
     VetImageChatbotComponent,
+    VetPoultryChatbotComponent,
     FarmerAvisComponent,
     VetAvisComponent,
      VetCommandesComponent,

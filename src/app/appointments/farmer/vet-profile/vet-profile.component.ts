@@ -23,7 +23,7 @@ export class VetProfileComponent implements OnInit {
   loading = true;
 
   calDate = new Date();
-  calDays: { date: Date; valid: boolean }[] = [];
+  calDays: { date: Date; valid: boolean; past: boolean }[] = [];
   selectedDate: string | null = null;
   slotsForDate: TimeSlot[] = [];
   selectedSlot: TimeSlot | null = null;
@@ -57,15 +57,22 @@ export class VetProfileComponent implements OnInit {
     const y = this.calDate.getFullYear(), m = this.calDate.getMonth();
     const firstDay = new Date(y, m, 1).getDay();
     const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const days: { date: Date; valid: boolean }[] = [];
-    for (let i = 0; i < firstDay; i++) days.push({ date: new Date(0), valid: false });
+    const days: { date: Date; valid: boolean; past: boolean }[] = [];
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    for (let i = 0; i < firstDay; i++) {
+      days.push({ date: new Date(0), valid: false, past: false });
+    }
+
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(y, m, d);
       const iso = this.toIso(date);
+      const isPast = date.getTime() < todayStart.getTime();
       const hasSlot = this.availabilities.some(a =>
         a.date === iso && (a.timeSlots || []).some(s => s.status === 'AVAILABLE')
       );
-      days.push({ date, valid: hasSlot });
+      days.push({ date, valid: hasSlot && !isPast, past: isPast });
     }
     this.calDays = days;
   }
@@ -73,8 +80,8 @@ export class VetProfileComponent implements OnInit {
   prevMonth() { this.calDate = new Date(this.calDate.getFullYear(), this.calDate.getMonth() - 1, 1); this.buildCal(); }
   nextMonth() { this.calDate = new Date(this.calDate.getFullYear(), this.calDate.getMonth() + 1, 1); this.buildCal(); }
 
-  selectDay(day: { date: Date; valid: boolean }) {
-    if (!day.valid || !day.date.getTime()) return;
+  selectDay(day: { date: Date; valid: boolean; past: boolean }) {
+    if (!day.valid || day.past || !day.date.getTime()) return;
     this.selectedDate = this.toIso(day.date);
     const av = this.availabilities.find(a => a.date === this.selectedDate);
     this.slotsForDate = (av?.timeSlots || []).filter(s => s.status === 'AVAILABLE');

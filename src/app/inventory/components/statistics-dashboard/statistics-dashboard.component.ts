@@ -26,7 +26,6 @@ interface KpiStats {
 export class StatisticsDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('stockPieChart') stockPieChartRef?: ElementRef<HTMLCanvasElement>;
   @ViewChild('lowStockBarChart') lowStockBarChartRef?: ElementRef<HTMLCanvasElement>;
-  @ViewChild('cashFlowLineChart') cashFlowLineChartRef?: ElementRef<HTMLCanvasElement>;
 
   loading = true;
   error = '';
@@ -49,7 +48,6 @@ export class StatisticsDashboardComponent implements OnInit, AfterViewInit, OnDe
 
   private pieChart?: Chart;
   private barChart?: Chart;
-  private lineChart?: Chart;
   private viewReady = false;
 
   constructor(
@@ -201,7 +199,7 @@ export class StatisticsDashboardComponent implements OnInit, AfterViewInit, OnDe
 
   private tryRenderCharts(): void {
     if (!this.viewReady || this.loading || this.error || !this.products.length) return;
-    if (!this.stockPieChartRef || !this.lowStockBarChartRef || !this.cashFlowLineChartRef) return;
+    if (!this.stockPieChartRef || !this.lowStockBarChartRef) return;
     this.renderCharts();
   }
 
@@ -209,7 +207,6 @@ export class StatisticsDashboardComponent implements OnInit, AfterViewInit, OnDe
     this.destroyCharts();
     this.renderStockPie();
     this.renderLowStockBar();
-    this.renderCashFlowLine();
   }
 
   private renderStockPie(): void {
@@ -277,95 +274,10 @@ export class StatisticsDashboardComponent implements OnInit, AfterViewInit, OnDe
     this.barChart = new Chart(this.lowStockBarChartRef!.nativeElement, config);
   }
 
-  private renderCashFlowLine(): void {
-    const monthKeys = this.lastMonths(6);
-    const purchaseByMonth = new Map<string, number>(monthKeys.map((m) => [m, 0]));
-    const revenueByMonth = new Map<string, number>(monthKeys.map((m) => [m, 0]));
-
-    const unitCostByProduct = new Map<number, number>();
-    this.products.forEach((p) => {
-      const batches = this.batchesByProduct.get(p.id) || [];
-      const qty = batches.reduce((sum, b) => sum + Number(b.quantity || 0), 0);
-      const cost = batches.reduce((sum, b) => sum + Number(b.quantity || 0) * Number(b.price || 0), 0);
-      unitCostByProduct.set(p.id, qty > 0 ? cost / qty : 0);
-
-      batches.forEach((b) => {
-        const key = this.toMonthKey(b.purchaseDate);
-        if (purchaseByMonth.has(key)) {
-          const previous = purchaseByMonth.get(key) || 0;
-          purchaseByMonth.set(key, previous + Number(b.quantity || 0) * Number(b.price || 0));
-        }
-      });
-    });
-
-    this.movements
-      .filter((m) => m.reason === 'VENTE')
-      .forEach((m) => {
-        const key = this.toMonthKey(m.dateMouvement);
-        if (!revenueByMonth.has(key)) return;
-        const qty = Number(m.quantity || 0);
-        const unitPrice = this.extractUnitPriceFromNote(m.note) ?? (unitCostByProduct.get(m.productId) || 0);
-        const previous = revenueByMonth.get(key) || 0;
-        revenueByMonth.set(key, previous + qty * unitPrice);
-      });
-
-    const labels = monthKeys.map((key) => this.monthLabel(key));
-    const purchases = monthKeys.map((key) => purchaseByMonth.get(key) || 0);
-    const revenue = monthKeys.map((key) => revenueByMonth.get(key) || 0);
-
-    const config: ChartConfiguration<'line'> = {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Revenus ventes (estimés)',
-            data: revenue,
-            borderColor: '#2A9D8F',
-            backgroundColor: 'rgba(42, 157, 143, 0.15)',
-            pointRadius: 3,
-            tension: 0.35,
-            fill: true
-          },
-          {
-            label: 'Coûts d’achat',
-            data: purchases,
-            borderColor: '#264653',
-            backgroundColor: 'rgba(38, 70, 83, 0.15)',
-            pointRadius: 3,
-            tension: 0.35,
-            fill: true
-          }
-        ]
-      },
-      options: {
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom' },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${this.formatCurrency(Number(ctx.parsed.y || 0))}`
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: (v) => this.formatCurrency(Number(v))
-            }
-          }
-        }
-      }
-    };
-
-    this.lineChart = new Chart(this.cashFlowLineChartRef!.nativeElement, config);
-  }
 
   private destroyCharts(): void {
     this.pieChart?.destroy();
     this.barChart?.destroy();
-    this.lineChart?.destroy();
   }
 
   private categoryLabel(category: string): string {

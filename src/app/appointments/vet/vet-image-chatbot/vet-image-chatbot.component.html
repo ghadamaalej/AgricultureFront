@@ -1,48 +1,118 @@
 <section class="image-chatbot-shell">
+
   <div class="hero">
-    <p class="eyebrow">Assistant Veterinaire IA</p>
-    <h2>Analyse d'image clinique</h2>
-    <p>
-      Envoyez une image de lesion, de peau ou de l animal. Le chatbot retourne les hypotheses
-      de maladie et un resume orientee prise en charge clinique.
-    </p>
+    <div class="hero-content">
+      <p class="eyebrow"><i class="fas fa-camera-retro"></i>&nbsp; Vision IA Veterinaire</p>
+      <h2>Analyse d'image clinique par Intelligence Artificielle</h2>
+      <p>
+        Importez une photo clinique nette (lesion, peau, symptome visible).
+        Notre IA propose les hypotheses diagnostiques probables avec une
+        orientation clinique avant la consultation.
+      </p>
+    </div>
+    <div class="hero-badges">
+      <span class="hero-badge"><i class="fas fa-bolt"></i> Resultat instantane</span>
+      <span class="hero-badge"><i class="fas fa-shield-alt"></i> Analyse securisee</span>
+      <span class="hero-badge"><i class="fas fa-brain"></i> Modele ML avance</span>
+    </div>
   </div>
 
   <div class="panel">
-    <label class="file-input">
-      <span>Image clinique</span>
+    <div class="panel-title">
+      <i class="fas fa-upload"></i>
+      <span>Soumettre une image</span>
+    </div>
+
+    <label class="file-input" [class.file-selected]="selectedFile">
+      <div class="file-drop-zone">
+        <div class="file-icon">
+          <i class="fas fa-image" *ngIf="!selectedFile"></i>
+          <i class="fas fa-check-circle" *ngIf="selectedFile"></i>
+        </div>
+        <div class="file-text">
+          <span class="file-main" *ngIf="!selectedFile">Cliquez pour selectionner une image</span>
+          <span class="file-main file-main-ok" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+          <span class="file-sub" *ngIf="!selectedFile">JPG, PNG, WEBP - max 10 Mo</span>
+          <span class="file-sub" *ngIf="selectedFile">Image prete pour l'analyse</span>
+        </div>
+      </div>
       <input type="file" accept="image/*" (change)="onFileSelected($event)">
     </label>
 
     <label class="field">
-      <span>Question clinique</span>
-      <textarea [(ngModel)]="clinicalQuestion" rows="4" placeholder="Ex: quelles hypotheses prioriser ? faut il isoler immediatement ?"></textarea>
+      <span class="field-label">
+        <i class="fas fa-comment-medical"></i> Question clinique optionnelle
+      </span>
+      <textarea
+        [(ngModel)]="clinicalQuestion"
+        rows="3"
+        placeholder="Ex : Quelles hypotheses prioriser ? Faut-il isoler immediatement ?">
+      </textarea>
     </label>
 
-    <button type="button" (click)="analyze()" [disabled]="loading || !selectedFile">
-      {{ loading ? 'Analyse clinique...' : 'Lancer l analyse IA' }}
+    <button type="button" class="btn-analyze" (click)="analyze()" [disabled]="loading || !selectedFile">
+      <span *ngIf="!loading">
+        <i class="fas fa-search"></i> Analyser avec l'IA
+      </span>
+      <span *ngIf="loading">
+        <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+      </span>
     </button>
 
-    <p class="error" *ngIf="error">{{ error }}</p>
+    <div class="error-banner" *ngIf="error">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ error }}</span>
+    </div>
   </div>
 
   <div class="result-card" *ngIf="result">
-    <p class="eyebrow">Hypothese principale</p>
-    <h3>{{ result.predictedLabel | titlecase }}</h3>
-    <p class="confidence">Confiance estimee: {{ result.confidence }}%</p>
+    <div class="result-header">
+      <div>
+        <p class="eyebrow"><i class="fas fa-microscope"></i> Resultat de l'analyse IA</p>
+        <h3>{{ result.predictedLabel | titlecase }}</h3>
+      </div>
+      <div class="confidence-badge">
+        <span class="confidence-label">Confiance</span>
+        <span class="confidence-value">{{ result.confidence }}%</span>
+      </div>
+    </div>
 
-    <div class="prediction-list">
-      <article class="prediction" *ngFor="let prediction of result.predictions">
-        <span>#{{ prediction.rank }} {{ prediction.disease | titlecase }}</span>
-        <strong>{{ prediction.probability }}%</strong>
-      </article>
+    <div class="confidence-bar-container">
+      <div class="confidence-bar">
+        <div class="confidence-fill" [style.width]="result.confidence + '%'"> </div>
+      </div>
+      <span class="confidence-text">Score de confiance : {{ result.confidence }}%</span>
+    </div>
+
+    <div class="predictions-section">
+      <h4 class="section-label">
+        <i class="fas fa-chart-bar"></i> Pathologies detectees
+      </h4>
+      <div class="prediction-list">
+        <article class="prediction" *ngFor="let prediction of result.predictions">
+          <div class="prediction-info">
+            <span class="rank">#{{ prediction.rank }}</span>
+            <span class="disease-name">{{ prediction.disease | titlecase }}</span>
+          </div>
+          <div class="prediction-score">
+            <div class="score-bar">
+              <div class="score-fill" [style.width]="prediction.probability + '%'"> </div>
+            </div>
+            <strong class="score-pct">{{ prediction.probability }}%</strong>
+          </div>
+        </article>
+      </div>
     </div>
 
     <div class="analysis">
-      <h4>Synthese IA</h4>
+      <h4><i class="fas fa-file-medical-alt"></i> Synthese IA</h4>
       <p>{{ result.analysis }}</p>
     </div>
 
-    <div class="disclaimer">{{ result.disclaimer }}</div>
+    <div class="disclaimer">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ result.disclaimer }}</span>
+    </div>
   </div>
+
 </section>

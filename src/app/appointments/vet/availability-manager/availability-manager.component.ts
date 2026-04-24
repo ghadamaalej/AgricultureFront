@@ -284,7 +284,7 @@ export class AvailabilityManagerComponent implements OnInit {
       },
       error: e => {
         this.availLoading = false;
-        this.availError = e.error?.message || 'Erreur';
+        this.availError = this.extractErrorMessage(e, 'Erreur lors de la creation de la disponibilite');
       }
     });
   }
@@ -334,7 +334,7 @@ export class AvailabilityManagerComponent implements OnInit {
       },
       error: e => {
         this.blockLoading = false;
-        this.blockError = e.error?.message || 'Erreur';
+        this.blockError = this.extractErrorMessage(e, 'Erreur lors du blocage du jour');
       }
     });
   }
@@ -446,7 +446,7 @@ export class AvailabilityManagerComponent implements OnInit {
       },
       error: e => {
         this.unavailLoading = false;
-        this.unavailError = e.error?.message || 'Erreur';
+        this.unavailError = this.extractErrorMessage(e, 'Erreur lors de la creation de l indisponibilite');
       }
     });
   }
@@ -490,6 +490,30 @@ export class AvailabilityManagerComponent implements OnInit {
 
   toIso(d: Date): string {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  private extractErrorMessage(error: any, fallback: string): string {
+    if (!error) {
+      return fallback;
+    }
+
+    if (typeof error.error === 'string' && error.error.trim()) {
+      return error.error;
+    }
+
+    if (error.error?.message && String(error.error.message).trim()) {
+      return String(error.error.message);
+    }
+
+    if (error.error?.error && String(error.error.error).trim()) {
+      return String(error.error.error);
+    }
+
+    if (error.message && String(error.message).trim()) {
+      return String(error.message);
+    }
+
+    return fallback;
   }
 
   get monthLabel() {
