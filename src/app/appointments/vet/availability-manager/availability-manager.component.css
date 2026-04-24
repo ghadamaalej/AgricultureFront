@@ -163,3 +163,273 @@
   .day-panel { width: 100%; }
   .cal-cell { min-height: 60px; }
 }
+/* ══════════════════════════════════════════════════════
+   AJOUTER À LA FIN de availability-manager.component.css
+   ══════════════════════════════════════════════════════ */
+
+/* ── Toggle Google Calendar ── */
+.gcal-toggle-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 14px 0 10px;
+  padding: 12px 14px;
+  background: #f4f0fb;
+  border: 1px solid #e0d6f7;
+  border-radius: 10px;
+}
+
+.gcal-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3d2e6e;
+}
+
+.gcal-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #5b34b7;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.gcal-label img {
+  display: block;
+  flex-shrink: 0;
+}
+
+.gcal-hint {
+  font-size: 11px;
+  color: #6b5ea8;
+  margin-left: 25px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* ── Statut de synchronisation ── */
+.gcal-status {
+  margin: 10px 0;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  overflow: hidden;
+}
+
+.gcal-syncing,
+.gcal-success,
+.gcal-error {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 9px 13px;
+  border-radius: 8px;
+}
+
+.gcal-syncing {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.gcal-success {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.gcal-error {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.gcal-link {
+  color: #16a34a;
+  font-weight: 700;
+  text-decoration: underline;
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+.gcal-link:hover { color: #166534; }
+
+
+
+/* ══════════════════════════════════════════════════════
+   AJOUTER À LA FIN de availability-manager.component.css
+   ══════════════════════════════════════════════════════ */
+
+/* ── Onglet Google Calendar ── */
+.stab.gcal-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Wrapper principal ── */
+.gcal-embed-wrapper {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid #e8f0e8;
+  box-shadow: 0 2px 10px rgba(0,0,0,.07);
+  overflow: hidden;
+  min-height: 500px;
+}
+
+/* ── Carte connexion ── */
+.gcal-connect-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 32px;
+  text-align: center;
+  gap: 14px;
+}
+
+.gcal-connect-icon {
+  width: 80px; height: 80px;
+  background: #f0f7f0;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 6px;
+}
+
+.gcal-connect-card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a2e1a;
+  margin: 0;
+}
+
+.gcal-connect-card p {
+  font-size: .9rem;
+  color: #6b8c6b;
+  max-width: 420px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.gcal-connect-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1.5px solid #dadce0;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: .92rem;
+  font-weight: 600;
+  color: #3c4043;
+  cursor: pointer;
+  transition: background .2s, box-shadow .2s;
+  margin-top: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+
+.gcal-connect-btn:hover {
+  background: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+
+.gcal-note {
+  font-size: .78rem !important;
+  color: #9aaa9a !important;
+  margin-top: 4px !important;
+}
+
+.gcal-note i { margin-right: 4px; }
+
+/* ── Chargement OAuth2 ── */
+.gcal-loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 32px;
+  gap: 16px;
+  color: #6b8c6b;
+  font-size: .95rem;
+}
+
+.gcal-loading-card i {
+  font-size: 2rem;
+  color: #2d6a2d;
+}
+
+/* ── Header iframe ── */
+.gcal-iframe-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1.5px solid #e8f0e8;
+  background: #f8fbf8;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.gcal-iframe-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .95rem;
+  font-weight: 700;
+  color: #1a2e1a;
+}
+
+.gcal-iframe-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gcal-open-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #2d6a2d;
+  color: #fff;
+  text-decoration: none;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: .8rem;
+  font-weight: 600;
+  transition: background .2s;
+}
+
+.gcal-open-btn:hover { background: #245524; color: #fff; }
+
+.gcal-disconnect-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 1.5px solid #e8f0e8;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: .8rem;
+  color: #9aaa9a;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.gcal-disconnect-btn:hover {
+  border-color: #e53935;
+  color: #e53935;
+}
+
+/* ── iFrame ── */
+.gcal-iframe {
+  width: 100%;
+  height: 680px;
+  border: none;
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .gcal-iframe { height: 480px; }
+  .gcal-iframe-header { flex-direction: column; align-items: flex-start; }
+}
