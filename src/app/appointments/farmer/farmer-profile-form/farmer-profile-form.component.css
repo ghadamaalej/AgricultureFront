@@ -1,0 +1,42 @@
+.page-header{margin-bottom:24px}
+.pt{font-size:1.7rem;font-weight:700;color:#1a2e1a;margin:0 0 4px}
+.ps{color:#6b8c6b;font-size:.9rem;margin:0}
+.sm{text-align:center;padding:40px;color:#6b8c6b}
+.sm.err{color:#c0392b}
+.profile-wrap{max-width:680px}
+
+/* Avatar section */
+.avatar-section{display:flex;align-items:center;gap:20px;background:#fff;border-radius:14px;padding:20px;border:1.5px solid #e8f0e8;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:24px}
+.av-img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid #e0f0e0}
+.av-ph{width:72px;height:72px;border-radius:50%;background:#2d6a2d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;flex-shrink:0}
+.av-name{font-size:1.1rem;font-weight:700;color:#1a2e1a;margin:0 0 4px}
+.av-role{font-size:.8rem;color:#7a9a7a;background:#f0f7f0;padding:3px 10px;border-radius:12px;display:inline-flex;align-items:center;gap:6px}
+.av-role i{font-size:.75rem}
+
+/* Form */
+.pf-form{display:flex;flex-direction:column;gap:0}
+.form-section-title{font-size:.78rem;font-weight:700;color:#3d7a3d;text-transform:uppercase;letter-spacing:.8px;margin:20px 0 12px;padding-bottom:6px;border-bottom:1px solid #eaf0ea}
+.form-row{display:flex;gap:14px;margin-bottom:14px}
+.fg{flex:1;display:flex;flex-direction:column;gap:5px}
+.fg.full{margin-bottom:14px}
+.fg label{font-size:.82rem;font-weight:600;color:#3a5a3a}
+.fg input,.fg textarea{padding:10px 12px;border-radius:8px;border:1.5px solid #d8e8d8;font-size:.9rem;color:#1a2e1a;outline:none;background:#fafffe;transition:border-color .2s}
+.fg input:focus,.fg textarea:focus{border-color:#2d6a2d}
+.fg input.err{border-color:#e74c3c}
+.fg textarea{resize:vertical}
+.em{color:#e74c3c;font-size:.76rem}
+
+/* Feedback boxes */
+.success-box{background:#e8ffec;border:1px solid #a8d4a8;border-radius:8px;padding:10px 14px;font-size:.88rem;color:#1a7a2d;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.err-box{background:#fff0f0;border:1px solid #f0c0c0;border-radius:8px;padding:10px 14px;font-size:.88rem;color:#c0392b;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+
+/* Actions */
+.form-actions{display:flex;justify-content:flex-end}
+.btn-save{display:flex;align-items:center;gap:8px;background:#2d6a2d;color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .2s}
+.btn-save:hover{background:#245524}
+.btn-save:disabled{opacity:.6;cursor:not-allowed}
+
+/* Number input — remove arrows */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}

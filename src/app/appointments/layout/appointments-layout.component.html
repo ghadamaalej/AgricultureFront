@@ -31,7 +31,14 @@
         </button>
         <button class="ni boutique-nav" [class.active]="view==='global-shop'" (click)="setView('global-shop')">
           <i class="fas fa-store"></i><span>Boutique Veterinaire</span>
+
         </button>
+        <button class="ni" [class.active]="view==='farmer-profile'" (click)="setView('farmer-profile')">
+  <i class="fas fa-user-circle"></i><span>Mon profil</span>
+</button>
+<button class="ni back-btn" (click)="goBack()">
+  <i class="fas fa-arrow-left"></i><span>Retour</span>
+</button>
       </ng-container>
 
       <!-- VETERINAIRE -->
@@ -109,6 +116,7 @@
       <app-farmer-image-chatbot    *ngIf="view==='ai-farmer'"></app-farmer-image-chatbot>
       <app-farmer-poultry-chatbot  *ngIf="view==='ai-farmer-poultry'"></app-farmer-poultry-chatbot>
       <app-global-shop             *ngIf="view==='global-shop'" (back)="setView('list')"></app-global-shop>
+      <app-farmer-profile-form *ngIf="view==='farmer-profile'"></app-farmer-profile-form>
     </ng-container>
 
     <!-- VET views -->

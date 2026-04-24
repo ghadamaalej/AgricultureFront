@@ -32,6 +32,7 @@ import { InventoryModule }               from '../inventory/inventory.module';
 import { ShopModule }                    from '../shop/shop.module';
 import { VetCommandesComponent } from './vet/vet-commandes/vet-commandes.component';
 import { VetStatisticsComponent } from './vet/vet-statistics/vet-statistics.component';
+import { FarmerProfileFormComponent } from './farmer/farmer-profile-form/farmer-profile-form.component';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,9 @@ import { VetStatisticsComponent } from './vet/vet-statistics/vet-statistics.comp
     VetAvisComponent,
      VetCommandesComponent,
        VetStatisticsComponent,
+       
+    FarmerProfileFormComponent  
+
     
   ],
   imports: [

@@ -1,0 +1,91 @@
+<div class="page-header">
+  <div>
+    <h1 class="pt">Mon profil</h1>
+    <p class="ps">Mettez à jour vos informations personnelles</p>
+  </div>
+</div>
+
+<div *ngIf="loading" class="sm"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>
+<div *ngIf="!loading && error" class="sm err"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+
+<div class="profile-wrap" *ngIf="!loading && farmer">
+
+  <!-- Avatar -->
+  <div class="avatar-section">
+    <div class="pf-avatar">
+      <img *ngIf="farmer.photo" [src]="farmer.photo" class="av-img" alt="">
+      <div *ngIf="!farmer.photo" class="av-ph">{{ initials }}</div>
+    </div>
+    <div class="av-info">
+      <h2 class="av-name">{{ farmer.prenom }} {{ farmer.nom }}</h2>
+      <span class="av-role"><i class="fas fa-tractor"></i> Agriculteur</span>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="form" (ngSubmit)="submit()" class="pf-form">
+
+    <div class="form-section-title">Informations personnelles</div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Prénom *</label>
+        <input formControlName="prenom" placeholder="Votre prénom" [class.err]="invalid('prenom')">
+        <span class="em" *ngIf="invalid('prenom')">Champ requis</span>
+      </div>
+      <div class="fg">
+        <label>Nom *</label>
+        <input formControlName="nom" placeholder="Votre nom" [class.err]="invalid('nom')">
+        <span class="em" *ngIf="invalid('nom')">Champ requis</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="fg">
+        <label>Email *</label>
+        <input type="email" formControlName="email" [class.err]="invalid('email')">
+        <span class="em" *ngIf="invalid('email')">Email invalide</span>
+      </div>
+      <div class="fg">
+        <label>Téléphone</label>
+        <input formControlName="telephone" placeholder="ex: 20123456">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="fg">
+        <label>Région</label>
+        <input formControlName="region" placeholder="ex: Tunis, Sfax, Sousse…">
+      </div>
+      <div class="fg">
+        <label>CIN</label>
+        <input type="number" formControlName="cin" placeholder="ex: 12345678" [class.err]="invalid('cin')">
+        <span class="em" *ngIf="invalid('cin')">CIN invalide (8 chiffres)</span>
+      </div>
+    </div>
+
+    <div class="form-section-title">Sécurité</div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Nouveau mot de passe</label>
+        <input type="password" formControlName="motDePasse" placeholder="Laisser vide pour ne pas changer">
+      </div>
+      <div class="fg"></div>
+    </div>
+
+    <div class="success-box" *ngIf="success">
+      <i class="fas fa-check-circle"></i> Profil mis à jour avec succès !
+    </div>
+    <div class="err-box" *ngIf="error && !loading">
+      <i class="fas fa-exclamation-circle"></i> {{ error }}
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-save" [disabled]="saving">
+        <i class="fas fa-spinner fa-spin" *ngIf="saving"></i>
+        <i class="fas fa-save" *ngIf="!saving"></i>
+        Enregistrer les modifications
+      </button>
+    </div>
+
+  </form>
+</div>
