@@ -62,7 +62,7 @@
             </div>
             <div class="prod-info">
               <span class="prod-name">{{ p.nom }}</span>
-              <span *ngIf="p.description" class="prod-desc">{{ p.description | slice:0:50 }}{{ (p.description?.length ?? 0) > 50 ? '…' : '' }}</span>
+              <span *ngIf="p.description" class="prod-desc">{{ p.description | slice:0:50 }}{{ p.description!.length > 50 ? '…' : '' }}</span>
             </div>
           </td>
           <!-- Catégorie -->

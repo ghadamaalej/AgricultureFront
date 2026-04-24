@@ -4,6 +4,79 @@
     "secure": false,
     "changeOrigin": true
   },
+  "/Vente": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/Vente": ""
+    }
+  },
+  "/upload": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/uploads": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/formation": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/user": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/forums": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/explorer": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/evenement": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/support": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/pret": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/inventaires": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/assistance": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/paiement": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/reclamations": {
+    "target": "http://localhost:8095",
+    "secure": false,
+    "changeOrigin": true
+  },
   "/osrm": {
     "target": "https://router.project-osrm.org",
     "secure": true,

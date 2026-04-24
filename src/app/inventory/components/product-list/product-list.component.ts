@@ -96,7 +96,7 @@ export class ProductListComponent implements OnInit {
     this.load();
   }
 
-  isLowStock(p: InventoryProduct) { return p.currentQuantity <= p.minThreshold; }
+  isLowStock(p: InventoryProduct) { return (p.currentQuantity ?? 0) <= (p.minThreshold ?? 0); }
 
   categoryLabel(c: string): string {
     const map: Record<string, string> = {

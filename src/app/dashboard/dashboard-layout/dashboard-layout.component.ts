@@ -22,7 +22,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     { icon: 'fas fa-users',              label: 'Users',        key: 'users',        route: '/dashboard/users'        },
     { icon: 'fas fa-truck',              label: 'Deliveries',   key: 'deliveries',   route: '/dashboard/deliveries'   },
     { icon: 'fas fa-calendar-alt',       label: 'Events',       key: 'events',       route: '/dashboard/events'       },
-    { icon: 'fas fa-hand-holding-usd',   label: 'Loans',        key: 'loans',        route: '/dashboard/loans'        },
+    { icon: 'fas fa-hand-holding-usd',   label: 'Loans',        key: 'loans',        route: '/loans'        },
     { icon: 'fas fa-store',              label: 'Marketplace',  key: 'marketplace',  route: '/dashboard/marketplace'  },
     { icon: 'fas fa-comments',           label: 'Community',    key: 'community',    route: '/dashboard/forums'       },
     { icon: 'fas fa-graduation-cap',     label: 'Training',     key: 'training',     route: '/dashboard/training'     },
@@ -30,8 +30,6 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     { icon: 'fas fa-stethoscope',        label: 'Appointments', key: 'appointments', route: '/dashboard/appointments' },
     { icon: 'fas fa-hands-helping',      label: 'Helps',        key: 'Helps',        route: '/dashboard/Aide'         },
     { icon: 'fas fa-paw',                label: 'Animals',      key: 'Animals',      route: '/dashboard/Animals'      },
-    { icon: 'fas fa-hands-helping',      label: 'Helps',    key: 'Helps',    route: '/dashboard/Aide'    },
-    { icon: 'fas fa-paw',                label: 'Animals',     key: 'Animals',     route: '/dashboard/Animals'     },
   ];
 
   constructor(
@@ -63,11 +61,6 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
         (success) => console.log('[Dashboard] Navigation success:', success),
         (error)   => console.error('[Dashboard] Navigation error:', error)
     );
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth']);
   }
 
   logout(): void {

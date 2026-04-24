@@ -42,25 +42,16 @@ export class DetailsEventComponent implements OnInit {
   }
 
   loadWeather(): void {
-    const location = `${this.event.lieu}, ${this.event.region}`;
-    const days = this.calculateDays();
     this.loadingWeather = true;
     this.weatherError = false;
+    this.weatherInfo = '';
+    this.forecastDays = [];
 
-    this.weatherService.getForecast(location, days).subscribe({
-      next: data => {
-        this.weatherData = data;
-        if (!data.region.includes(this.event.region)) {
-          this.weatherInfo = `📍 Showing weather for ${data.location}`;
-        }
-        this.filterForecast();
-        this.loadingWeather = false;
-      },
-      error: () => {
-        this.weatherError = true;
-        this.loadingWeather = false;
-      }
-    });
+    const exactLocation = `${this.event.lieu}, ${this.event.region}`;
+    const regionOnly = this.event.region;
+    const requestedDays = this.calculateDays();
+
+    this.tryLoadWeather(exactLocation, requestedDays, true, regionOnly);
   }
 
   calculateDays(): number {
@@ -81,6 +72,43 @@ export class DetailsEventComponent implements OnInit {
     if (!this.forecastDays.length) {
       this.weatherInfo = '⚠️ No forecast available for these dates';
     }
+  }
+
+  private tryLoadWeather(location: string, days: number, allowRetryWithShorterRange: boolean, fallbackLocation?: string): void {
+    this.weatherService.getForecast(location, days).subscribe({
+      next: data => {
+        this.weatherData = data;
+
+        const apiRegion = data.region || '';
+        if (this.event.region && !apiRegion.toLowerCase().includes(this.event.region.toLowerCase())) {
+          this.weatherInfo = `📍 Showing weather for ${data.location}`;
+        }
+
+        this.filterForecast();
+        this.loadingWeather = false;
+      },
+      error: () => {
+        if (allowRetryWithShorterRange && days > 3) {
+          this.tryLoadWeather(location, 3, false, fallbackLocation);
+          return;
+        }
+
+        if (fallbackLocation && fallbackLocation !== location) {
+          this.tryLoadWeather(fallbackLocation, Math.min(days, 3), false);
+          return;
+        }
+
+        this.weatherData = {
+          location: this.event.lieu,
+          region: this.event.region,
+          country: 'Tunisia',
+          forecast: []
+        };
+        this.weatherInfo = '⚠️ Weather forecast is temporarily unavailable for this event.';
+        this.weatherError = false;
+        this.loadingWeather = false;
+      }
+    });
   }
 
   get placesRestantes(): number {

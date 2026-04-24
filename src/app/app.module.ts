@@ -4,11 +4,10 @@ import localeFr from '@angular/common/locales/fr';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HTTP_INTERCEPTORS, HttpClientModule, provideHttpClient } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 
 import { AppComponent }                      from './app.component';
 import { AppRoutingModule }                  from './app-routing.module';
-import { NavbarComponent }                   from './components/navbar/navbar.component';
 import { HeroComponent }                     from './components/hero/hero.component';
 import { AboutComponent }                    from './components/about/about.component';
 import { ServicesComponent }                 from './components/services/services.component';
@@ -16,7 +15,6 @@ import { ProductsComponent }                 from './components/products/product
 import { CounterComponent }                  from './components/counter/counter.component';
 import { TestimonialsComponent }             from './components/testimonials/testimonials.component';
 import { BlogComponent }                     from './components/blog/blog.component';
-import { FooterComponent }                   from './components/footer/footer.component';
 import { AuthComponent }                     from './components/auth/auth.component';
 import { BlogDetailComponent }               from './components/blog-detail/blog-detail.component';
 import { HomeComponent }                     from './components/home/home.component';
@@ -31,9 +29,7 @@ import { ExpertAssistanceRequestsComponent } from './components/expert-assistanc
 import { AuthTokenInterceptor }              from './services/auth/auth-token.interceptor';
 import { SuccessToastInterceptor }           from './core/interceptors/success-toast.interceptor';
 import { SharedModule }                      from './shared/shared.module';
-import { FarmerModule }                      from './farmer/farmer.module';
-import { AnimalsModule }                     from './animals/animals.module';
-import { ClaimsModule }                      from './claims/claims.module';
+import { ShopModule }                        from './shop/shop.module';
 import { ToastComponent }                    from './shared/components/toast/toast.component';
 import { AppToastComponent }                 from './shared/components/app-toast/app-toast.component';
 
@@ -43,7 +39,6 @@ registerLocaleData(localeFr);
     declarations: [
         AppComponent,
         AuthComponent,
-        NavbarComponent,
         HeroComponent,
         AboutComponent,
         ServicesComponent,
@@ -51,7 +46,6 @@ registerLocaleData(localeFr);
         CounterComponent,
         TestimonialsComponent,
         BlogComponent,
-        FooterComponent,
         BlogDetailComponent,
         HomeComponent,
         NotFoundComponent,
@@ -74,9 +68,7 @@ registerLocaleData(localeFr);
         HttpClientModule,
         AppRoutingModule,
         SharedModule,
-        FarmerModule,
-        AnimalsModule,
-        ClaimsModule,
+        ShopModule,
     ],
     providers: [
         {
@@ -90,7 +82,6 @@ registerLocaleData(localeFr);
             multi: true
         },
         { provide: LOCALE_ID, useValue: 'fr' },
-        provideHttpClient()
     ],
     bootstrap: [AppComponent]
 })

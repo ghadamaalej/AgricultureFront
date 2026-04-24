@@ -47,6 +47,9 @@ export class MarketplaceComponent implements OnInit {
   items: any[] = [];
   showForm = false;
   blockedSlots: any[] = [];
+  loadError: string | null = null;
+  isLoadingProducts = false;
+  isLoadingRentals = false;
 
   weekAvailability = [
     {
@@ -188,54 +191,66 @@ aiResult: any = null;
   }
 
   loadProducts() {
-  this.productService.getAll().subscribe((data: any) => {
-    const produits = data?._embedded?.produitAgricoles || data || [];
+  this.isLoadingProducts = true;
+  this.loadError = null;
+  this.productService.getAll().subscribe({
+    next: (data: any) => {
+      this.isLoadingProducts = false;
+      const produits = data?._embedded?.produitAgricoles || data || [];
 
-    if (!Array.isArray(produits)) {
-      console.error('No produits found in response');
-      return;
-    }
+      if (!Array.isArray(produits)) {
+        console.error('No produits found in response');
+        return;
+      }
 
-    this.items = produits.map((p: any) => ({
-      id: this.extractId(p._links?.self?.href || ''),
-      name: p.nom,
-      category: p.category || '',
-      type: 'Product',
-      price: p.prix,
-      image: p.photoProduit
-        ? 'http://localhost:8090/uploads/' + p.photoProduit
-        : 'assets/images/product1.jpg',
-      description: p.description,
-      quantity: p.quantiteDisponible,
-      idUser: p.idUser,
-      averageRating: 0,
-      reviewCount: 0
-    }));
+      this.items = produits.map((p: any) => ({
+        id: p.id ?? this.extractId(p._links?.self?.href || ''),
+        name: p.nom,
+        category: p.category || '',
+        type: 'Product',
+        price: p.prix,
+        image: p.photoProduit
+          ? 'http://localhost:8090/uploads/' + p.photoProduit
+          : 'assets/images/product1.jpg',
+        description: p.description,
+        quantity: p.quantiteDisponible,
+        idUser: p.idUser,
+        averageRating: 0,
+        reviewCount: 0
+      }));
 
-    this.items.forEach((item: any) => {
-      this.reviewService.getReviews('PRODUCT', item.id).subscribe({
-        next: (reviews: any[]) => {
-          const list = Array.isArray(reviews) ? reviews : [];
-          item.reviewCount = list.length;
+      this.items.forEach((item: any) => {
+        this.reviewService.getReviews('PRODUCT', item.id).subscribe({
+          next: (reviews: any[]) => {
+            const list = Array.isArray(reviews) ? reviews : [];
+            item.reviewCount = list.length;
 
-          if (list.length > 0) {
-            const total = list.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
-            item.averageRating = total / list.length;
-          } else {
+            if (list.length > 0) {
+              const total = list.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
+              item.averageRating = total / list.length;
+            } else {
+              item.averageRating = 0;
+            }
+
+            this.filteredItems = [...this.items];
+          },
+          error: () => {
+            item.reviewCount = 0;
             item.averageRating = 0;
+            this.filteredItems = [...this.items];
           }
-
-          this.filteredItems = [...this.items];
-        },
-        error: () => {
-          item.reviewCount = 0;
-          item.averageRating = 0;
-          this.filteredItems = [...this.items];
-        }
+        });
       });
-    });
 
-    this.filteredItems = [...this.items];
+      this.filteredItems = [...this.items];
+    },
+    error: (err: any) => {
+      this.isLoadingProducts = false;
+      console.error('Failed to load products:', err);
+      this.loadError = 'Le service marketplace est temporairement indisponible. Veuillez réessayer plus tard.';
+      this.items = [];
+      this.filteredItems = [];
+    }
   });
 }
 
@@ -848,7 +863,10 @@ aiResult: any = null;
   }
 
   loadRentItems() {
-    this.locationService.getAll().subscribe((data: any) => {
+    this.isLoadingRentals = true;
+    this.locationService.getAll().subscribe({
+     next: (data: any) => {
+      this.isLoadingRentals = false;
       let locations: any[] = [];
 
       if (data._embedded?.locations) locations = data._embedded.locations;
@@ -907,6 +925,17 @@ aiResult: any = null;
         this.locationService.hasActiveReservations(item.id)
           .subscribe(res => item.hasReservation = res);
       });
+    },
+    error: (err: any) => {
+      this.isLoadingRentals = false;
+      console.error('Failed to load rentals:', err);
+      this.rentItems = [];
+      // Only surface the error and update filteredItems when the user is in rent mode
+      if (this.mode === 'rent') {
+        this.loadError = 'Le service marketplace est temporairement indisponible. Veuillez réessayer plus tard.';
+        this.applyFilters();
+      }
+    }
     });
   }
 

@@ -122,9 +122,9 @@
       <!-- Top badges -->
       <div class="vcard-top">
         <div class="vcard-cat-badge"
-             [style.background]="'color-mix(in srgb, ' + catConfig[p.categorie]?.color + ' 12%, white)'"
-             [style.color]="catConfig[p.categorie]?.color">
-          {{ catConfig[p.categorie]?.emoji }} {{ catConfig[p.categorie]?.label }}
+             [style.background]="'color-mix(in srgb, ' + catConfig[p.categorie].color + ' 12%, white)'"
+             [style.color]="catConfig[p.categorie].color">
+          {{ catConfig[p.categorie].emoji }} {{ catConfig[p.categorie].label }}
         </div>
         <div class="vcard-badges-right">
           <span class="badge-low"  *ngIf="isLowStock(p) && (p.currentQuantity ?? 0) > 0">

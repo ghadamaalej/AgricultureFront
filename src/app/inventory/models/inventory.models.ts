@@ -18,8 +18,8 @@ export interface InventoryProduct {
   categorie: ProductCategory;
   unit: string;
   isPerishable: boolean;
-  currentQuantity: number;
-  minThreshold: number;
+  currentQuantity?: number;
+  minThreshold?: number;
   owner?: UserSummary;
   // Boutique fields (nullable)
   prixVente?: number | null;

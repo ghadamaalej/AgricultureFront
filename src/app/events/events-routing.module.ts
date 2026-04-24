@@ -8,6 +8,7 @@ import { PaymentComponent } from './payment/payment/payment.component';
 import { EventMapComponent } from './event-map/event-map.component';
 
 const routes: Routes = [
+  { path: '', redirectTo: 'listEvents', pathMatch: 'full' },
   { path: 'listEvents', component: ListComponent },
   { path: 'detailsEvent/:id', component: DetailsEventComponent },
   { path: 'organizer/events', component: OrganisateurEventListComponent },

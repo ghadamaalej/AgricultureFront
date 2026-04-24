@@ -65,7 +65,7 @@
         <div class="fcard-body">
           <div class="fcard-cat">{{ categoryLabel(p.categorie) }}</div>
           <h3 class="fcard-name">{{ p.nom }}</h3>
-          <p *ngIf="p.description" class="fcard-desc">{{ p.description | slice:0:80 }}{{ (p.description?.length ?? 0) > 80 ? '…' : '' }}</p>
+          <p *ngIf="p.description" class="fcard-desc">{{ p.description | slice:0:80 }}{{ p.description.length > 80 ? '…' : '' }}</p>
           <div class="fcard-footer">
             <span class="fcard-price">{{ p.prixVente | number:'1.2-2' }} DT</span>
             <span class="fcard-detail-btn">Voir détail →</span>

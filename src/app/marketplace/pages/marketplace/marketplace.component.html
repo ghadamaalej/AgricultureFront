@@ -23,6 +23,11 @@
   </div>
 </section>
 
+<!-- ERROR BANNER -->
+<div *ngIf="loadError" style="background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:12px 20px;margin:16px auto;max-width:900px;border-radius:8px;text-align:center;">
+  ⚠️ {{ loadError }}
+</div>
+
 <!-- CONTENT -->
 <section class="section-padding">
   <div class="container marketplace-layout">
@@ -171,7 +176,20 @@
         </button>
       </div>
 
-      <div class="products-grid">
+      <!-- Loading state -->
+      <div *ngIf="isLoadingProducts || isLoadingRentals" style="text-align:center;padding:60px 20px;color:#888;">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+        <p style="margin-top:12px">Chargement des produits...</p>
+      </div>
+
+      <!-- Empty state (not loading, no error, no items) -->
+      <div *ngIf="!isLoadingProducts && !isLoadingRentals && !loadError && paginatedItems.length === 0"
+           style="text-align:center;padding:60px 20px;color:#888;">
+        <i class="fas fa-box-open fa-2x"></i>
+        <p style="margin-top:12px">Aucun produit trouvé.</p>
+      </div>
+
+      <div class="products-grid" *ngIf="!isLoadingProducts && !isLoadingRentals">
         <div class="product-card reveal"
              *ngFor="let p of paginatedItems; let i = index"
              [style.animation-delay]="(i * 0.08) + 's'">

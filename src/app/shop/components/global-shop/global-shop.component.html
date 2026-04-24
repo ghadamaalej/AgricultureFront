@@ -116,7 +116,7 @@
           <span>{{ vetRegion(p) }}</span>
         </div>
         <p *ngIf="p.description" class="gscard-desc">
-          {{ p.description | slice:0:60 }}{{ (p.description?.length??0)>60 ? '…' : '' }}
+          {{ p.description | slice:0:60 }}{{ p.description!.length>60 ? '…' : '' }}
         </p>
         <div class="gscard-footer">
           <span class="gscard-price">{{ p.prixVente | number:'1.2-2' }} DT</span>

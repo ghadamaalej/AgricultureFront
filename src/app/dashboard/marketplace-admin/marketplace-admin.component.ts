@@ -131,10 +131,10 @@ export class MarketplaceAdminComponent implements OnInit {
 
     this.productService.getAll().subscribe({
       next: async (data: any) => {
-        const produits = data?._embedded?.produitAgricoles || [];
+        const produits = data?._embedded?.produitAgricoles || data || [];
 
         this.products = produits.map((p: any) => ({
-          id: this.extractId(p._links?.self?.href),
+          id: p.id ?? this.extractId(p._links?.self?.href || ''),
           nom: p.nom,
           description: p.description,
           prix: p.prix,

@@ -35,7 +35,7 @@ export class ProductService {
   const formData = new FormData();
   formData.append('file', file);
 
-  return this.http.post('http://localhost:8090/upload', formData, {
+  return this.http.post('/upload', formData, {
     responseType: 'text'
   });
 }

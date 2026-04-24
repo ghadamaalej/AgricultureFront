@@ -9,6 +9,7 @@ import { ContratSignComponent } from '../loans/agent/contrat-sign/contrat-sign.c
 import { AgriDashboardComponent } from './agriculteur/agri-dashboard/agri-dashboard.component';
 
 const routes: Routes = [
+{ path: '', redirectTo: 'institutions', pathMatch: 'full' },
 { path: 'agent/services', component: ServicesListComponent }, 
 { path: 'agent/services/new', component: ServiceFormComponent },
 { path: 'agent/services/edit/:id', component: ServiceFormComponent },

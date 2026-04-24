@@ -31,6 +31,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     activeLink        = '/';
     moreDropdownOpen  = false;
     activeSubmenu: any[] | null = null;
+    private hideSubmenuTimer: any;
 
     navLinks = [
         { label: 'Home',         route: '/'                  },
@@ -122,13 +123,31 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
 
     showSubmenu(dropdownItem: any): void {
+        clearTimeout(this.hideSubmenuTimer);
         if (dropdownItem.hasSubmenu) {
             this.activeSubmenu = dropdownItem.submenu;
         }
     }
 
+    keepSubmenu(): void {
+        clearTimeout(this.hideSubmenuTimer);
+    }
+
     hideSubmenu(): void {
-        this.activeSubmenu = null;
+        this.hideSubmenuTimer = setTimeout(() => {
+            this.activeSubmenu = null;
+        }, 150);
+    }
+
+    toggleOrNavigate(dropdownItem: NavDropdownLink): void {
+        if (dropdownItem.hasSubmenu) {
+            clearTimeout(this.hideSubmenuTimer);
+            this.activeSubmenu = this.activeSubmenu === dropdownItem.submenu
+                ? null
+                : (dropdownItem.submenu ?? null);
+        } else {
+            this.navigate(dropdownItem.route);
+        }
     }
 
     isDropdownActive(): boolean {
@@ -187,6 +206,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        clearTimeout(this.hideSubmenuTimer);
         this.destroy$.next();
         this.destroy$.complete();
     }

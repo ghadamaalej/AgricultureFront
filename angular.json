@@ -27,6 +27,15 @@
               "@angular/material/prebuilt-themes/indigo-pink.css",
               "node_modules/leaflet/dist/leaflet.css"
             ],
+            "allowedCommonJsDependencies": [
+              "canvg",
+              "core-js",
+              "html2canvas",
+              "leaflet",
+              "leaflet.markercluster",
+              "raf",
+              "rgbcolor"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -63,10 +72,10 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "agrezen-angular:build:production"
+              "buildTarget": "agrezen-angular:build:production"
             },
             "development": {
-              "browserTarget": "agrezen-angular:build:development"
+              "buildTarget": "agrezen-angular:build:development"
             }
           },
           "defaultConfiguration": "development"
