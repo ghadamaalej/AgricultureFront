@@ -38,6 +38,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
   },
+  { path: 'marketplace/cart', redirectTo: 'appointments', pathMatch: 'full' },
   { path: 'register-extra',  component: RegisterExtraComponent  },
   { path: 'blog/:id', component: BlogDetailComponent },
   { path: '404',      component: NotFoundComponent   },

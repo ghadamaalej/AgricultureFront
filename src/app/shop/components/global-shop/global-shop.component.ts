@@ -1,4 +1,5 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { InventoryApiService } from 'src/app/inventory/services/inventory-api.service';
 import { InventoryProduct } from 'src/app/inventory/models/inventory.models';
 import { CartService } from '../../services/cart.service';
@@ -40,11 +41,21 @@ export class GlobalShopComponent implements OnInit {
 
   constructor(
     private api: InventoryApiService,
-    public cartService: CartService
+    public cartService: CartService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
-       this.loadShop();
+    this.loadShop();
+    this.openCheckoutOnStripeReturn();
+  }
+
+  private openCheckoutOnStripeReturn() {
+    const paymentStatus = this.route.snapshot.queryParamMap.get('payment');
+    if (paymentStatus === 'success' || paymentStatus === 'cancel') {
+      this.showCart = false;
+      this.showCheckout = true;
+    }
   }
 
   private loadShop() {

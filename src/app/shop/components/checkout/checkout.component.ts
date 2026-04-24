@@ -1,10 +1,9 @@
-import { Component, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { PaymentApiService, CommandeRequest } from '../../services/payment-api.service';
 import { ToastService } from 'src/app/core/services/toast.service';
 import { AuthService } from 'src/app/services/auth/auth.service';
-
-declare var Stripe: any;
 
 @Component({
   selector: 'app-checkout',
@@ -12,47 +11,27 @@ declare var Stripe: any;
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.css']
 })
-export class CheckoutComponent implements OnInit, OnDestroy {
+export class CheckoutComponent implements OnInit {
   @Output() close   = new EventEmitter<void>();
   @Output() success = new EventEmitter<void>();
 
-  step: 'summary' | 'payment' | 'processing' | 'success' | 'error' = 'summary';
+  step: 'summary' | 'processing' | 'redirecting' | 'success' | 'error' = 'summary';
   error = '';
   orderId: number | null = null;
   orderRef = '';
 
-  stripe: any = null;
-  elements: any = null;
-  paymentElement: any = null;
-  clientSecret = '';
-  paymentElementReady = false;
-  isConfirmingPayment = false;
-  private readonly stripePublishableKey = 'pk_test_51TLlvW4WOLv4xB64Ky7TafIi9dKCCiIMQTAUEbIJVSvSm1hKGihxULANwuzAH0PHTVjHpwgqEVgTemv7hvhdq4Re00jXu8gGh1';
+  private readonly pendingCheckoutKey = 'pendingCheckoutOrderId';
 
   constructor(
     public cartService: CartService,
     private paymentApi: PaymentApiService,
     private toast: ToastService,
-    private auth: AuthService
+    private auth: AuthService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
-    this.loadStripe();
-  }
-
-  ngOnDestroy() {
-    if (this.paymentElement) this.paymentElement.destroy();
-  }
-
-  loadStripe() {
-    if (typeof Stripe === 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://js.stripe.com/v3/';
-      script.onload = () => { this.stripe = Stripe(this.stripePublishableKey); };
-      document.head.appendChild(script);
-    } else {
-      this.stripe = Stripe(this.stripePublishableKey);
-    }
+    this.handleStripeReturn();
   }
 
   proceedToPayment() {
@@ -79,10 +58,18 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.paymentApi.creerCommande(request).subscribe({
       next: (commande) => {
         this.orderId = commande.id;
-        this.clientSecret = commande.stripeClientSecret;
         this.orderRef = `CMD-${commande.id}`;
-        this.step = 'payment';
-        setTimeout(() => this.mountStripeElement(), 300);
+
+        if (!commande.stripeClientSecret || !/^https?:\/\//i.test(commande.stripeClientSecret)) {
+          this.error = 'URL de paiement Stripe invalide.';
+          this.step = 'error';
+          this.toast.error(this.error);
+          return;
+        }
+
+        localStorage.setItem(this.pendingCheckoutKey, String(commande.id));
+        this.step = 'redirecting';
+        window.location.href = commande.stripeClientSecret;
       },
       error: (e) => {
         this.error = e.error?.error || e.error?.message || 'Erreur lors de la creation de la commande.';
@@ -92,87 +79,59 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  mountStripeElement() {
-    if (!this.stripe || !this.clientSecret) {
-      this.error = 'Stripe non initialise. Verifiez la cle publique.';
+  private handleStripeReturn() {
+    const paymentStatus = this.route.snapshot.queryParamMap.get('payment');
+    if (!paymentStatus) {
+      return;
+    }
+
+    const rawOrderId = localStorage.getItem(this.pendingCheckoutKey);
+    const pendingOrderId = rawOrderId ? Number(rawOrderId) : NaN;
+    this.clearPaymentQueryParams();
+
+    if (paymentStatus === 'cancel') {
+      localStorage.removeItem(this.pendingCheckoutKey);
       this.step = 'error';
+      this.error = 'Paiement annule. Vous pouvez reessayer.';
       this.toast.error(this.error);
       return;
     }
 
-    try {
-      this.paymentElementReady = false;
-      this.elements = this.stripe.elements({ clientSecret: this.clientSecret, locale: 'fr' });
-      this.paymentElement = this.elements.create('payment');
-      this.paymentElement.on('ready', () => { this.paymentElementReady = true; });
-      this.paymentElement.on('loaderror', (event: any) => {
-        this.paymentElementReady = false;
-        this.error = event?.error?.message || 'Impossible de charger le formulaire de paiement.';
+    if (paymentStatus === 'success') {
+      if (!Number.isFinite(pendingOrderId)) {
         this.step = 'error';
-        this.toast.error(this.error);
-      });
-      this.paymentElement.mount('#stripe-payment-element');
-    } catch (e: any) {
-      this.error = e?.message || 'Erreur lors de l initialisation du paiement.';
-      this.step = 'error';
-      this.toast.error(this.error);
-    }
-  }
-
-  async confirmPayment() {
-    if (!this.stripe || !this.elements || !this.paymentElementReady) {
-      this.error = 'Le formulaire de paiement n est pas pret.';
-      this.step = 'error';
-      this.toast.error(this.error);
-      return;
-    }
-    this.isConfirmingPayment = true;
-
-    try {
-      const { error } = await this.stripe.confirmPayment({
-        elements: this.elements,
-        confirmParams: {
-          return_url: window.location.href
-        },
-        redirect: 'if_required'
-      });
-
-      if (error) {
-        this.isConfirmingPayment = false;
-        this.error = error.message || 'Paiement echoue.';
-        this.step = 'error';
+        this.error = 'Paiement effectue, mais la commande est introuvable.';
         this.toast.error(this.error);
         return;
       }
 
-      if (!this.orderId) {
-        this.isConfirmingPayment = false;
-        this.error = 'Commande introuvable apres paiement.';
-        this.step = 'error';
-        this.toast.error(this.error);
-        return;
-      }
+      this.orderId = pendingOrderId;
+      this.orderRef = `CMD-${pendingOrderId}`;
+      this.step = 'processing';
 
-      this.paymentApi.confirmerPaiementCommande(this.orderId).subscribe({
+      this.paymentApi.confirmerPaiementCommande(pendingOrderId).subscribe({
         next: () => {
-          this.isConfirmingPayment = false;
+          localStorage.removeItem(this.pendingCheckoutKey);
           this.step = 'success';
           this.cartService.clear();
           this.toast.success('Paiement effectue avec succes.');
         },
         error: (e) => {
-          this.isConfirmingPayment = false;
-          this.error = e.error?.error || e.error?.message || 'Paiement effectue mais statut commande non mis a jour.';
           this.step = 'error';
+          this.error = e.error?.error || e.error?.message || 'Paiement effectue mais statut commande non mis a jour.';
           this.toast.error(this.error);
         }
       });
-    } catch (e: any) {
-      this.isConfirmingPayment = false;
-      this.error = e?.message || 'Erreur technique pendant la confirmation du paiement.';
-      this.step = 'error';
-      this.toast.error(this.error);
     }
+  }
+
+  private clearPaymentQueryParams() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('payment');
+    url.searchParams.delete('session_id');
+    const query = url.searchParams.toString();
+    const nextUrl = `${url.pathname}${query ? `?${query}` : ''}${url.hash}`;
+    window.history.replaceState({}, document.title, nextUrl);
   }
 
   retryPayment() {

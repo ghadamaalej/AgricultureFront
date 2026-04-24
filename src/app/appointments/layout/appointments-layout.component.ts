@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-appointments-layout',
@@ -12,9 +12,20 @@ export class AppointmentsLayoutComponent implements OnInit {
   role = '';
     view = 'list'; // list | book | diagnostic | ai-farmer | ai-vet | avail | profile | records | messages
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
   ngOnInit() {
     this.role = this.auth.getCurrentRole() || '';
+
+    const paymentStatus = this.route.snapshot.queryParamMap.get('payment');
+    if (this.role === 'AGRICULTEUR' && (paymentStatus === 'success' || paymentStatus === 'cancel')) {
+      this.view = 'global-shop';
+      return;
+    }
+
     // Support pre-selected view from localStorage (e.g. "Prendre RDV" button)
     const saved = localStorage.getItem('apptDefaultView');
     if (saved) { this.view = saved; localStorage.removeItem('apptDefaultView'); }
