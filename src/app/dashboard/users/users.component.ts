@@ -47,7 +47,7 @@ export class UsersComponent implements OnInit {
   success = '';
 
   // Gateway URL
-  private readonly baseUrl = 'http://localhost:8089/user/api/user';
+  private readonly baseUrl = '/user/api/user';
 
   constructor(private http: HttpClient) {}
 

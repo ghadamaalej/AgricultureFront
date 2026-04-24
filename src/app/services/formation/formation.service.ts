@@ -69,7 +69,7 @@ export interface InscriptionFormation {
   providedIn: 'root'
 })
 export class FormationService {
-  private apiUrl = 'http://192.168.1.14:8089/formation/api/formations';
+  private apiUrl = '/formation/api/formations';
 
   constructor(private http: HttpClient) {}
 

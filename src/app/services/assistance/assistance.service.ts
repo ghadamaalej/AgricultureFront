@@ -48,7 +48,7 @@ export interface ReponseIngenieur {
   providedIn: 'root'
 })
 export class AssistanceService {
-  private apiUrl = 'http://localhost:8084/api/demandes';
+  private apiUrl = '/api/demandes';
 
   constructor(private http: HttpClient) {}
 
@@ -74,21 +74,21 @@ export class AssistanceService {
 
   acceptAffectation(affectationId: number, ingenieurId: number): Observable<AffectationDemande> {
     return this.http.post<AffectationDemande>(
-      `http://localhost:8084/api/affectations/${affectationId}/accept?ingenieurId=${ingenieurId}`,
+      `/api/affectations/${affectationId}/accept?ingenieurId=${ingenieurId}`,
       {}
     );
   }
 
   refuseAffectation(affectationId: number, ingenieurId: number): Observable<AffectationDemande> {
     return this.http.post<AffectationDemande>(
-      `http://localhost:8084/api/affectations/${affectationId}/refuse?ingenieurId=${ingenieurId}`,
+      `/api/affectations/${affectationId}/refuse?ingenieurId=${ingenieurId}`,
       {}
     );
   }
 
   createEngineerResponse(affectationId: number, contenu: string): Observable<ReponseIngenieur> {
     return this.http.post<ReponseIngenieur>(
-      `http://localhost:8084/api/affectations/${affectationId}/reponses`,
+      `/api/affectations/${affectationId}/reponses`,
       { contenu, statut: 'PROPOSEE' }
     );
   }

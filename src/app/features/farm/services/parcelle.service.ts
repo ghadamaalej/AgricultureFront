@@ -8,7 +8,7 @@ import { Parcelle } from '../models/parcelle.model';
   providedIn: 'root'
 })
 export class ParcelleService {
-  private apiUrl = 'http://localhost:8089/support/api/parcelles'; // Adjust based on your backend URL
+  private apiUrl = '/support/api/parcelles';
 
   constructor(private http: HttpClient) {}
 

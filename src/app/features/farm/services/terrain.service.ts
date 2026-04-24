@@ -8,7 +8,7 @@ import { Terrain } from '../models/terrain.model';
   providedIn: 'root'
 })
 export class TerrainService {
-  private apiUrl = 'http://localhost:8089/support/api/terrains'; // Adjust based on your backend URL
+  private apiUrl = '/support/api/terrains';
 
   constructor(private http: HttpClient) {}
 

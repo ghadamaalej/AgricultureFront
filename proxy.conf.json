@@ -1,0 +1,32 @@
+{
+  "/user": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/support": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/formation": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/demandes": {
+    "target": "http://localhost:8084",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/affectations": {
+    "target": "http://localhost:8084",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

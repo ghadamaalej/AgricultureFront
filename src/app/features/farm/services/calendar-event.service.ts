@@ -8,8 +8,8 @@ import { EvenementCalendrierApi, RappelApi } from '../models/calendar.model';
 })
 export class CalendarEventService {
   // Matches your Spring Boot app in application.properties (server.port=8091)
-  private readonly eventApiUrl = 'http://localhost:8089/support/api/evenements';
-  private readonly rappelApiUrl = 'http://localhost:8089/support/api/rappels';
+  private readonly eventApiUrl = '/support/api/evenements';
+  private readonly rappelApiUrl = '/support/api/rappels';
 
   constructor(private http: HttpClient) {}
 

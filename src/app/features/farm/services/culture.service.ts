@@ -8,7 +8,7 @@ import { Culture, CultureCreatePayload } from '../models/parcelle.model';
   providedIn: 'root'
 })
 export class CultureService {
-  private apiUrl = 'http://localhost:8089/support/api/cultures'; // Adjust based on your backend URL
+  private apiUrl = '/support/api/cultures';
 
   constructor(private http: HttpClient) {}
 
