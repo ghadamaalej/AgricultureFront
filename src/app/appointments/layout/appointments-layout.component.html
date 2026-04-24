@@ -76,6 +76,9 @@
         <button class="ni" [class.active]="view==='avis'" (click)="setView('avis')">
           <i class="fas fa-star"></i><span>Mes avis</span>
         </button>
+        <button class="ni stats-nav" [class.active]="view==='statistics'" (click)="setView('statistics')">
+          <i class="fas fa-chart-line"></i><span>Statistiques</span>
+        </button>
 
       </ng-container>
 
@@ -126,6 +129,7 @@
       <app-chat                 *ngIf="view==='messages'"></app-chat>
       <app-vet-image-chatbot    *ngIf="view==='ai-vet'"></app-vet-image-chatbot>
       <app-vet-avis             *ngIf="view==='avis'"></app-vet-avis>
+      <app-vet-statistics       *ngIf="view==='statistics'"></app-vet-statistics>
     </ng-container>
 
   </main>

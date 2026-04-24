@@ -1,0 +1,272 @@
+<div class="stats-page">
+
+  <!-- ── Header ─────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon"><i class="fas fa-chart-line"></i></div>
+      <div>
+        <h1 class="page-title">Tableau de bord analytique</h1>
+        <p class="page-subtitle">Vue d'ensemble de votre activité vétérinaire</p>
+      </div>
+    </div>
+    <div class="period-tabs">
+      <button *ngFor="let p of periods"
+        class="ptab" [class.active]="selectedPeriod === p.value"
+        (click)="setPeriod(p.value)">
+        {{ p.label }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Loading / Error ──────────────────────────────────── -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des données…</p>
+  </div>
+
+  <div *ngIf="error && !loading" class="error-state">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="loadAll()"><i class="fas fa-redo"></i> Réessayer</button>
+  </div>
+
+  <ng-container *ngIf="!loading && !error">
+
+    <!-- ── KPI Cards ─────────────────────────────────────── -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-revenue">
+        <div class="kpi-icon"><i class="fas fa-money-bill-wave"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Revenus totaux</span>
+          <span class="kpi-value">{{ formatAmount(totalRevenue) }}</span>
+          <span class="kpi-sub">{{ totalOrders }} commandes payées</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-cost">
+        <div class="kpi-icon"><i class="fas fa-shopping-cart"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Coûts d'achat</span>
+          <span class="kpi-value">{{ formatAmount(totalCost) }}</span>
+          <span class="kpi-sub">Achats stock cumulés</span>
+        </div>
+      </div>
+      <div class="kpi-card" [class.kpi-gain-pos]="netGain >= 0" [class.kpi-gain-neg]="netGain < 0">
+        <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Gain net</span>
+          <span class="kpi-value">{{ formatAmount(netGain) }}</span>
+          <span class="kpi-sub">{{ netGain >= 0 ? 'Bénéfice' : 'Perte' }}</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-rdv">
+        <div class="kpi-icon"><i class="fas fa-calendar-check"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Total RDV</span>
+          <span class="kpi-value">{{ appointmentStats?.totalAppointments || 0 }}</span>
+          <span class="kpi-sub">{{ appointmentStats?.todayAppointments || 0 }} aujourd'hui</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-stock-low" *ngIf="lowStockCount > 0 || outOfStockCount > 0">
+        <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Alertes stock</span>
+          <span class="kpi-value">{{ outOfStockCount + lowStockCount }}</span>
+          <span class="kpi-sub">{{ outOfStockCount }} ruptures · {{ lowStockCount }} faibles</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-products">
+        <div class="kpi-icon"><i class="fas fa-boxes"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Produits actifs</span>
+          <span class="kpi-value">{{ products.length }}</span>
+          <span class="kpi-sub">Dans votre inventaire</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row 1: Revenue & Gain ─────────────────────────── -->
+    <div class="charts-row">
+      <div class="chart-card large">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <span class="chart-icon green"><i class="fas fa-chart-line"></i></span>
+            <div>
+              <h3 class="chart-title">Ventes & Coûts</h3>
+              <p class="chart-desc">Évolution des revenus et des coûts sur la période</p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="revenueChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <span class="chart-icon blue"><i class="fas fa-chart-bar"></i></span>
+            <div>
+              <h3 class="chart-title">Gain net par période</h3>
+              <p class="chart-desc">Bénéfice/perte par unité de temps</p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="gainChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row 2: RDV & Commandes ─────────────────────────── -->
+    <div class="charts-row three-col">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <span class="chart-icon orange"><i class="fas fa-calendar-alt"></i></span>
+            <div>
+              <h3 class="chart-title">Statut des RDV</h3>
+              <p class="chart-desc">Répartition par statut</p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body pie-body">
+          <canvas id="rdvStatusChart"></canvas>
+        </div>
+        <div class="rdv-mini-stats" *ngIf="appointmentStats">
+          <div class="mini-stat"><span class="dot dot-wait"></span>En attente <strong>{{ appointmentStats.pendingAppointments }}</strong></div>
+          <div class="mini-stat"><span class="dot dot-ok"></span>Acceptés <strong>{{ appointmentStats.acceptedAppointments }}</strong></div>
+          <div class="mini-stat"><span class="dot dot-up"></span>À venir <strong>{{ appointmentStats.upcomingAppointments }}</strong></div>
+          <div class="mini-stat"><span class="dot dot-anim"></span>Animaux <strong>{{ appointmentStats.distinctAnimals }}</strong></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <span class="chart-icon purple"><i class="fas fa-shopping-bag"></i></span>
+            <div>
+              <h3 class="chart-title">Statut des commandes</h3>
+              <p class="chart-desc">Répartition des commandes reçues</p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body pie-body">
+          <canvas id="commandeStatusChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <span class="chart-icon red"><i class="fas fa-warehouse"></i></span>
+            <div>
+              <h3 class="chart-title">État du stock</h3>
+              <p class="chart-desc">Niveaux de stock actuels</p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body pie-body">
+          <canvas id="stockStatusChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row 3: Movements & Top Products & Categories ──── -->
+    <div class="charts-row">
+      <div class="chart-card large">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <span class="chart-icon green"><i class="fas fa-exchange-alt"></i></span>
+            <div>
+              <h3 class="chart-title">Mouvements de stock</h3>
+              <p class="chart-desc">Entrées et sorties de stock</p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="movementsChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <span class="chart-icon blue"><i class="fas fa-layer-group"></i></span>
+            <div>
+              <h3 class="chart-title">Catégories de produits</h3>
+              <p class="chart-desc">Nb de produits par catégorie</p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row 4: Top products ──────────────────────────── -->
+    <div class="charts-row">
+      <div class="chart-card full-width">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <span class="chart-icon orange"><i class="fas fa-trophy"></i></span>
+            <div>
+              <h3 class="chart-title">Top produits vendus</h3>
+              <p class="chart-desc">Quantités vendues par produit (commandes payées)</p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body tall">
+          <canvas id="topProductsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Stock Alerts Table ────────────────────────────── -->
+    <div class="alerts-section" *ngIf="outOfStockProducts.length > 0 || lowStockProducts.length > 0">
+      <h2 class="section-title"><i class="fas fa-bell"></i> Alertes de stock</h2>
+      <div class="alerts-grid">
+
+        <div class="alert-table-card" *ngIf="outOfStockProducts.length > 0">
+          <div class="alert-table-header rupture">
+            <i class="fas fa-times-circle"></i> Ruptures de stock
+            <span class="alert-badge">{{ outOfStockCount }}</span>
+          </div>
+          <table class="alert-table">
+            <thead>
+              <tr><th>Produit</th><th>Catégorie</th><th>Seuil min.</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of outOfStockProducts">
+                <td><strong>{{ p.nom }}</strong></td>
+                <td>{{ p.categorie }}</td>
+                <td><span class="qty-badge rupture-qty">{{ p.minThreshold }} {{ p.unit }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="alert-table-card" *ngIf="lowStockProducts.length > 0">
+          <div class="alert-table-header low">
+            <i class="fas fa-exclamation-circle"></i> Stocks faibles
+            <span class="alert-badge">{{ lowStockCount }}</span>
+          </div>
+          <table class="alert-table">
+            <thead>
+              <tr><th>Produit</th><th>Quantité</th><th>Seuil</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of lowStockProducts">
+                <td><strong>{{ p.nom }}</strong></td>
+                <td><span class="qty-badge low-qty">{{ p.currentQuantity }} {{ p.unit }}</span></td>
+                <td>{{ p.minThreshold }} {{ p.unit }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+  </ng-container>
+</div>

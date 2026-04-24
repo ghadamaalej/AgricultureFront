@@ -12,6 +12,7 @@ import { InventoryApiService } from 'src/app/inventory/services/inventory-api.se
 })
 export class ProductDetailComponent implements OnInit {
   @Input() product!: InventoryProduct;
+  @Input() vetId = 0;
   @Input() vetNom = '';
   @Input() vetRegion = '';
   @Output() close       = new EventEmitter<void>();
@@ -40,9 +41,11 @@ export class ProductDetailComponent implements OnInit {
 
   addToCart() {
     if (!this.canAdd) return;
-    this.cartService.addItem(this.product, this.quantity, this.vetNom, this.vetRegion);
-    this.addedToCart = true;
-    this.toast.success(`"${this.product.nom}" ajouté au panier !`);
+    const added = this.cartService.addItem(this.product, this.quantity, this.vetId, this.vetNom, this.vetRegion);
+    if (added) {
+      this.addedToCart = true;
+      this.toast.success(`"${this.product.nom}" ajouté au panier !`);
+    }
   }
 
   imageUrl(): string {

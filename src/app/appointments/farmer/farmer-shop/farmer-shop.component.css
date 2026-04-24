@@ -92,3 +92,122 @@
 .no-results button { background:#2e7d32; color:#fff; border:none; border-radius:8px; padding:8px 16px; cursor:pointer; font-size:13px; }
 
 @media (max-width:600px) { .fshop-grid { grid-template-columns:1fr; } .detail-grid { grid-template-columns:1fr; } }
+
+/* ── Cart FAB (icône panier flottant dans le header) ── */
+.cart-fab {
+  position: relative;
+  margin-left: auto;
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(46,125,50,.45);
+  transition: background .2s, transform .2s;
+  flex-shrink: 0;
+}
+.cart-fab:hover { background: #1b5e20; transform: scale(1.08); }
+.cart-fab-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #f44336;
+  color: #fff;
+  border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  padding: 0 3px;
+  animation: pop .2s ease;
+}
+@keyframes pop {
+  0%   { transform: scale(0.5); }
+  80%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* ── Bouton Ajouter au panier (card) ── */
+.btn-add-cart {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #2e7d32;
+  color: #fff;
+  transition: background .2s, transform .15s;
+  white-space: nowrap;
+}
+.btn-add-cart:hover:not(:disabled) { background: #1b5e20; transform: scale(1.04); }
+.btn-add-cart:disabled { background: #bdbdbd; cursor: not-allowed; }
+.btn-add-cart.added { background: #388e3c; }
+
+/* ── Panier – quantité + bouton dans modal ── */
+.detail-cart-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 18px 0 12px;
+  flex-wrap: wrap;
+}
+.qty-ctrl {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fafafa;
+}
+.qty-btn {
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #2e7d32;
+  transition: background .15s;
+}
+.qty-btn:hover { background: #e8f5e9; }
+.qty-val {
+  min-width: 36px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a2e1a;
+}
+.btn-add-cart-detail {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  background: linear-gradient(135deg, #2e7d32, #388e3c);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(46,125,50,.35);
+  transition: opacity .2s, transform .15s;
+  min-width: 0;
+}
+.btn-add-cart-detail:hover { opacity: .9; transform: translateY(-1px); }

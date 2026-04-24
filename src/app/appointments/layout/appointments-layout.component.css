@@ -48,3 +48,11 @@
 .boutique-nav.active { background: rgba(255,213,79,0.15) !important; }
 .boutique-nav.active i,
 .boutique-nav.active span { color: #ffd54f !important; }
+
+/* Statistics nav button */
+.stats-nav { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 4px; padding-top: 4px; }
+.stats-nav i { color: #64b5f6; }
+.stats-nav.active { background: rgba(100,181,246,0.15) !important; }
+.stats-nav.active i,
+.stats-nav.active span { color: #64b5f6 !important; }
+

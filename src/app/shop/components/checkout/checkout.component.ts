@@ -159,7 +159,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           this.step = 'success';
           this.cartService.clear();
           this.toast.success('Paiement effectue avec succes.');
-          setTimeout(() => this.success.emit(), 2000);
         },
         error: (e) => {
           this.isConfirmingPayment = false;

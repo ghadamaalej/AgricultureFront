@@ -254,6 +254,7 @@
   <app-farmer-shop
     [vetId]="vet.id"
     [vetName]="vet.prenom + ' ' + vet.nom"
+    [vetRegion]="vet.region || ''"
     (back)="closeShop()"
   ></app-farmer-shop>
 </div>

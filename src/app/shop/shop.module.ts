@@ -7,6 +7,7 @@ import { CartDrawerComponent }    from './components/cart-drawer/cart-drawer.com
 import { ProductDetailComponent } from './components/product-detail/product-detail.component';
 import { CheckoutComponent }      from './components/checkout/checkout.component';
 import { CartIconComponent }      from './components/cart-icon/cart-icon.component';
+import { CartConflictComponent }  from './components/cart-conflict/cart-conflict.component';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import { CartIconComponent }      from './components/cart-icon/cart-icon.compone
     ProductDetailComponent,
     CheckoutComponent,
     CartIconComponent,
+    CartConflictComponent,
   ],
   imports: [
     CommonModule,
@@ -27,6 +29,7 @@ import { CartIconComponent }      from './components/cart-icon/cart-icon.compone
     ProductDetailComponent,
     CheckoutComponent,
     CartIconComponent,
+    CartConflictComponent,
   ]
 })
 export class ShopModule {}

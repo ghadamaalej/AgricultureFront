@@ -10,6 +10,12 @@
         <p class="fshop-subtitle">Produits vétérinaires disponibles</p>
       </div>
     </div>
+
+    <!-- Cart icon button -->
+    <button class="cart-fab" (click)="openCart()" title="Voir le panier">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="cart-fab-badge" *ngIf="cartService.count > 0">{{ cartService.count }}</span>
+    </button>
   </div>
 
   <!-- Loader / Error -->
@@ -51,10 +57,10 @@
     <div class="fshop-grid">
       <div *ngFor="let p of filtered"
            class="fshop-card"
-           [class.out-of-stock]="!((p.currentQuantity ?? 0) > 0)"
-           (click)="openDetail(p)">
+           [class.out-of-stock]="!((p.currentQuantity ?? 0) > 0)">
 
-        <div class="fcard-img-wrap">
+        <!-- Image -->
+        <div class="fcard-img-wrap" (click)="openDetail(p)">
           <img *ngIf="imageUrl(p)" [src]="imageUrl(p)" [alt]="p.nom" class="fcard-img">
           <div *ngIf="!imageUrl(p)" class="fcard-img-placeholder">{{ categoryEmoji(p.categorie) }}</div>
           <div class="fcard-stock-badge" [class.in]="(p.currentQuantity ?? 0) > 0" [class.out]="!((p.currentQuantity ?? 0) > 0)">
@@ -63,12 +69,18 @@
         </div>
 
         <div class="fcard-body">
-          <div class="fcard-cat">{{ categoryLabel(p.categorie) }}</div>
-          <h3 class="fcard-name">{{ p.nom }}</h3>
-          <p *ngIf="p.description" class="fcard-desc">{{ p.description | slice:0:80 }}{{ (p.description?.length ?? 0) > 80 ? '…' : '' }}</p>
+          <div class="fcard-cat" (click)="openDetail(p)">{{ categoryLabel(p.categorie) }}</div>
+          <h3 class="fcard-name" (click)="openDetail(p)">{{ p.nom }}</h3>
+          <p *ngIf="p.description" class="fcard-desc" (click)="openDetail(p)">{{ p.description | slice:0:80 }}{{ (p.description?.length ?? 0) > 80 ? '…' : '' }}</p>
           <div class="fcard-footer">
             <span class="fcard-price">{{ p.prixVente | number:'1.2-2' }} DT</span>
-            <span class="fcard-detail-btn">Voir détail →</span>
+            <button class="btn-add-cart"
+                    [class.added]="addedProductId === p.id"
+                    [disabled]="!((p.currentQuantity ?? 0) > 0)"
+                    (click)="addToCart(p, 1)">
+              <i class="fas" [class.fa-shopping-cart]="addedProductId !== p.id" [class.fa-check]="addedProductId === p.id"></i>
+              {{ addedProductId === p.id ? 'Ajouté !' : 'Ajouter' }}
+            </button>
           </div>
         </div>
       </div>
@@ -131,11 +143,40 @@
         <span class="detail-price-unit">/ {{ selectedProduct.unit }}</span>
       </div>
 
-      <p class="detail-contact-hint">
-        💬 Pour commander, contactez directement le vétérinaire via la messagerie.
+      <!-- Quantity + Add to cart -->
+      <div class="detail-cart-row" *ngIf="(selectedProduct.currentQuantity ?? 0) > 0">
+        <div class="qty-ctrl">
+          <button class="qty-btn" (click)="selectedQty = selectedQty > 1 ? selectedQty - 1 : 1">−</button>
+          <span class="qty-val">{{ selectedQty }}</span>
+          <button class="qty-btn" (click)="selectedQty = selectedQty < (selectedProduct.currentQuantity ?? 1) ? selectedQty + 1 : selectedQty">+</button>
+        </div>
+        <button class="btn-add-cart-detail" (click)="addDetailToCart()">
+          <i class="fas fa-shopping-cart"></i>
+          Ajouter au panier — {{ (selectedProduct.prixVente ?? 0) * selectedQty | number:'1.2-2' }} DT
+        </button>
+      </div>
+
+      <p class="detail-contact-hint" *ngIf="!((selectedProduct.currentQuantity ?? 0) > 0)">
+        ⚠️ Ce produit est actuellement en rupture de stock.
       </p>
 
       <button class="detail-close-btn" (click)="closeDetail()">Fermer</button>
     </div>
   </div>
 </div>
+
+<!-- ── Cart Drawer ── -->
+<ng-container *ngIf="showCart">
+  <app-cart-drawer
+    (close)="closeCart()"
+    (checkout)="goCheckout()">
+  </app-cart-drawer>
+</ng-container>
+
+<!-- ── Checkout ── -->
+<ng-container *ngIf="showCheckout">
+  <app-checkout (close)="closeCheckout()" (success)="closeCheckout()"></app-checkout>
+</ng-container>
+
+<!-- Conflict Dialog (mono-vétérinaire) -->
+<app-cart-conflict></app-cart-conflict>
